@@ -1,0 +1,65 @@
+/*
+ * Fastly Wordpress Plugin
+ * Admin Interface Styles
+ * @author Ryan Sandor Richards
+ */
+#fastly-admin h1 {
+  float: left;
+}
+
+#fastly-admin .content {
+  padding: 10px 0 0 20px;
+  margin: 10px 0 0 200px;
+}
+
+#fastly-admin .content .button-row {
+  margin: 20px 0;
+  line-height: 20px;
+}
+
+#fastly-admin .error {
+  background-color: #faa;
+  padding: 4px;
+}
+
+#fastly-admin .error-flash {
+  color: red;
+  font-weight: bold;
+}
+
+#fastly-admin a.disabled {
+  cursor: default !important;
+}
+
+#fastly-admin .loading {
+  display: none;
+  margin-bottom: -3px;
+  margin-left: 4px;
+}
+
+#fastly-admin a.advanced {
+  font-size: 9px;
+}
+
+#fastly-admin fieldset {
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  background: #efefef;
+  padding: 6px;
+  width: 500px;
+}
+
+#fastly-admin fieldset.advanced {
+  display: none;
+}
+
+#fastly-admin input.text {
+  font-size: 18px;
+  padding: 4px;
+  width: 300px;
+}
+
+#fastly-admin fieldset input.text {
+  width: 99%;
+}
+
