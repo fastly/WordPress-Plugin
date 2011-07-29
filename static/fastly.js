@@ -94,11 +94,13 @@ window.Fastly = (function($) {
       // Send the sign up request
       function disable() {
         $(e.target).addClass('disabled');
+        $('fieldset input').attr('disabled', true);
         $('.loading').show();
       }
       
       function enable() {
         $(e.target).removeClass('disabled');
+        $('fieldset input').attr('disabled', false);
         $('.loading').hide();
       }
       

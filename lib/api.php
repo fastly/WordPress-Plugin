@@ -11,9 +11,6 @@
 class FastlyAPI {  
   /**
    * Default constructor.
-   *
-   * TODO Needs correct default host and port.
-   *
    * @param $api_key Fastly API key.
    * @param $host Hostname of the API server.
    * @param $port Port for the API server.
@@ -44,7 +41,7 @@ class FastlyAPI {
 		
 		$lines = explode("\n", $response);
 		
-		// TODO Handle the separation of header and body in a less fucked up way
+		// TODO Handle this better...
     preg_match("#HTTP/1.1 (\\d+)#", array_shift($lines), $matches);
     $code = $matches[1];    
     $body = array_pop($lines);
@@ -104,6 +101,7 @@ class FastlyAPI {
       "POST " . $path . " HTTP/1.1",
       "User-Agent: FastlyAPI Adapter",
       "Accept: */*",
+      "Connection: close",
       "Content-Length: " . $content_length,
     );
 

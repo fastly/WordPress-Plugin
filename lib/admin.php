@@ -70,11 +70,8 @@ class FastlyAdmin {
     
     switch ($code) {
       case 200:
-        $api_key = $body['key']['attributes']['key'];
-        $service_id = $body['service']['service']['service'];
-        
-        update_option('fastly_api_key', $api_key);
-        update_option('fastly_service_id', $service_id);
+        update_option('fastly_api_key', $body['api_key']);
+        update_option('fastly_service_id', $body['service_id']);
         update_option('fastly_page', 'configure');
         
         // Update internal host name
