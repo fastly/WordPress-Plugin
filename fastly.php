@@ -1,8 +1,5 @@
 <?php
-/**
- * @package Fastly
- * @version 1.0
- */
+
 /*
 Plugin Name: Fastly
 Plugin URI: http://fastly.com/
@@ -11,6 +8,15 @@ Author: Fastly.com
 Version: 0.2b
 Author URI: http://fastly.com/
 */
+
+
+/**
+ * Main plugin code.
+ * @package Fastly
+ * @version 0.2b
+ * @author Ryan Sandor Richards
+ * @copyright 2011 Fastly.com, All Rights Reserved
+ */
 
 // Basic plugin definitions
 define('FASTLY_VERSION', '0.2b');

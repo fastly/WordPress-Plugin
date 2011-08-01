@@ -2,7 +2,10 @@
 
 /**
  * Fastly Admin Panel.
+ * @package Fastly
+ * @version 0.2b
  * @author Ryan Sandor Richards
+ * @copyright 2011 Fastly.com, All Rights Reserved
  */
 class FastlyAdmin {
   /**
@@ -299,3 +302,5 @@ class FastlyAdmin {
 		$this->initJS();
 	}
 }
+
+// "There's a starman, waiting in the sky, he'd like to come and meet us, but he thinks he'll blow our minds" -- David Bowie

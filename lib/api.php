@@ -2,11 +2,10 @@
 
 /**
  * Fastly API for PHP.
- * 
- * TODO Needs to be extended to support default action methods (/signup, PURGE, etc.)
- *
+ * @package Fastly
+ * @version 0.2b
  * @author Ryan Sandor Richards
- * @copyright 2011 Fastly.com
+ * @copyright 2011 Fastly.com, All Rights Reserved
  */
 class FastlyAPI {  
   /**
@@ -115,4 +114,4 @@ class FastlyAPI {
   }
 } 
 
-// WHITE LIGHT, doo-doo doo-doo doo, WHITE LIGHT
+// "WHITE LIGHT, doo-doo doo-doo doo, WHITE LIGHT" -- Gorillaz

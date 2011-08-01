@@ -2,7 +2,10 @@
 
 /**
  * Fastly Purger - Detects changes in content and automatically sends purge requests.
+ * @package Fastly
+ * @version 0.2b
  * @author Ryan Sandor Richards
+ * @copyright 2011 Fastly.com, All Rights Reserved
  */
 class FastlyPurge {
   /** 
@@ -203,3 +206,5 @@ class FastlyPurge {
 		$this->purgePostDependencies($post->ID);
 	}
 }
+
+// "While mona lisas and mad hatters, sons of bankers, sons of lawyers turn around and say good morning to the night..." -- Elton John
