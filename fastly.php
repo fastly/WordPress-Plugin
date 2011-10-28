@@ -9,7 +9,6 @@ Version: 0.2b
 Author URI: http://fastly.com/
 */
 
-
 /**
  * Main plugin code.
  * @package Fastly

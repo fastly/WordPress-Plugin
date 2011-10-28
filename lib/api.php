@@ -77,7 +77,7 @@ class FastlyAPI {
    * Sends a purge all request to the Fastly API.
    */
   function purgeAll($service_id) {
-    return $this->post('/service/'.$service_id.'/purge_all');
+    return $this->post('/service/' . $service_id . '/purge_all');
   }
 
   /** 

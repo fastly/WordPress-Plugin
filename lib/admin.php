@@ -26,7 +26,18 @@ class FastlyAdmin {
 		add_action('wp_ajax_set_page', array(&$this, 'ajaxSetPage'));
 		add_action('wp_ajax_sign_up', array(&$this, 'ajaxSignUp'));
 		
-		//update_option('fastly_page', 'welcome');
+		#update_option('fastly_page', 'welcome');
+		update_option('fastly_page', 'configure');
+		
+		/* Point to CI API Server
+		update_option('fastly_api_hostname', '184.106.66.217');
+    update_option('fastly_api_port', 5500);
+		//*/
+		
+		/* Point to Dev API Server
+		update_option('fastly_api_hostname', '10.235.5.18');
+    update_option('fastly_api_port', 80);
+		//*/
 		
 		// Grab an instance of the API adapter
 		$this->api = new FastlyAPI(
