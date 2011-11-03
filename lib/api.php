@@ -115,3 +115,4 @@ class FastlyAPI {
 } 
 
 // "WHITE LIGHT, doo-doo doo-doo doo, WHITE LIGHT" -- Gorillaz
+?>

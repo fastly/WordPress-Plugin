@@ -63,3 +63,5 @@ function fastly_action_links($links, $file) {
 add_filter('plugin_action_links', 'fastly_action_links', 10, 2);
 
 // "Look out honey, cause I'm using technology..." - Iggy Pop
+
+?>
