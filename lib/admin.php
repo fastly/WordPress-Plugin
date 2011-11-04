@@ -127,6 +127,7 @@ class FastlyAdmin {
 		register_setting('fastly-group', 'fastly_api_hostname');
 		register_setting('fastly-group', 'fastly_api_port');
 		register_setting('fastly-group', 'fastly_api_key');
+		register_setting('fastly-group', 'fastly_service_id');
 		
 		// Page change group
 		register_setting('fastly-page-group', 'fastly_page');
