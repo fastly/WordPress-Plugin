@@ -250,8 +250,9 @@ class FastlyAdmin {
     ';
     
     settings_fields('fastly-group');
-    
-    $testUrl = 'http://' . get_option('fastly_hostname') . '.a.prod.fastly.net/';
+    $wpUrl   = get_bloginfo('wpurl');
+    $parts   = explode('/', $wpUrl, 2);
+    $testUrl = 'http://' . $parts[0] . '.a.prod.fastly.net/' . $parts[1];
     
     echo '
           <fieldset>
