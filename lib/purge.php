@@ -85,7 +85,7 @@ class FastlyPurge {
 	 * Purges posts and pages on update.
 	 */
 	function purgePost($postId) {
-		$this->purge( str_replace(get_bloginfo('wpurl'), "", get_permalink($postId)) );
+		$this->purge( get_permalink($postId) );
 	}
 
 	/**
@@ -148,7 +148,7 @@ class FastlyPurge {
 			$this->purgeAll();
 		}
 		else {
-			$this->purge( str_replace(get_bloginfo('wpurl'), "", get_category_link($categoryId)) );
+			$this->purge( get_category_link($categoryId) );
 		}
 	}
 
@@ -167,7 +167,7 @@ class FastlyPurge {
 	 * @param $categoryId Id of the category to purge.
 	 */
 	function purgeTagCategory($categoryId) {
-		$this->purge( str_replace(get_bloginfo('wpurl'),"",get_tag_link($categoryId)) );
+		$this->purge( get_tag_link($categoryId) );
 	}
 	
 	/**
@@ -182,7 +182,7 @@ class FastlyPurge {
 		);
 		
 		foreach ($uris as $uri) {
-			$this->purge( str_replace(get_bloginfo('wpurl'), "", $uri) );
+			$this->purge( $uri );
 		}
 	}  
 
