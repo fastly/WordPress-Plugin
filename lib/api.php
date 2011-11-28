@@ -60,18 +60,8 @@ class FastlyAPI {
     // TODO How can we handle this more elegantly?
     if (!$this->api_key)
       return;
-    
-    $server = $_SERVER['SERVER_NAME'];
-    $key = $this->api_key;
-    
-    $request = "PURGE " . $uri . " HTTP/1.1\r\n"
-      . "User-Agent: Fastly API Adapter\r\n"
-			. "Host: " . $server . "\r\n"
-			. "Accept: */*\r\n"
-			. "Proxy-Connection: Keep-Alive\r\n"
-			. "X-Fastly-Key: " . $key . "\r\n"
-			. "\r\n";
-    return $this->send($request);
+      
+    return $this->post('/purge/' . get_bloginfo('wpurl') . $uri);
   }
 
   /**
