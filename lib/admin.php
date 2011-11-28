@@ -249,7 +249,7 @@ class FastlyAdmin {
     ';
     
     settings_fields('fastly-group');
-    $wpUrl   = get_bloginfo('wpurl');
+    $wpUrl   = preg_replace("/^http:\/\//",'', get_bloginfo('wpurl'));
     $parts   = explode('/', $wpUrl, 2);
     $testUrl = 'http://' . $parts[0] . '.a.prod.fastly.net/' . $parts[1];
     
