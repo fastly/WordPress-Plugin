@@ -194,7 +194,7 @@ class FastlyPurge {
 	 * @param $postId Id of the post being purged.
 	 */
 	function purgeTags($postId) {
-		$tags = get_the_tags($postId);
+		$tags = wp_get_post_tags($postId);
 		foreach ($tags as $tag) {
 			$this->purgeTagCategory($tag->term_id);
 		}
