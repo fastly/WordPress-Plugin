@@ -13,10 +13,11 @@ class FastlyAPI {
    * @param $host Hostname of the API server.
    * @param $port Port for the API server.
    */
-  function FastlyAPI($api_key='', $host='api.fastly.com', $port='80') {
+  function FastlyAPI($api_key='', $host='ssl://api.fastly.com', $port='443') {
     $this->api_key = $api_key;
     $this->host = $host;
     $this->port = $port;
+    $this->ip   = gethostbyname($this->host);
   }
   
   /**
@@ -24,12 +25,13 @@ class FastlyAPI {
    * @param $request HTTP request content to send.
    */
   function send($request) {
-    $fp = fsockopen($this->host, $this->port, $errno, $errstr, 10);
+    $fp = fsockopen($this->ip, $this->port, $errno, $errstr, 10);
 		if (!$fp) {
 		  return -1;
 		}
 		else {
 			fwrite($fp, $request);
+			fflush($fp);
 			$response = '';
 	    while (!feof($fp)) {
 	        $response .= fgets($fp, 128);
