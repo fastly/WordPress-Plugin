@@ -14,7 +14,7 @@ class FastlyPurge {
     // Posts and Pages
 		add_action('edit_post', array(&$this, 'purgePost'), 99);
 		add_action('edit_post', array(&$this, 'purgePostDependencies'), 99);
-		add_action('transition_post_status', array(&$this,'purgePostStatus'),99);
+		add_action('transition_post_status', array(&$this,'purgePostStatus'),99, 3);
 		add_action('deleted_post', array(&$this, 'purgePost'), 99);
 		add_action('deleted_post', array(&$this, 'purgeCommon'), 99);
 		
