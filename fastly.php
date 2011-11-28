@@ -5,20 +5,20 @@ Plugin Name: Fastly
 Plugin URI: http://fastly.com/
 Description: Configuration and cache purging for the Fastly CDN.
 Author: Fastly.com
-Version: 0.2b
+Version: 0.3
 Author URI: http://fastly.com/
 */
 
 /**
  * Main plugin code.
  * @package Fastly
- * @version 0.2b
+ * @version 0.3
  * @author Ryan Sandor Richards
  * @copyright 2011 Fastly.com, All Rights Reserved
  */
 
 // Basic plugin definitions
-define('FASTLY_VERSION', '0.2b');
+define('FASTLY_VERSION', '0.3');
 define('FASTLY_PLUGIN_URL', plugin_dir_url( __FILE__ ));
 
 // Includes

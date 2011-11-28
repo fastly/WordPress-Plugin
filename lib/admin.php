@@ -3,7 +3,6 @@
 /**
  * Fastly Admin Panel.
  * @package Fastly
- * @version 0.2b
  * @author Ryan Sandor Richards
  * @copyright 2011 Fastly.com, All Rights Reserved
  */
