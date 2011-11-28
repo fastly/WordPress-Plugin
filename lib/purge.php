@@ -54,7 +54,10 @@ class FastlyPurge {
 	 * @param $url URL to purge from the cache server.
 	 */
 	function purge($url) {
-		$url = get_option('fastly_hostname') . $url;
+		//$url = get_option('fastly_hostname') . $url;
+		if (!preg_match("/^http/", $url)) {
+		  $url = get_bloginfo('wpurl') . $url;
+		}
 		$this->api->purge($url);		
 	}
 	
