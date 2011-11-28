@@ -36,8 +36,8 @@ if (!function_exists('json_decode')) {
 add_option('fastly_hostname', '');
 add_option('fastly_api_key', '');
 add_option('fastly_service_id', '');
-add_option('fastly_api_hostname', 'ssl:api.fastly.com');
-add_option('fastly_api_port', 80);
+add_option('fastly_api_hostname', 'ssl://api.fastly.com');
+add_option('fastly_api_port', 443);
 add_option('fastly_page', 'welcome');
 
 // Setup Purging
