@@ -18,7 +18,7 @@ Author URI: http://fastly.com/
  */
 
 // Basic plugin definitions
-define('FASTLY_VERSION', '0.3');
+define('FASTLY_VERSION', '0.5');
 define('FASTLY_PLUGIN_URL', plugin_dir_url( __FILE__ ));
 
 // Includes
@@ -36,8 +36,8 @@ if (!function_exists('json_decode')) {
 add_option('fastly_hostname', '');
 add_option('fastly_api_key', '');
 add_option('fastly_service_id', '');
-add_option('fastly_api_hostname', 'ssl://api.fastly.com');
-add_option('fastly_api_port', 443);
+add_option('fastly_api_hostname', 'https://api.fastly.com');
+add_option('fastly_api_port', null);
 add_option('fastly_page', 'welcome');
 
 // Setup Purging

@@ -13,37 +13,37 @@ class FastlyAdmin {
   function FastlyAdmin() {
     // Setup admin interface
     add_action('admin_menu', array(&$this, 'adminPanel'));
-		add_action('admin_init', array(&$this, 'adminInit'));
-		
-		// Add scripts and styles
-		wp_register_style('fastly.css', $this->resource('fastly.css'));
-  	wp_enqueue_style('fastly.css');
-  	wp_register_script('fastly.js', $this->resource('fastly.js'));
-  	wp_enqueue_script('fastly.js');
-		
-		// Ajax Actions
-		add_action('wp_ajax_set_page', array(&$this, 'ajaxSetPage'));
-		add_action('wp_ajax_sign_up', array(&$this, 'ajaxSignUp'));
-		
-		#update_option('fastly_page', 'welcome');
-		update_option('fastly_page', 'configure');
-		
-		/* Point to CI API Server
-		update_option('fastly_api_hostname', '184.106.66.217');
+    add_action('admin_init', array(&$this, 'adminInit'));
+    
+    // Add scripts and styles
+    wp_register_style('fastly.css', $this->resource('fastly.css'));
+    wp_enqueue_style('fastly.css');
+    wp_register_script('fastly.js', $this->resource('fastly.js'));
+    wp_enqueue_script('fastly.js');
+    
+    // Ajax Actions
+    add_action('wp_ajax_set_page', array(&$this, 'ajaxSetPage'));
+    add_action('wp_ajax_sign_up', array(&$this, 'ajaxSignUp'));
+    
+    #update_option('fastly_page', 'welcome');
+    update_option('fastly_page', 'configure');
+    
+    /* Point to CI API Server
+    update_option('fastly_api_hostname', '184.106.66.217');
     update_option('fastly_api_port', 5500);
-		//*/
-		
-		/* Point to Dev API Server
-		update_option('fastly_api_hostname', '10.235.5.18');
+    //*/
+    
+    /* Point to Dev API Server
+    update_option('fastly_api_hostname', '10.235.5.18');
     update_option('fastly_api_port', 80);
-		//*/
-		
-		// Grab an instance of the API adapter
-		$this->api = new FastlyAPI(
-		  get_option('fastly_api_key'),
-		  get_option('fastly_api_hostname'),
-		  get_option('fastly_api_port')
-		);
+    //*/
+    
+    // Grab an instance of the API adapter
+    $this->api = new FastlyAPI(
+      get_option('fastly_api_key'),
+      get_option('fastly_api_hostname'),
+      get_option('fastly_api_port')
+    );
   }
   
   /**
@@ -118,63 +118,63 @@ class FastlyAdmin {
   
   
   /**
-	 * Called when admin is initialized by wordpress.
-	 */
-	function adminInit() {
-	  // Config form group
-		register_setting('fastly-group', 'fastly_hostname');
-		register_setting('fastly-group', 'fastly_api_hostname');
-		register_setting('fastly-group', 'fastly_api_port');
-		register_setting('fastly-group', 'fastly_api_key');
-		register_setting('fastly-group', 'fastly_service_id');
-		
-		// Page change group
-		register_setting('fastly-page-group', 'fastly_page');
-		
-		// Generate front-end templates
-  	$this->templates = array(
+   * Called when admin is initialized by wordpress.
+   */
+  function adminInit() {
+    // Config form group
+    register_setting('fastly-group', 'fastly_hostname');
+    register_setting('fastly-group', 'fastly_api_hostname');
+    register_setting('fastly-group', 'fastly_api_port');
+    register_setting('fastly-group', 'fastly_api_key');
+    register_setting('fastly-group', 'fastly_service_id');
+    
+    // Page change group
+    register_setting('fastly-page-group', 'fastly_page');
+    
+    // Generate front-end templates
+    $this->templates = array(
       'welcome' => $this->welcome(),
       'configure' => $this->configure(),
-  	);
+    );
 
-  	// Get the current page
-  	$this->page = get_option('fastly_page');
-		if (!$this->validPage($this->page)) {
-		  $this->page = 'welcome';
-		  update_option('fastly_page', 'welcome');
-		}
-	}
+    // Get the current page
+    $this->page = get_option('fastly_page');
+    if (!$this->validPage($this->page)) {
+      $this->page = 'welcome';
+      update_option('fastly_page', 'welcome');
+    }
+  }
   
   /**
-	 * Adds the admin panel for the plugin.
-	 */
-	function adminPanel() {
-		add_options_page('Configure Fastly', 'Fastly', 'manage_options', 'fastly-admin-panel', array(&$this, 'render'));
-	}
-	
-	/**
-	 * Fetches various static resources for the fastly plugin (js, css, images, etc.)
-	 * @param $name Name of the resource to fetch.
-	 * @return The URL to the resource in the plugin directory.
-	 */
-	function resource($name='') {
-	  return FASTLY_PLUGIN_URL . 'static/' . $name;
-	}
-	
-	/**
-	 * Backwards compatible JSON encoder.
-	 * @param $obj Object to encode.
-	 * @return The JSON encoding of the given object.
-	 */
-	function encode($obj) {
-	  if (function_exists('json_encode')) {
-	    return json_encode($obj);
-	  }
-	  else {
-	    $json = new Services_JSON();
-	    return $json->encode($obj);
-	  }
-	}
+   * Adds the admin panel for the plugin.
+   */
+  function adminPanel() {
+    add_options_page('Configure Fastly', 'Fastly', 'manage_options', 'fastly-admin-panel', array(&$this, 'render'));
+  }
+  
+  /**
+   * Fetches various static resources for the fastly plugin (js, css, images, etc.)
+   * @param $name Name of the resource to fetch.
+   * @return The URL to the resource in the plugin directory.
+   */
+  function resource($name='') {
+    return FASTLY_PLUGIN_URL . 'static/' . $name;
+  }
+  
+  /**
+   * Backwards compatible JSON encoder.
+   * @param $obj Object to encode.
+   * @return The JSON encoding of the given object.
+   */
+  function encode($obj) {
+    if (function_exists('json_encode')) {
+      return json_encode($obj);
+    }
+    else {
+      $json = new Services_JSON();
+      return $json->encode($obj);
+    }
+  }
 
   /**
    * Backwards compatible JSON decode.
@@ -244,8 +244,8 @@ class FastlyAdmin {
     ob_start();    
     echo '
       <div class="configure fastly-admin-page">
-	      <h2>Configure</h2>
-	      <form method="post" action="options.php">
+        <h2>Configure</h2>
+        <form method="post" action="options.php">
     ';
     
     settings_fields('fastly-group');
@@ -300,21 +300,21 @@ class FastlyAdmin {
     </script>';
   }
   
-	/**
-	 * Renders the admin panel for the plugin.
-	 */
-	function render() {
-		if (!current_user_can('manage_options'))  {
-			wp_die( __('You do not have sufficient permissions to access this page.') );
-		}
-		
-		echo '<div id="fastly-admin" class="wrap">';
-  		echo '<h1><img alt="fastly" src="' . $this->resource('logo_white.gif') . '"></h1>';
-  		echo '<div class="content">' . $this->templates[$this->page] . '</div>';
-		echo '</div>';
-		
-		$this->initJS();
-	}
+  /**
+   * Renders the admin panel for the plugin.
+   */
+  function render() {
+    if (!current_user_can('manage_options'))  {
+      wp_die( __('You do not have sufficient permissions to access this page.') );
+    }
+    
+    echo '<div id="fastly-admin" class="wrap">';
+      echo '<h1><img alt="fastly" src="' . $this->resource('logo_white.gif') . '"></h1>';
+      echo '<div class="content">' . $this->templates[$this->page] . '</div>';
+    echo '</div>';
+    
+    $this->initJS();
+  }
 }
 
 // "There's a starman, waiting in the sky, he'd like to come and meet us, but he thinks he'll blow our minds" -- David Bowie
