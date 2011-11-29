@@ -14,18 +14,21 @@ class FastlyAPI {
    * @param $port Port for the API server.
    */
   function FastlyAPI($api_key='', $host='ssl://api.fastly.com', $port='443') {
-    $this->api_key = $api_key;
-    $this->host = $host;
-    $this->port = $port;
-    $this->ip   = gethostbyname($this->host);
+    $this->api_key   = $api_key;
+    $this->host      = $host;
+    $this->port      = $port;
+    $this->host_name = preg_replace('/^ssl:\/\//', '', $host);
+    $this->ip        = gethostbyname($this->host_name);
   }
   
+
+
   /**
    * Sends a request to the fastly API server.
    * @param $request HTTP request content to send.
    */
   function send($request) {
-    $fp = fsockopen($this->ip, $this->port, $errno, $errstr, 10);
+    $fp = fsockopen($this->host, $this->port, $errno, $errstr, 10);
 		if (!$fp) {
 		  return -1;
 		}
@@ -61,7 +64,7 @@ class FastlyAPI {
     if (!$this->api_key)
       return;
       
-    return $this->post('/purge/' . get_bloginfo('wpurl') . $uri);
+    return $this->post('/purge/' . $uri);
   }
 
   /**
@@ -91,7 +94,7 @@ class FastlyAPI {
       "POST " . $path . " HTTP/1.1",
       "User-Agent: FastlyAPI Adapter",
       "Accept: */*",
-      "Connection: close",
+      "Host: " . $this->host_name,
       "Content-Length: " . $content_length,
     );
 
