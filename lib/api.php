@@ -13,58 +13,30 @@ class FastlyAPI {
    * @param $host Hostname of the API server.
    * @param $port Port for the API server.
    */
-  function FastlyAPI($api_key='', $host='ssl://api.fastly.com', $port='443') {
+  function FastlyAPI($api_key='', $host='https://api.fastly.com', $port=null) {
     $this->api_key   = $api_key;
     $this->host      = $host;
     $this->port      = $port;
-    $this->host_name = preg_replace('/^ssl:\/\//', '', $host);
-    $this->ip        = gethostbyname($this->host_name);
+    $this->host_name = preg_replace('/^(ssl|https?):\/\//', '', $host);
   }
   
-
-
-  /**
-   * Sends a request to the fastly API server.
-   * @param $request HTTP request content to send.
-   */
-  function send($request) {
-    $fp = fsockopen($this->host, $this->port, $errno, $errstr, 10);
-		if (!$fp) {
-		  return -1;
-		}
-		else {
-			fwrite($fp, $request);
-			fflush($fp);
-			$response = '';
-	    while (!feof($fp)) {
-	        $response .= fgets($fp, 128);
-	    }
-	    fclose($fp);
-		}
-		
-		$lines = explode("\n", $response);
-		
-		// TODO Handle this better...
-    preg_match("#HTTP/1.1 (\\d+)#", array_shift($lines), $matches);
-    $code = $matches[1];    
-    $body = array_pop($lines);
-    
-    return array(
-      'code' => $code,
-      'body' => $body
-    );
-  }
-
   /**
    * Sends a purge request to the Fastly API.
    * @param $uri URI to purge.
    */
-  function purge($uri) {
+  function purge($uris) {
+    error_log($uris);
     // TODO How can we handle this more elegantly?
     if (!$this->api_key)
       return;
-      
-    return $this->post('/purge/' . $uri);
+    
+    if (!is_array($uris)) {
+      $uris = array($uris);
+    }
+    // TODO - change this to a curl_multi_exec at some point
+    foreach ($uris as $uri) {
+      $this->post('/purge/' . $uri);
+    }
   }
 
   /**
@@ -81,30 +53,27 @@ class FastlyAPI {
    * @return The response from the server or -1 if an error occurred.
    */
   function post($path, $data=array()) {
-    // Construct post body
-    $body = array();
-    foreach ($data as $k => $v) {
-      $body[] = $k . '=' . urlencode($v);
-    }
-    $body = implode('&', $body);
-    $content_length = strlen($body);
-    
-    // Construct post header
-    $header = array(
-      "POST " . $path . " HTTP/1.1",
-      "User-Agent: FastlyAPI Adapter",
-      "Accept: */*",
-      "Host: " . $this->host_name,
-      "Content-Length: " . $content_length,
-    );
 
+    $headers = array("Host: ".$this->host_name, "Accept: */*"); 
     if ($this->api_key) {
-      $header[] = "X-Fastly-Key: " . $this->api_key;
+      $headers[] = "X-Fastly-Key: " . $this->api_key;
     }
+
+    $url = $this->host;
+    if (!is_null($this->port) || $this->port == "") {
+      $url .= ":" . $this->port; 
+    } 
+    $url .= $path;
+    $ch  = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return !!$response;
     
-    // Construct and send the request
-    $request = implode("\r\n", $header) . "\r\n\r\n" . $body . "\r\n"; 
-		return $this->send($request);
   }
 } 
 
