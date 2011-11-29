@@ -89,7 +89,7 @@ class FastlyAdmin {
         
         // Update internal host name
         $parts = explode('/', $_REQUEST['website_address']);
-        if (count($parts >= 3)) {
+        if (count($parts) >= 3) {
           update_option('fastly_hostname', $parts[2]);
         }
         
@@ -251,6 +251,8 @@ class FastlyAdmin {
     settings_fields('fastly-group');
     $wpUrl   = preg_replace("/^http:\/\//",'', get_bloginfo('wpurl'));
     $parts   = explode('/', $wpUrl, 2);
+    if (count($parts) < 2)
+        array_push($parts, "");
     $testUrl = 'http://' . $parts[0] . '.a.prod.fastly.net/' . $parts[1];
     
     echo '
