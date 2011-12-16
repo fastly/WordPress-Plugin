@@ -34,6 +34,7 @@ class FastlyAPI {
     }
     // TODO - change this to a curl_multi_exec at some point
     foreach ($uris as $uri) {
+      $uri = preg_replace("/^https?:\/\//", '', $uri); 
       $this->post('/purge/' . $uri);
     }
   }
