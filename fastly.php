@@ -12,13 +12,13 @@ Author URI: http://fastly.com/
 /**
  * Main plugin code.
  * @package Fastly
- * @version 0.5
+ * @version 0.6
  * @author Ryan Sandor Richards
  * @copyright 2011 Fastly.com, All Rights Reserved
  */
 
 // Basic plugin definitions
-define('FASTLY_VERSION', '0.5');
+define('FASTLY_VERSION', '0.6');
 define('FASTLY_PLUGIN_URL', plugin_dir_url( __FILE__ ));
 
 // Includes
