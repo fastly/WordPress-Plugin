@@ -25,7 +25,6 @@ class FastlyAPI {
    * @param $uri URI to purge.
    */
   function purge($uris) {
-    error_log($uris);
     // TODO How can we handle this more elegantly?
     if (!$this->api_key)
       return;
