@@ -152,10 +152,9 @@ class FastlyPurge {
     $urls = array();
     if (is_active_widget(false, false, 'categories')) {
       $this->purgeAll();
-      $urls = array();
     }
     else {
-      $urls = array_merge($urls, get_category_link($categoryId) );
+      $urls[] = get_category_link($categoryId);
     }
     return $call ? $this->purge($urls) : $urls;
   }
