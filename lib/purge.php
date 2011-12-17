@@ -115,7 +115,7 @@ class FastlyPurge {
   /**
    * Purges post comments.
    */
-  function purgePostComments($commentId, $call=true) {
+  function purgeComments($commentId, $call=true) {
     $comment  = get_comment($commentId);
     $approved = $comment->comment_approved;
     $urls     = array();
@@ -123,7 +123,7 @@ class FastlyPurge {
     if ($approved == 1 || $approved == 'trash') {
       $postId = $comment->comment_post_ID;
       #$this->purge('/\\\?comments_popup=' . $postId);
-      $urls = array_merge($urls, '/?comments_popup=' . $postId);
+      $urls[] = '/?comments_popup=' . $postId;
       
       // TODO Need Regex Support
       /*
