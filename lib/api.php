@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * Fastly API for PHP.
