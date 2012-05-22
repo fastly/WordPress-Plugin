@@ -60,7 +60,7 @@ class FastlyAPI {
     }
 
     $url = $this->host;
-    if (!is_null($this->port) || $this->port == "") {
+    if (!is_null($this->port) && is_numeric($this->port)) {
       $url .= ":" . $this->port; 
     } 
     $url .= $path;
