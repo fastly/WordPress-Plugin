@@ -123,7 +123,7 @@ class FastlyPurge {
     if ($approved == 1 || $approved == 'trash') {
       $postId = $comment->comment_post_ID;
       #$this->purge('/\\\?comments_popup=' . $postId);
-      $urls[] = '/?comments_popup=' . $postId;
+      $urls[] = get_bloginfo('wpurl') . '/?comments_popup=' . $postId;
       
       // TODO Need Regex Support
       /*
