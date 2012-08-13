@@ -34,8 +34,8 @@ class FastlyAPI {
     }
     // TODO - change this to a curl_multi_exec at some point
     foreach ($uris as $uri) {
-      $uri = preg_replace("/^https?:\/\//", '', $uri); 
-      $this->post('/purge/' . $uri);
+      #$uri = preg_replace("/^https?:\/\//", '', $uri); 
+      $this->post($uri);
     }
   }
 
@@ -43,7 +43,13 @@ class FastlyAPI {
    * Sends a purge all request to the Fastly API.
    */
   function purgeAll($service_id) {
-    return $this->post('/service/' . $service_id . '/purge_all');
+    $url = $this->host;
+    if (!is_null($this->port) && is_numeric($this->port)) {
+      $url .= ":" . $this->port; 
+    } 
+    $url .= '/service/' . $service_id . '/purge_all';
+      
+    return $this->post($url, true);
   }
 
   /** 
@@ -52,23 +58,21 @@ class FastlyAPI {
    * @param $data Data for the body for the post request.
    * @return The response from the server or -1 if an error occurred.
    */
-  function post($path, $data=array()) {
+  function post($url, $do_post = false) {
 
     $headers = array("Host: ".$this->host_name, "Accept: */*"); 
     if ($this->api_key) {
       $headers[] = "X-Fastly-Key: " . $this->api_key;
     }
 
-    $url = $this->host;
-    if (!is_null($this->port) && is_numeric($this->port)) {
-      $url .= ":" . $this->port; 
-    } 
-    $url .= $path;
     $ch  = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, 1);
+    if ($do_post) {
+      curl_setopt($ch, CURLOPT_POST, 1);
+    } else {
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PURGE");      
+    }
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
     curl_close($ch);
