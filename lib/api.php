@@ -68,7 +68,7 @@ class FastlyAPI {
     $ch  = curl_init();
     # Temporary workaround to fix purging. Use POST instead of PURGE method.
     # Strip off protocol
-    $url = "https://app.fastly.com/purge/" . preg_replace("/^http(s?):\/\/",'', $url);
+    $url = "https://app.fastly.com/purge/" . preg_replace("/^http(s?):\/\//",'', $url);
     error_log("Purging using POST for " . $url);
     curl_setopt($ch, CURLOPT_URL, $url );
     if ($do_post) {
