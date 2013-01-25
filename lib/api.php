@@ -61,6 +61,7 @@ class FastlyAPI {
    */
   function post($url, $do_post = true) {
 
+    $headers = array();
     if ($this->api_key) {
       $headers[] = "X-Fastly-Key: " . $this->api_key;
     }
