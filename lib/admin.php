@@ -249,11 +249,11 @@ class FastlyAdmin {
     ';
     
     settings_fields('fastly-group');
-    $wpUrl   = preg_replace("/^http:\/\//",'', get_bloginfo('wpurl'));
-    $parts   = explode('/', $wpUrl, 2);
-    if (count($parts) < 2)
-        array_push($parts, "");
-    $testUrl = 'http://' . $parts[0] . '.a.prod.fastly.net/' . $parts[1];
+    $parts = parse_url( get_bloginfo('wpurl') );
+    $testUrl = 'http://' . $parts['host'] . '.global.prod.fastly.net';
+    if( !empty($parts['path']) ) {
+      $testUrl .= $parts['path'];
+    }
     
     echo '
           <fieldset>
@@ -309,7 +309,7 @@ class FastlyAdmin {
     }
     
     echo '<div id="fastly-admin" class="wrap">';
-      echo '<h1><img alt="fastly" src="' . $this->resource('logo_white.gif') . '"></h1>';
+      echo '<h1><img alt="fastly" src="' . $this->resource('logo_white.gif') . '"><br><span style="font-size: x-small;">version: '. FASTLY_VERSION .'</span></h1>';
       echo '<div class="content">' . $this->templates[$this->page] . '</div>';
     echo '</div>';
     
@@ -317,6 +317,6 @@ class FastlyAdmin {
   }
 }
 
-// "There's a starman, waiting in the sky, he'd like to come and meet us, but he thinks he'll blow our minds" -- David Bowie
+// "Some people call me the space cowboy, yeah | Some call me the gangster of love | Some people call me Maurice" -- Steve Miller
 
 ?>
