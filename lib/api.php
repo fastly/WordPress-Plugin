@@ -33,9 +33,12 @@ class FastlyAPI {
       $uris = array($uris);
     }
     // TODO - change this to a curl_multi_exec at some point
+	$logPurges = (bool)get_option('fastly_log_purges');
     foreach ($uris as $uri) {
       #$uri = preg_replace("/^https?:\/\//", '', $uri); 
-      error_log("Purging " . $uri);
+	  if( $logPurges ) {
+        error_log("Purging " . $uri);
+      }
       $this->post($uri);
     }
   }
@@ -63,14 +66,18 @@ class FastlyAPI {
 
     $headers = array();
     if ($this->api_key) {
-      $headers[] = "X-Fastly-Key: " . $this->api_key;
+      $headers[] = "Fastly-Key: " . $this->api_key;
     }
 
     $ch  = curl_init();
     # Temporary workaround to fix purging. Use POST instead of PURGE method.
     # Strip off protocol
-    $url = "https://app.fastly.com/purge/" . preg_replace("/^http(s?):\/\//",'', $url);
-    error_log("Purging using POST for " . $url);
+    $url = get_option('fastly_api_hostname') . "/purge/" . preg_replace("/^http(s?):\/\//",'', $url);
+
+	if( (bool)get_option('fastly_log_purges') ) {
+      error_log("Purging using POST for " . $url);
+    }
+
     curl_setopt($ch, CURLOPT_URL, $url );
     if ($do_post) {
       curl_setopt($ch, CURLOPT_POST, 1);
