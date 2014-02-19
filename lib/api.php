@@ -81,6 +81,7 @@ class FastlyAPI {
     curl_setopt($ch, CURLOPT_URL, $url );
     if ($do_post) {
       curl_setopt($ch, CURLOPT_POST, 1);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, '');
     } else {
       curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PURGE");      
     }
