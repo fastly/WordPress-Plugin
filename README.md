@@ -25,10 +25,6 @@ Take a look at the inline comments in the [code](https://github.com/fastly/WordP
 - Wires Instant Purging into the publishing process, keeping content up to date
 - Includes an admin panel in `wp-admin`
 
-## Credits
-
-Made with blood, sweat, tears, and love by @rsandor, @simonwistow and Fastly.
-
 ## License
 
 Fastly.com WordPress Plugin
