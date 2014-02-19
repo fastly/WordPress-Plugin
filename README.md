@@ -7,7 +7,7 @@ Integrates Fastly with Wordpress' publishing tools.
 You can either install from source (you're looking at it), or from the Wordpress [plugin directory](http://wordpress.org/plugins/fastly/).
 
 0. If you don't already have it send us a support request asking to have the Wordpress feature turned on for your account.
-1. Add a new WordPress object to a Service and set up the path to the Wordpress install. Examples:
+1. Add a new WordPress config to a Service and set up the path to the Wordpress install. Examples:
   - If your blog is at `http://blog.example.com/`, your path is `/`
   - If your blog is at `http://example.com/blog/`, your path is `/blog/`
 2. Deploy the new Version of the Service.
