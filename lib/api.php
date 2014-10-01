@@ -13,7 +13,7 @@ class FastlyAPI {
    * @param $host Hostname of the API server.
    * @param $port Port for the API server.
    */
-  function FastlyAPI($api_key='', $host='https://app.fastly.com', $port=null) {
+  function FastlyAPI($api_key='', $host='https://api.fastly.com', $port=null) {
     $this->api_key   = $api_key;
     $this->host      = $host;
     $this->port      = $port;
