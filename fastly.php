@@ -1,21 +1,13 @@
 <?php
-
 /*
-Plugin Name: Fastly
-Plugin URI: http://fastly.com/
-Description: Configuration and cache purging for the Fastly CDN.
-Author: Fastly.com
-Version: 0.97
-Author URI: http://fastly.com/
+    Plugin Name: Fastly
+    Version: 0.97
+    Plugin URI: https://github.com/fastly/WordPress-Plugin
+    Description: Configuration and cache purging for the Fastly CDN.
+    Author: Fastly
+    Author URI: http://www.fastly.com/
+    Text-Domain: fastly
 */
-
-/**
- * Main plugin code.
- * @package Fastly
- * @version 0.97
- * @author Ryan Sandor Richards
- * @copyright 2011 Fastly.com, All Rights Reserved
- */
 
 // Basic plugin definitions
 define('FASTLY_VERSION', '0.97');
@@ -62,7 +54,5 @@ function fastly_action_links($links, $file) {
   return $links;
 }
 add_filter('plugin_action_links', 'fastly_action_links', 10, 2);
-
-// "Look out honey, cause I'm using technology..." - Iggy Pop
 
 ?>

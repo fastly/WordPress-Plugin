@@ -1,12 +1,10 @@
 <?php
 
 /**
- * Fastly API for PHP.
- * @package Fastly
- * @author Ryan Sandor Richards
- * @copyright 2011 Fastly.com, All Rights Reserved
+ * @package API
  */
-class FastlyAPI {  
+
+class FastlyAPI {
   /**
    * Default constructor.
    * @param $api_key Fastly API key.
@@ -19,7 +17,7 @@ class FastlyAPI {
     $this->port      = $port;
     $this->host_name = preg_replace('/^(ssl|https?):\/\//', '', $host);
   }
-  
+
   /**
    * Sends a purge request to the Fastly API.
    * @param $uri URI to purge.
@@ -28,7 +26,7 @@ class FastlyAPI {
     // TODO How can we handle this more elegantly?
     if (!$this->api_key)
       return;
-    
+
     if (!is_array($uris)) {
       $uris = array($uris);
     }
@@ -49,10 +47,10 @@ class FastlyAPI {
   function purgeAll($service_id) {
     $url = $this->host;
     if (!is_null($this->port) && is_numeric($this->port)) {
-      $url .= ":" . $this->port; 
-    } 
+      $url .= ":" . $this->port;
+    }
     $url .= '/service/' . $service_id . '/purge_all';
-      
+
     return $this->post($url, true);
   }
 
@@ -83,16 +81,15 @@ class FastlyAPI {
       curl_setopt($ch, CURLOPT_POST, 1);
       curl_setopt($ch, CURLOPT_POSTFIELDS, '');
     } else {
-      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PURGE");      
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PURGE");
     }
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
     curl_close($ch);
-    return !!$response;
-    
-  }
-} 
 
-// "WHITE LIGHT, doo-doo doo-doo doo, WHITE LIGHT" -- Gorillaz
+    return !!$response;
+  }
+}
+
 ?>
