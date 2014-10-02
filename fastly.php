@@ -1,7 +1,7 @@
 <?php
 /*
     Plugin Name: Fastly
-    Version: 0.97
+    Version: 1.0.0
     Plugin URI: https://github.com/fastly/WordPress-Plugin
     Description: Configuration and cache purging for the Fastly CDN.
     Author: Fastly
@@ -10,7 +10,7 @@
 */
 
 // Basic plugin definitions
-define('FASTLY_VERSION', '0.97');
+define('FASTLY_VERSION', '1.0.0');
 define('FASTLY_PLUGIN_URL', plugin_dir_url( __FILE__ ));
 
 // Includes
