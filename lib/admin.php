@@ -48,7 +48,11 @@ class FastlyAdmin {
    *
    * @return void
    */
-  function admin_enqueue_scripts() {
+  function admin_enqueue_scripts( $hook_suffix ) {
+    if ('settings_page_fastly-admin-panel' !== $hook_suffix) {
+      return;
+    }
+
     // Add scripts and styles
     wp_register_style('fastly.css', $this->resource('fastly.css'));
     wp_enqueue_style('fastly.css');
