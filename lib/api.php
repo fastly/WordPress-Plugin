@@ -75,7 +75,7 @@ class FastlyAPI {
     $url = get_option('fastly_api_hostname') . "/purge/" . preg_replace("/^http(s?):\/\//",'', $url);
 
 	if( (bool)get_option('fastly_log_purges') ) {
-      error_log("Purging using POST for " . $url);
+      error_log("Purging using POST for " . esc_url($url));
     }
 
     curl_setopt($ch, CURLOPT_URL, $url );

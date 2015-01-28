@@ -45,7 +45,12 @@ window.Fastly = (function($) {
       loadPage('configure');
       $.ajax({
         url: ajaxurl, 
-        data: {action: 'set_page', page: 'configure'}
+        data: {
+          action: 'set_page',
+          page: 'configure',
+          //nonce provided by wp_localize_script() in admin.php
+          nonce: nonce
+        }
       });
     },
     
@@ -114,7 +119,9 @@ window.Fastly = (function($) {
           name: name.val(),
           email: email.val(),
           address: address.val(),
-          website_address: website_address.val()
+          website_address: website_address.val(),
+          //nonce provided by wp_localize_script() in admin.php
+          nonce: nonce
         },
         dataType: 'json',
         success: function(response) {

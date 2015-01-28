@@ -14,12 +14,11 @@ class FastlyAdmin {
     // Setup admin interface
     add_action('admin_menu', array(&$this, 'adminPanel'));
     add_action('admin_init', array(&$this, 'adminInit'));
-    
-    // Add scripts and styles
-    wp_register_style('fastly.css', $this->resource('fastly.css'));
-    wp_enqueue_style('fastly.css');
-    wp_register_script('fastly.js', $this->resource('fastly.js'));
-    wp_enqueue_script('fastly.js');
+
+    // Scripts must be registered as a wp_enqueue_scripts handler or the
+    // wp_create_nonce() function is undefined because that part of WP is not
+    // yet loaded and available.
+    add_action('wp_enqueue_scripts', array(&$this, 'enqueueScripts'));
     
     // Ajax Actions
     add_action('wp_ajax_set_page', array(&$this, 'ajaxSetPage'));
@@ -45,6 +44,19 @@ class FastlyAdmin {
       get_option('fastly_api_port')
     );
   }
+
+  function enqueueScripts() {
+    // Add scripts and styles
+    wp_register_style('fastly.css', $this->resource('fastly.css'));
+    wp_enqueue_style('fastly.css');
+    wp_register_script('fastly.js', $this->resource('fastly.js'));
+
+    // Expose a WP CSRF nonce to the fastly.js script
+    $nonce = wp_create_nonce('fastly-admin');
+    wp_localize_script('fastly.js', 'nonce', $nonce);
+
+    wp_enqueue_script('fastly.js');
+  }
   
   /**
    * @param $p Page name to test.
@@ -58,6 +70,10 @@ class FastlyAdmin {
    * Set the user's default page.
    */
   function ajaxSetPage() {
+    if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'fastly-admin')) {
+      wp_die('Bad CSRF Nonce.');
+    }
+
     if (isset($_REQUEST['page']) && $this->validPage($_REQUEST['page'])) {
       update_option('fastly_page', $_REQUEST['page']);
       die(1);
@@ -69,6 +85,10 @@ class FastlyAdmin {
    * Make a sign up request to teh fastly API.
    */
   function ajaxSignUp() {
+    if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'fastly-admin')) {
+      wp_die('Bad CSRF Nonce.');
+    }
+
     unset($_REQUEST['action']);
     $_REQUEST['wizard'] = 'wordpress';
     
@@ -259,18 +279,18 @@ class FastlyAdmin {
     echo '
           <fieldset>
             <p><b>Fastly API Key</b></p>
-            <p><input class="text" type="text" name="fastly_api_key" value="' . get_option('fastly_api_key') . '"></p>
+            <p><input class="text" type="text" name="fastly_api_key" value="' . esc_attr(get_option('fastly_api_key')) . '"></p>
             <p><b>Service Id</b></p>
-            <p><input class="text" type="text" name="fastly_service_id" value="' . get_option('fastly_service_id') . '"></p>
+            <p><input class="text" type="text" name="fastly_service_id" value="' . esc_attr(get_option('fastly_service_id')) . '"></p>
           </fieldset>
       
           <p><a href="#" class="advanced">Advanced Configuration</a></p>
       
           <fieldset class="advanced">
             <p><b>Fastly API Hostname</b></p>
-            <p><input class="text" name="fastly_api_hostname" type="text" value="' . get_option('fastly_api_hostname') . '"></p>
+            <p><input class="text" name="fastly_api_hostname" type="text" value="' . esc_url(get_option('fastly_api_hostname')) . '"></p>
             <p><b>Fastly API Port</b></p>
-            <p><input class="text" name="fastly_api_port" type="text" value="' . get_option('fastly_api_port') . '"></p>
+            <p><input class="text" name="fastly_api_port" type="text" value="' . esc_attr(get_option('fastly_api_port')) . '"></p>
             <p><input class="checkbox" name="fastly_log_purges" type="checkbox" value="1" ' . ((int)get_option('fastly_log_purges')?"checked='checked'":"") . '> <b>Log purges to PHP errorlog</b></p>
             
             <!--
@@ -284,7 +304,7 @@ class FastlyAdmin {
           <p><input type="submit" class="button" value="Save Settings"></p>
         </form>
       </div>
-      <p>Test your site: <a href="' . $testUrl . '">' . $testUrl . '</a></p>
+      <p>Test your site: <a href="' . esc_url($testUrl) . '">' . esc_url($testUrl) . '</a></p>
     ';
     
     $form = ob_get_contents();
