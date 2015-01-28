@@ -15,11 +15,8 @@ class FastlyAdmin {
     add_action('admin_menu', array(&$this, 'adminPanel'));
     add_action('admin_init', array(&$this, 'adminInit'));
     
-    // Add scripts and styles
-    wp_register_style('fastly.css', $this->resource('fastly.css'));
-    wp_enqueue_style('fastly.css');
-    wp_register_script('fastly.js', $this->resource('fastly.js'));
-    wp_enqueue_script('fastly.js');
+    // Register scripts and styles
+    add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
     
     // Ajax Actions
     add_action('wp_ajax_set_page', array(&$this, 'ajaxSetPage'));
@@ -45,7 +42,24 @@ class FastlyAdmin {
       get_option('fastly_api_port')
     );
   }
-  
+
+  /**
+   * Register scripts and styles needed for the admin option page.
+   *
+   * @return void
+   */
+  function admin_enqueue_scripts( $hook_suffix ) {
+    if ('settings_page_fastly-admin-panel' !== $hook_suffix) {
+      return;
+    }
+
+    // Add scripts and styles
+    wp_register_style('fastly.css', $this->resource('fastly.css'));
+    wp_enqueue_style('fastly.css');
+    wp_register_script('fastly.js', $this->resource('fastly.js'));
+    wp_enqueue_script('fastly.js');
+  }
+
   /**
    * @param $p Page name to test.
    * @return True if the given page is valid, false otherwise.
