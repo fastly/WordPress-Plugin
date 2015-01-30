@@ -48,8 +48,8 @@ window.Fastly = (function($) {
         data: {
           action: 'set_page',
           page: 'configure',
-          //nonce provided by wp_localize_script() in admin.php
-          nonce: nonce
+          //fastlyNonce provided by wp_localize_script() in admin.php
+          nonce: fastlyNonce
         }
       });
     },
@@ -120,8 +120,8 @@ window.Fastly = (function($) {
           email: email.val(),
           address: address.val(),
           website_address: website_address.val(),
-          //nonce provided by wp_localize_script() in admin.php
-          nonce: nonce
+          //fastlyNonce provided by wp_localize_script() in admin.php
+          nonce: fastlyNonce
         },
         dataType: 'json',
         success: function(response) {

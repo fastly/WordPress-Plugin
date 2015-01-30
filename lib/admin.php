@@ -60,7 +60,7 @@ class FastlyAdmin {
     wp_register_script('fastly.js', $this->resource('fastly.js'));
     // Expose a WP CSRF nonce to the fastly.js script
     $nonce = wp_create_nonce('fastly-admin');
-    wp_localize_script('fastly.js', 'nonce', $nonce);
+    wp_localize_script('fastly.js', 'fastlyNonce', $nonce);
     wp_enqueue_script('fastly.js');
   }
   
@@ -81,7 +81,7 @@ class FastlyAdmin {
     }
 
     if (isset($_REQUEST['page']) && $this->validPage($_REQUEST['page'])) {
-      update_option('fastly_page', $_REQUEST['page']);
+      update_option('fastly_page', esc_sql($_REQUEST['page']));
       die(1);
     }
     die();
@@ -109,14 +109,14 @@ class FastlyAdmin {
     
     switch ($code) {
       case 200:
-        update_option('fastly_api_key', $body['api_key']);
-        update_option('fastly_service_id', $body['service_id']);
+        update_option('fastly_api_key', esc_sql($body['api_key']));
+        update_option('fastly_service_id', esc_sql($body['service_id']));
         update_option('fastly_page', 'configure');
         
         // Update internal host name
         $parts = explode('/', $_REQUEST['website_address']);
         if (count($parts) >= 3) {
-          update_option('fastly_hostname', $parts[2]);
+          update_option('fastly_hostname', esc_sql($parts[2]));
         }
         
         $response = array('status' => 'success');
@@ -234,7 +234,7 @@ class FastlyAdmin {
         
         <fieldset>
           <p><b>Blog Name</b></p>
-          <p><input class="text" id="customer" type="text" value="' . $customer . '"></p>
+          <p><input class="text" id="customer" type="text" value="' . esc_attr($customer) . '"></p>
           <p><b>Your Name</b></p>
           <p><input class="text" id="name" type="text"></p>
           <p><b>Email Address</b></p>
@@ -245,9 +245,9 @@ class FastlyAdmin {
         
         <fieldset>
           <p><b>Blog Address</b></p>
-          <p><input class="text" id="website_address" type="text" value="' . $website_address . '"></p>
+          <p><input class="text" id="website_address" type="text" value="' . esc_url($website_address) . '"></p>
           <p><b>Server Address</b></p>
-          <p><input class="text" id="address" type="text" value="' . $address . '"></p>
+          <p><input class="text" id="address" type="text" value="' . esc_attr($address) . '"></p>
         </fieldset>
         
         <p><label id="agree_tos_label" for="agree_tos"><input id="agree_tos" type="checkbox"> I agree to the
