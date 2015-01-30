@@ -14,11 +14,9 @@ class FastlyAdmin {
     // Setup admin interface
     add_action('admin_menu', array(&$this, 'adminPanel'));
     add_action('admin_init', array(&$this, 'adminInit'));
-
-    // Scripts must be registered as a wp_enqueue_scripts handler or the
-    // wp_create_nonce() function is undefined because that part of WP is not
-    // yet loaded and available.
-    add_action('wp_enqueue_scripts', array(&$this, 'enqueueScripts'));
+    
+    // Register scripts and styles
+    add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
     
     // Ajax Actions
     add_action('wp_ajax_set_page', array(&$this, 'ajaxSetPage'));
@@ -45,16 +43,24 @@ class FastlyAdmin {
     );
   }
 
-  function enqueueScripts() {
+  /**
+   * Register scripts and styles needed for the admin option page.
+   *
+   * @return void
+   */
+  function admin_enqueue_scripts( $hook_suffix ) {
+    if ('settings_page_fastly-admin-panel' !== $hook_suffix) {
+      return;
+    }
+
     // Add scripts and styles
     wp_register_style('fastly.css', $this->resource('fastly.css'));
     wp_enqueue_style('fastly.css');
-    wp_register_script('fastly.js', $this->resource('fastly.js'));
 
+    wp_register_script('fastly.js', $this->resource('fastly.js'));
     // Expose a WP CSRF nonce to the fastly.js script
     $nonce = wp_create_nonce('fastly-admin');
     wp_localize_script('fastly.js', 'nonce', $nonce);
-
     wp_enqueue_script('fastly.js');
   }
   
