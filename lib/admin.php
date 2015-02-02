@@ -56,10 +56,14 @@ class FastlyAdmin {
     // Add scripts and styles
     wp_register_style('fastly.css', $this->resource('fastly.css'));
     wp_enqueue_style('fastly.css');
+
     wp_register_script('fastly.js', $this->resource('fastly.js'));
+    // Expose a WP CSRF nonce to the fastly.js script
+    $nonce = wp_create_nonce('fastly-admin');
+    wp_localize_script('fastly.js', 'fastlyNonce', $nonce);
     wp_enqueue_script('fastly.js');
   }
-
+  
   /**
    * @param $p Page name to test.
    * @return True if the given page is valid, false otherwise.
@@ -72,8 +76,12 @@ class FastlyAdmin {
    * Set the user's default page.
    */
   function ajaxSetPage() {
+    if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'fastly-admin')) {
+      wp_die('Bad CSRF Nonce.');
+    }
+
     if (isset($_REQUEST['page']) && $this->validPage($_REQUEST['page'])) {
-      update_option('fastly_page', $_REQUEST['page']);
+      update_option('fastly_page', esc_sql($_REQUEST['page']));
       die(1);
     }
     die();
@@ -83,6 +91,10 @@ class FastlyAdmin {
    * Make a sign up request to teh fastly API.
    */
   function ajaxSignUp() {
+    if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'fastly-admin')) {
+      wp_die('Bad CSRF Nonce.');
+    }
+
     unset($_REQUEST['action']);
     $_REQUEST['wizard'] = 'wordpress';
     
@@ -97,14 +109,14 @@ class FastlyAdmin {
     
     switch ($code) {
       case 200:
-        update_option('fastly_api_key', $body['api_key']);
-        update_option('fastly_service_id', $body['service_id']);
+        update_option('fastly_api_key', esc_sql($body['api_key']));
+        update_option('fastly_service_id', esc_sql($body['service_id']));
         update_option('fastly_page', 'configure');
         
         // Update internal host name
         $parts = explode('/', $_REQUEST['website_address']);
         if (count($parts) >= 3) {
-          update_option('fastly_hostname', $parts[2]);
+          update_option('fastly_hostname', esc_sql($parts[2]));
         }
         
         $response = array('status' => 'success');
@@ -222,7 +234,7 @@ class FastlyAdmin {
         
         <fieldset>
           <p><b>Blog Name</b></p>
-          <p><input class="text" id="customer" type="text" value="' . $customer . '"></p>
+          <p><input class="text" id="customer" type="text" value="' . esc_attr($customer) . '"></p>
           <p><b>Your Name</b></p>
           <p><input class="text" id="name" type="text"></p>
           <p><b>Email Address</b></p>
@@ -233,9 +245,9 @@ class FastlyAdmin {
         
         <fieldset>
           <p><b>Blog Address</b></p>
-          <p><input class="text" id="website_address" type="text" value="' . $website_address . '"></p>
+          <p><input class="text" id="website_address" type="text" value="' . esc_url($website_address) . '"></p>
           <p><b>Server Address</b></p>
-          <p><input class="text" id="address" type="text" value="' . $address . '"></p>
+          <p><input class="text" id="address" type="text" value="' . esc_attr($address) . '"></p>
         </fieldset>
         
         <p><label id="agree_tos_label" for="agree_tos"><input id="agree_tos" type="checkbox"> I agree to the
@@ -273,18 +285,18 @@ class FastlyAdmin {
     echo '
           <fieldset>
             <p><b>Fastly API Key</b></p>
-            <p><input class="text" type="text" name="fastly_api_key" value="' . get_option('fastly_api_key') . '"></p>
+            <p><input class="text" type="text" name="fastly_api_key" value="' . esc_attr(get_option('fastly_api_key')) . '"></p>
             <p><b>Service Id</b></p>
-            <p><input class="text" type="text" name="fastly_service_id" value="' . get_option('fastly_service_id') . '"></p>
+            <p><input class="text" type="text" name="fastly_service_id" value="' . esc_attr(get_option('fastly_service_id')) . '"></p>
           </fieldset>
       
           <p><a href="#" class="advanced">Advanced Configuration</a></p>
       
           <fieldset class="advanced">
             <p><b>Fastly API Hostname</b></p>
-            <p><input class="text" name="fastly_api_hostname" type="text" value="' . get_option('fastly_api_hostname') . '"></p>
+            <p><input class="text" name="fastly_api_hostname" type="text" value="' . esc_url(get_option('fastly_api_hostname')) . '"></p>
             <p><b>Fastly API Port</b></p>
-            <p><input class="text" name="fastly_api_port" type="text" value="' . get_option('fastly_api_port') . '"></p>
+            <p><input class="text" name="fastly_api_port" type="text" value="' . esc_attr(get_option('fastly_api_port')) . '"></p>
             <p><input class="checkbox" name="fastly_log_purges" type="checkbox" value="1" ' . ((int)get_option('fastly_log_purges')?"checked='checked'":"") . '> <b>Log purges to PHP errorlog</b></p>
             
             <!--
@@ -298,7 +310,7 @@ class FastlyAdmin {
           <p><input type="submit" class="button" value="Save Settings"></p>
         </form>
       </div>
-      <p>Test your site: <a href="' . $testUrl . '">' . $testUrl . '</a></p>
+      <p>Test your site: <a href="' . esc_url($testUrl) . '">' . esc_url($testUrl) . '</a></p>
     ';
     
     $form = ob_get_contents();
