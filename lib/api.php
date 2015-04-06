@@ -66,7 +66,7 @@ class FastlyAPI {
 
     $headers = array();
     if ($this->api_key) {
-      $headers[] = "Fastly-Key: " . $this->api_key;
+      $headers['Fastly-Key'] = $this->api_key;
     }
 
     $ch  = curl_init();
