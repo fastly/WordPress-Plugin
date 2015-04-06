@@ -45,7 +45,8 @@ class FastlyPurge {
     $this->api = new FastlyAPI(
       get_option('fastly_api_key'), 
       get_option('fastly_api_hostname'),
-      get_option('fastly_api_port')
+      get_option('fastly_api_port'),
+      get_option('fastly_api_soft')
     );
   }
   
