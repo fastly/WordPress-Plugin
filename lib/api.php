@@ -13,10 +13,11 @@ class FastlyAPI {
    * @param $host Hostname of the API server.
    * @param $port Port for the API server.
    */
-  function FastlyAPI($api_key='', $host='https://app.fastly.com', $port=null) {
+  function FastlyAPI($api_key='', $host='https://app.fastly.com', $port=null, $soft=null) {
     $this->api_key   = $api_key;
     $this->host      = $host;
     $this->port      = $port;
+    $this->soft      = $soft;
     $this->host_name = preg_replace('/^(ssl|https?):\/\//', '', $host);
   }
   
@@ -66,7 +67,11 @@ class FastlyAPI {
 
     $headers = array();
     if ($this->api_key) {
-      $headers[] = "Fastly-Key: " . $this->api_key;
+      $headers['Fastly-Key'] = $this->api_key;
+    }
+
+    if ($this->soft) {
+      $headers['Fastly-Soft-Purge'] = '1';
     }
 
     $ch  = curl_init();
