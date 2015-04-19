@@ -2,6 +2,12 @@
 
 Integrates Fastly with WordPress' publishing tools.
 
+## Prerequisite
+
+The server must have "php5-curl" installed on the server you are hosting Wordpress with.
+
+    sudo apt-get install php5-curl
+
 ## Installation
 
 You can either install from source (you're looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
