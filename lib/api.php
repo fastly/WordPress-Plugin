@@ -6,7 +6,7 @@
  * @author Ryan Sandor Richards
  * @copyright 2011 Fastly.com, All Rights Reserved
  */
-class FastlyAPI {  
+class FastlyAPI {
   /**
    * Default constructor.
    * @param $api_key Fastly API key.
@@ -19,7 +19,16 @@ class FastlyAPI {
     $this->port      = $port;
     $this->host_name = preg_replace('/^(ssl|https?):\/\//', '', $host);
   }
-  
+
+  function _curlEnabled(){
+    if (function_exists('curl_version')) {
+      return true;
+    } else {
+      error_log("[Fastly-Plugin]: you must install \"php5-curl\" for Fastly Plugin to work");
+      return false;
+    }
+  }
+
   /**
    * Sends a purge request to the Fastly API.
    * @param $uri URI to purge.
@@ -28,14 +37,14 @@ class FastlyAPI {
     // TODO How can we handle this more elegantly?
     if (!$this->api_key)
       return;
-    
+
     if (!is_array($uris)) {
       $uris = array($uris);
     }
     // TODO - change this to a curl_multi_exec at some point
 	$logPurges = (bool)get_option('fastly_log_purges');
     foreach ($uris as $uri) {
-      #$uri = preg_replace("/^https?:\/\//", '', $uri); 
+      #$uri = preg_replace("/^https?:\/\//", '', $uri);
 	  if( $logPurges ) {
         error_log("Purging " . $uri);
       }
@@ -49,20 +58,24 @@ class FastlyAPI {
   function purgeAll($service_id) {
     $url = $this->host;
     if (!is_null($this->port) && is_numeric($this->port)) {
-      $url .= ":" . $this->port; 
-    } 
+      $url .= ":" . $this->port;
+    }
     $url .= '/service/' . $service_id . '/purge_all';
-      
+
     return $this->post($url, true);
   }
 
-  /** 
+  /**
    * Sends a post request to the Fastly API.
    * @param $path Path to call on the remote host.
    * @param $data Data for the body for the post request.
    * @return The response from the server or -1 if an error occurred.
    */
   function post($url, $do_post = true) {
+    # Guard Clause against dependency
+    if (_curlEnabled) {
+      return -1;
+    }
 
     $headers = array();
     if ($this->api_key) {
@@ -87,7 +100,7 @@ class FastlyAPI {
 
     return ( is_wp_error( $response ) ) ? -1 : $response;
   }
-} 
+}
 
 // "WHITE LIGHT, doo-doo doo-doo doo, WHITE LIGHT" -- Gorillaz
 ?>
