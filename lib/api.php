@@ -69,7 +69,6 @@ class FastlyAPI {
       $headers[] = "Fastly-Key: " . $this->api_key;
     }
 
-    $ch  = curl_init();
     # Temporary workaround to fix purging. Use POST instead of PURGE method.
     # Strip off protocol
     $url = get_option('fastly_api_hostname') . "/purge/" . preg_replace("/^http(s?):\/\//",'', $url);
