@@ -11,6 +11,9 @@ class FastlyPurge {
    * Default constructor - configures purge listeners.
    */
   function FastlyPurge() {
+    // Surrogate Keys
+    add_action( 'send_headers', 'add_surrogate_key' );
+
     // Posts and Pages
     add_action('edit_post', array(&$this, 'purgePost'), 99);
     add_action('edit_post', array(&$this, 'purgePostDependencies'), 99);
@@ -50,20 +53,31 @@ class FastlyPurge {
   }
   
   /**
+   * Add Surrogate-Key to pages with a page id
+   * @param WP &$this Current WordPress environment instance (passed by reference).
+   */
+  function add_surrogate_key(&$this) {
+    header( 'Surrogate-Key: article_id-'.$this->query_vars['page_id'] );
+  }
+
+  /**
    * Sends a purge request for the given url.
    * @param $url URL to purge from the cache server.
    */
-  function purge($urls) {
+  function purge($urls, $postId) {
     $this->api->purge($urls);   
+    if ($postId) {
+      $this->api->purge_surrogate_key($postId)
+    }
   }
-  
+
   /**
    * Purges all pages on the site.
    */
   function purgeAll() {
     $this->api->purgeAll( get_option('fastly_service_id') );
   }
-  
+
   /**
    * Purges common pages.
    */
@@ -84,7 +98,7 @@ class FastlyPurge {
    */
   function purgePost($postId, $call=true) {
     $urls = array( get_permalink($postId) );
-    return $call ? $this->purge($urls) : $urls;
+    return $call ? $this->purge($urls, $postId) : $urls;
   }
 
   /**
@@ -96,7 +110,7 @@ class FastlyPurge {
     $urls = array_merge($urls, $this->purgeCategories($postId, false));
     $urls = array_merge($urls, $this->purgeArchives($postId, false));
     $urls = array_merge($urls, $this->purgeTags($postId, false));
-    return $call ? $this->purge($urls) : $urls;
+    return $call ? $this->purge($urls, $postId) : $urls;
   }
   
   /**
@@ -109,7 +123,7 @@ class FastlyPurge {
     foreach ($categories as $cat) {
       $urls = array_merge($urls, $this->purgeCategory($cat->cat_ID, false));
     }
-    return $call ? $this->purge($urls) : $urls;
+    return $call ? $this->purge($urls, $postId) : $urls;
   }
   
   /**
@@ -132,7 +146,7 @@ class FastlyPurge {
       }
       */
     }
-    return $call ? $this->purge($urls) : $urls;
+    return $call ? $this->purge($urls, $postId) : $urls;
   }
   
   /**
@@ -189,7 +203,7 @@ class FastlyPurge {
       get_year_link(get_post_time('Y',false,$postId)),
     );
 
-    return $call ? $this->purge($urls) : $urls;
+    return $call ? $this->purge($urls, $postId) : $urls;
   }  
 
   /**
@@ -202,7 +216,7 @@ class FastlyPurge {
     foreach ($tags as $tag) {
       $urls = array_merge($urls, $this->purgeTagCategory($tag->term_id, false));
     }
-    return $call ? $this->purge($urls) : $urls;
+    return $call ? $this->purge($urls, $postId) : $urls;
   }
 
   /**
@@ -212,7 +226,7 @@ class FastlyPurge {
     $urls = array();
     $urls = array_merge($urls, $this->purgePost($post->ID, false));
     $urls = array_merge($urls, $this->purgePostDependencies($post->ID, false));
-    return $call ? $this->purge($urls) : $urls;
+    return $call ? $this->purge($urls, $post->ID) : $urls;
   }
 }
 
