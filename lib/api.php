@@ -20,6 +20,15 @@ class FastlyAPI {
     $this->host_name = preg_replace('/^(ssl|https?):\/\//', '', $host);
   }
 
+  function _curlEnabled(){
+     if (function_exists('curl_version')) {
+       return true;
+     } else {
+       error_log("[Fastly-Plugin]: you must install \"php5-curl\" for Fastly Plugin to work");
+       return false;
+     }
+   }
+
   /**
    * Sends a purge request to the Fastly API.
    * @param $uri URI to purge.
@@ -63,6 +72,10 @@ class FastlyAPI {
    * @return The response from the server or -1 if an error occurred.
    */
   function post($url, $do_post = true) {
+    # Guard Clause against dependency
+    if (_curlEnabled) {
+      return -1;
+    }
 
     $headers = array();
     if ($this->api_key) {
