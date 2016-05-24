@@ -46,6 +46,10 @@ The server must have "php5-curl" installed on the server you are hosting Wordpre
 
 == Changelog ==
 
+= 0.99 = 
+* Add a guard function for cURL prequisite 
+* Bring up to date with WP Plugin repo standards
+
 = 0.98 =
 * Security fixes for XSS/CSRF
 * Only load CSS/JS on admin page
