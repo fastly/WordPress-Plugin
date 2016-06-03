@@ -41,6 +41,7 @@ You can either install from source (you're looking at it), or from the WordPress
 
 _Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour._
 
+_Note: you can enable "soft" purging for urls. You can read more about soft purging [here](https://www.fastly.com/blog/introducing-soft-purge-more-efficient-way-mark-outdated-content) and [here](https://docs.fastly.com/guides/purging/soft-purges)._
 
 == Prequisites ==
 
@@ -53,6 +54,10 @@ The server must have "php5-curl" installed on the server you are hosting Wordpre
 1. Configuration
 
 == Changelog ==
+
+= 1.1 = 
+* Include fixes for header sending
+* Enable "soft" purging
 
 = 1.0 =
 * Mark as deprecated
