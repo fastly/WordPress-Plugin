@@ -39,7 +39,8 @@ class FastlyAdmin {
     $this->api = new FastlyAPI(
       get_option('fastly_api_key'),
       get_option('fastly_api_hostname'),
-      get_option('fastly_api_port')
+      get_option('fastly_api_port'),
+      get_option('fastly_api_soft')
     );
   }
 
@@ -154,6 +155,7 @@ class FastlyAdmin {
     register_setting('fastly-group', 'fastly_api_key');
     register_setting('fastly-group', 'fastly_service_id');
     register_setting('fastly-group', 'fastly_log_purges');
+    register_setting('fastly-group', 'fastly_api_soft');
 
     // Page change group
     register_setting('fastly-page-group', 'fastly_page');
@@ -298,6 +300,7 @@ class FastlyAdmin {
             <p><b>Fastly API Port</b></p>
             <p><input class="text" name="fastly_api_port" type="text" value="' . esc_attr(get_option('fastly_api_port')) . '"></p>
             <p><input class="checkbox" name="fastly_log_purges" type="checkbox" value="1" ' . ((int)get_option('fastly_log_purges')?"checked='checked'":"") . '> <b>Log purges to PHP errorlog</b></p>
+            <p><input class="checkbox" name="fastly_api_soft" type="checkbox" value="1" ' . ((int)get_option('fastly_api_soft')?"checked='checked'":"") . '> <b>Enable soft purges</b></p>
 
             <!--
             <p><b></b></p>
