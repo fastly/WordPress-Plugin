@@ -54,6 +54,11 @@ The server must have "php5-curl" installed on the server you are hosting Wordpre
 
 == Changelog ==
 
+= 1.0 =
+* Mark as deprecated
+* Recommend Purgely from Condé Nast
+* Add in link to GitHub repo
+
 = 0.99 = 
 * Add a guard function for cURL prequisite 
 * Bring up to date with WP Plugin repo standards
