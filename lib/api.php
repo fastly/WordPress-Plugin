@@ -43,10 +43,10 @@ class FastlyAPI {
       $uris = array($uris);
     }
     // TODO - change this to a curl_multi_exec at some point
-	$logPurges = (bool)get_option('fastly_log_purges');
+    $logPurges = (bool)get_option('fastly_log_purges');
     foreach ($uris as $uri) {
       #$uri = preg_replace("/^https?:\/\//", '', $uri);
-	  if( $logPurges ) {
+      if( $logPurges ) {
         error_log("Purging " . $uri);
       }
       $this->post($uri);
@@ -91,7 +91,7 @@ class FastlyAPI {
     # Strip off protocol
     $url = get_option('fastly_api_hostname') . "/purge/" . preg_replace("/^http(s?):\/\//",'', $url);
 
-	if( (bool)get_option('fastly_log_purges') ) {
+    if( (bool)get_option('fastly_log_purges') ) {
       error_log("Purging using POST for " . esc_url($url));
     }
 
