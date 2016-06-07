@@ -43,6 +43,8 @@ _Note: you may have to disable other caching plugins like W3TotalCache to avoid 
 
 _Note: you can enable "soft" purging for urls. You can read more about soft purging [here](https://www.fastly.com/blog/introducing-soft-purge-more-efficient-way-mark-outdated-content) and [here](https://docs.fastly.com/guides/purging/soft-purges)._
 
+_Note: you can optionally introduce an artifical delay between publishing and purging using to prevent wait conditions._ 
+
 == Prequisites ==
 
 The server must have "php5-curl" installed on the server you are hosting Wordpress with e.g

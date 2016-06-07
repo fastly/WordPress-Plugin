@@ -44,6 +44,13 @@ class FastlyAPI {
     }
     // TODO - change this to a curl_multi_exec at some point
     $logPurges = (bool)get_option('fastly_log_purges');
+
+    // optionally sleep before we start to purge to stop race conditions
+    $delay = (int)get_option('fastly_purge_delay');
+    if ($delay>0) {
+      sleep($delay);
+    }
+
     foreach ($uris as $uri) {
       #$uri = preg_replace("/^https?:\/\//", '', $uri);
       if( $logPurges ) {

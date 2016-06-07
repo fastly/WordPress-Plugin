@@ -156,6 +156,7 @@ class FastlyAdmin {
     register_setting('fastly-group', 'fastly_service_id');
     register_setting('fastly-group', 'fastly_log_purges');
     register_setting('fastly-group', 'fastly_api_soft');
+    register_setting('fastly-group', 'fastly_purge_delay');
 
     // Page change group
     register_setting('fastly-page-group', 'fastly_page');
@@ -301,6 +302,7 @@ class FastlyAdmin {
             <p><input class="text" name="fastly_api_port" type="text" value="' . esc_attr(get_option('fastly_api_port')) . '"></p>
             <p><input class="checkbox" name="fastly_log_purges" type="checkbox" value="1" ' . ((int)get_option('fastly_log_purges')?"checked='checked'":"") . '> <b>Log purges to PHP errorlog</b></p>
             <p><input class="checkbox" name="fastly_api_soft" type="checkbox" value="1" ' . ((int)get_option('fastly_api_soft')?"checked='checked'":"") . '> <b>Enable soft purges</b></p>
+            <p><input class="text" name="fastly_purge_delay" type="text" value="' . ((int)get_option('fastly_purge_delay') . '"></p> <b>Delay between being asked to purge and doing purge in seconds(default 0)</b></p>
 
             <!--
             <p><b></b></p>

@@ -40,6 +40,7 @@ add_option('fastly_api_hostname', 'https://api.fastly.com');
 add_option('fastly_api_port', null);
 add_option('fastly_page', 'welcome');
 add_option('fastly_log_purges', '0');
+add_option('fastly_purge_delay', '0');
 
 // Setup Purging
 new FastlyPurge();
