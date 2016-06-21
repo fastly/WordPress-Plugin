@@ -14,13 +14,18 @@ class FastlyPurge {
     // Posts and Pages
     add_action('edit_post', array(&$this, 'purgePost'), 99);
     add_action('edit_post', array(&$this, 'purgePostDependencies'), 99);
+    add_action('save_post', array(&$this, 'purgePost'), 99);             // FIXME I think edit_post and save_post are redundant
+    add_action('save_post', array(&$this, 'purgePostDependencies'), 99); // It should probably just be save_post
     add_action('transition_post_status', array(&$this,'purgePostStatus'),99, 3);
     add_action('deleted_post', array(&$this, 'purgePost'), 99);
     add_action('deleted_post', array(&$this, 'purgeCommon'), 99);
+    add_action('trashed_post', array(&$this, 'purgePost'), 99);
+    add_action('trashed_post', array(&$this, 'purgeCommon'), 99);
 
     // Comments
     add_action('comment_post', array(&$this, 'purgeComments'),99);
     add_action('edit_comment', array(&$this, 'purgeComments'),99);
+    add_action('save_comment', array(&$this, 'purgeComments'),99);
     add_action('trashed_comment', array(&$this, 'purgeComments'),99);
     add_action('untrashed_comment', array(&$this, 'purgeComments'),99);
     add_action('deleted_comment', array(&$this, 'purgeComments'),99);
@@ -40,6 +45,9 @@ class FastlyPurge {
     add_action("edit_category",array(&$this, 'purgeCategory'), 99);
     add_action("edit_link_category",array(&$this, 'purgeLinkCategory'), 99);
     add_action("edit_post_tag",array(&$this, 'purgeTagCategory'), 99);
+
+    // Attachments
+    add_action('deleted_attachment', array(&$this, 'purgePost'), 99);
 
     // Setup API
     $this->api = new FastlyAPI(
@@ -83,7 +91,7 @@ class FastlyPurge {
   /**
    * Purges posts and pages on update.
    */
-  function purgePost($postId, $call=true) {
+  function purgePost($postId, $call=true) {    
     $urls = array( get_permalink($postId) );
     return $call ? $this->purge($urls) : $urls;
   }
