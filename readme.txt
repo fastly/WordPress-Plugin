@@ -55,6 +55,9 @@ The server must have "php5-curl" installed on the server you are hosting Wordpre
 
 == Changelog ==
 
+= 1.1.1 =
+* Code from purgely integrated into fastly
+
 = 1.1 = 
 * Include fixes for header sending
 * Enable "soft" purging
