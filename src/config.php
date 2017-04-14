@@ -77,7 +77,7 @@ if ( ! defined( 'PURGELY_STALE_IF_ERROR_TTL' ) ) {
  * @since 1.0.0.
  */
 if ( ! defined( 'PURGELY_SURROGATE_CONTROL_TTL' ) ) {
-	define( 'PURGELY_SURROGATE_CONTROL_TTL', 60 * 5 ); // 5 minutes
+	define( 'PURGELY_SURROGATE_CONTROL_TTL', 0 ); // 0 minutes
 }
 
 /**
