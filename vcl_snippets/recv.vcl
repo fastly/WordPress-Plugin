@@ -22,7 +22,8 @@
     set req.http.X-Pass = "1";
   }
 
-  if (req.http.Cookie:wordpress_test_cookie) {
+  # Remove wordpress except on non-cacheable paths
+  if (!req.http.X-Pass && req.http.Cookie:wordpress_test_cookie) {
     remove req.http.Cookie:wordpress_test_cookie;
   }
 
@@ -31,7 +32,7 @@
     set req.http.X-Pass = "1";
   }
 
-  if (req.http.Cookie) {
+  if (!req.http.X-Pass && req.http.Cookie) {
     set req.http.Cookie = ";" req.http.Cookie;
     set req.http.Cookie = regsuball(req.http.Cookie, "; +", ";");
     set req.http.Cookie = regsuball(req.http.Cookie, ";(vendor_region|PHPSESSID|themetype2)=", "; \1=");
