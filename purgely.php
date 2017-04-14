@@ -141,19 +141,10 @@ class Purgely {
 		$this::$surrogate_keys_header = new Purgely_Surrogate_Keys_Header();
 
 		// Initialize the surrogate control header.
-		$this::$surrogate_control_header = new Purgely_Surrogate_Control_Header( Purgely_Settings::get_setting( 'surrogate_control_ttl' ) );
+		$this::$surrogate_control_header = new Purgely_Surrogate_Control_Header();
 
 		// Add the surrogate keys.
 		add_action( 'wp', array( $this, 'set_standard_keys' ), 100 );
-
-		// Set the default stale while revalidate and stale if error values.
-		if ( true === Purgely_Settings::get_setting( 'enable_stale_while_revalidate' ) ) {
-			$this->add_cache_control_header( Purgely_Settings::get_setting( 'stale_while_revalidate_ttl' ), 'stale-while-revalidate' );
-		}
-
-		if ( true === Purgely_Settings::get_setting( 'enable_stale_if_error' ) ) {
-			$this->add_cache_control_header( Purgely_Settings::get_setting( 'stale_if_error_ttl' ), 'stale-if-error' );
-		}
 
 		// Send the surrogate keys.
 		add_action( 'wp', array( $this, 'send_surrogate_keys' ), 101 );
@@ -232,9 +223,9 @@ class Purgely {
 	/**
 	 * Set the TTL for the object and send the header.
 	 *
-	 * This is the main function for setting the TTL for the page. To change it, use the "purgely_surrogate_control"
-	 * filter. Additionally, the "purgely_set_ttl" helper function can be used. The filter and function do the same
-	 * thing.
+	 * This is the main function for setting the TTL for the page.
+     * To change it, use the "purgely_pre_send_surrogate_control" and "purgely_post_send_surrogate_control"
+	 * actions.
 	 *
 	 * Note that any alterations must be done before init, 101.
 	 *
@@ -253,22 +244,10 @@ class Purgely {
 		}
 
 		$surrogate_control = $this::$surrogate_control_header;
-		$seconds = apply_filters( 'purgely_surrogate_control', $surrogate_control->get_seconds() );
 
-		do_action( 'purgely_pre_send_surrogate_control', $seconds );
+		do_action( 'purgely_pre_send_surrogate_control', $surrogate_control );
 		$surrogate_control->send_header();
-		do_action( 'purgely_post_send_surrogate_control', $seconds );
-	}
-
-	/**
-	 * Set the TTL for the current request.
-	 *
-	 * @param  int $seconds The amount of seconds to cache the object for.
-	 * @return int                The amount of seconds to cache the object for.
-	 */
-	public function set_ttl( $seconds ) {
-		$this::$surrogate_control_header->set_seconds( $seconds );
-		return $this::$surrogate_control_header->get_seconds();
+		do_action( 'purgely_post_send_surrogate_control', $surrogate_control );
 	}
 
 	/**
@@ -307,6 +286,7 @@ class Purgely {
 	 * @return array                   Array of cache control headers to send.
 	 */
 	public function add_cache_control_header( $seconds, $directive ) {
+        // TODO - remove this if Cache header is not to be used
 		$header    = new Purgely_Cache_Control_Header( $seconds, $directive );
 		$headers   = $this::$cache_control_headers;
 		$headers[] = $header;
@@ -336,8 +316,7 @@ class Purgely {
 	public function upgrade()
     {
 
-        if(get_option('fastly-settings'))
-        {
+        if(get_option('fastly-settings')) {
             return;
         }
 

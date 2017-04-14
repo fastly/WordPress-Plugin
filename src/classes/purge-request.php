@@ -130,14 +130,14 @@ class Purgely_Purge {
                 }
 
                 foreach ($response_output as $k => $single_response) {
-                    $resp = json_decode($single_response->body);
-                    if($resp->status !== 'ok') {
+                    $status = $single_response->success;
+                    if(!$status) {
                         $response = false;
                     }
 
                     if($log) {
                         $item = isset($thing[$k]) ? $thing[$k] : "invalid-{$k}";
-                        $status = isset($resp->status) ? $resp->status : 'error';
+                        $status = (isset($status) && $status) ? 'ok' : 'error';
                         $log_arr[$item] = $status;
                     }
                 }

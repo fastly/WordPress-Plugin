@@ -92,43 +92,6 @@ function purgely_add_surrogate_key( $key ) {
 }
 
 /**
- * Set the TTL for the current request.
- *
- * @param  int $seconds The amount of seconds to cache the object for.
- * @return int                The amount of seconds to cache the object for.
- */
-function purgely_set_ttl( $seconds ) {
-	if ( ! empty( $seconds ) ) {
-		$seconds = absint( $seconds );
-		$seconds = get_purgely_instance()->set_ttl( $seconds );
-	}
-
-	return $seconds;
-}
-
-/**
- * Set the stale while revalidate directive.
- *
- * @param  int $seconds The TTL for stale while revalidate.
- * @return array                All of the cache control headers.
- */
-function purgely_set_stale_while_revalidate( $seconds ) {
-	$purgely = get_purgely_instance();
-	return $purgely->add_cache_control_header( $seconds, 'stale-while-revalidate' );
-}
-
-/**
- * Set the stale if error directive.
- *
- * @param  int $seconds The TTL for stale if error.
- * @return array                All of the cache control headers.
- */
-function purgely_set_stale_if_error( $seconds ) {
-	$purgely = get_purgely_instance();
-	return $purgely->add_cache_control_header( $seconds, 'stale-if-error' );
-}
-
-/**
  * Get an individual settings value.
  *
  * @since 1.0.0.
