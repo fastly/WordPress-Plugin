@@ -49,6 +49,19 @@ The server must have "php5-curl" installed on the server you are hosting Wordpre
 
   `sudo apt-get install php5-curl`
 
+== Customization ==
+
+If you need to edit/add/remove headers (for now only Surrogate-Control) outputed by the plugin, it can be done by hooking with wordpress add_action on tag "purgely_post_send_surrogate_control"
+and "purgely_post_send_surrogate_control", and calling on object "unset_headers" function for removing headers, or "edit_headers" function for rewriting or adding new headers.
+
+Example (add this to your theme function.php) :
+
+add_action('purgely_pre_send_surrogate_control', 'custom_headers_edit');
+function custom_headers_edit($header_object)
+{
+  $header_object->edit_headers(array('custom-header' => '555', 'max-age' => '99'));
+}
+
 == Screenshots ==
 
 1. Configuration
