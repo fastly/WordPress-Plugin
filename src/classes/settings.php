@@ -61,6 +61,10 @@ class Purgely_Settings {
 				'sanitize_callback' => 'absint',
 				'default'           => PURGELY_SURROGATE_CONTROL_TTL,
 			),
+            'cache_control_ttl'         => array(
+                'sanitize_callback' => 'absint',
+                'default'           => PURGELY_CACHE_CONTROL_TTL,
+            ),
 			'default_purge_type'            => array(
 				'sanitize_callback' => 'sanitize_key',
 				'default'           => PURGELY_DEFAULT_PURGE_TYPE,

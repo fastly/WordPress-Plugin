@@ -82,16 +82,6 @@ function purgely_purge_all( $purge_args = array() ) {
 }
 
 /**
- * Add a key to the list.
- *
- * @param  string $key The key to add to the list.
- * @return array             The full list of keys.
- */
-function purgely_add_surrogate_key( $key ) {
-	return get_purgely_instance()->add_key( $key );
-}
-
-/**
  * Get an individual settings value.
  *
  * @since 1.0.0.
@@ -134,6 +124,7 @@ function purgely_get_options() {
 		'enable_stale_if_error',
 		'stale_if_error_ttl',
 		'surrogate_control_ttl',
+		'cache_control_ttl',
 		'default_purge_type',
 	);
 

@@ -122,11 +122,19 @@ class Purgely_Settings_Page {
 
 		add_settings_field(
 			'surrogate_control_ttl',
-			__( 'Cache TTL (in Seconds)', 'purgely' ),
+			__( 'Surrogate Cache TTL (in Seconds)', 'purgely' ),
 			array( $this, 'surrogate_control_render' ),
 			'fastly-settings',
 			'purgely-general_settings'
 		);
+
+        add_settings_field(
+            'cache_control_ttl',
+            __( 'Cache TTL (in Seconds)', 'purgely' ),
+            array( $this, 'cache_control_render' ),
+            'fastly-settings',
+            'purgely-general_settings'
+        );
 
 		add_settings_field(
 			'default_purge_type',
@@ -315,6 +323,23 @@ class Purgely_Settings_Page {
 		</p>
 		<?php
 	}
+
+    /**
+     * Render the setting input.
+     *
+     * @since 1.1.1.
+     *
+     * @return void
+     */
+    public function cache_control_render() {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='text' name='fastly-settings[cache_control_ttl]' value='<?php echo esc_attr( $options['cache_control_ttl'] ); ?>'>
+        <p class="description">
+            <?php esc_html_e( 'This setting controls the "cache-control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely' ); ?>
+        </p>
+        <?php
+    }
 
 	/**
 	 * Render the setting input.

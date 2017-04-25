@@ -77,7 +77,16 @@ if ( ! defined( 'PURGELY_STALE_IF_ERROR_TTL' ) ) {
  * @since 1.0.0.
  */
 if ( ! defined( 'PURGELY_SURROGATE_CONTROL_TTL' ) ) {
-	define( 'PURGELY_SURROGATE_CONTROL_TTL', 0 ); // 0 minutes
+	define( 'PURGELY_SURROGATE_CONTROL_TTL', 1800 ); // 30 minutes
+}
+
+/**
+ * Set the default cache control TTL.
+ *
+ * @since 1.0.0.
+ */
+if ( ! defined( 'PURGELY_CACHE_CONTROL_TTL' ) ) {
+    define( 'PURGELY_CACHE_CONTROL_TTL', 0 ); // 0 minutes
 }
 
 /**

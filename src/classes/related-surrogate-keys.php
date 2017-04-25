@@ -88,7 +88,8 @@ class Purgely_Related_Surrogate_Keys {
         return array(
             'tm-post',
             'tm-home',
-            'tm-feed'
+            'tm-feed',
+            'holos'
         );
     }
 

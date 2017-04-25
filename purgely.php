@@ -118,11 +118,11 @@ class Purgely {
 		include $this->src_dir . '/classes/related-surrogate-keys.php';
 		include $this->src_dir . '/classes/purge-request-collection.php';
 		include $this->src_dir . '/classes/purge-request.php';
-		include $this->src_dir . '/classes/header.php';
-		include $this->src_dir . '/classes/header-cache-control.php';
-		include $this->src_dir . '/classes/header-surrogate-control.php';
+        include $this->src_dir . '/classes/surrogate-key-collection.php';
+        include $this->src_dir . '/classes/header.php';
+        include $this->src_dir . '/classes/header-surrogate-control.php';
+        include $this->src_dir . '/classes/header-cache-control.php';
 		include $this->src_dir . '/classes/header-surrogate-keys.php';
-		include $this->src_dir . '/classes/surrogate-key-collection.php';
 
 		if ( is_admin() ) {
 			include $this->src_dir . '/settings-page.php';
@@ -140,7 +140,10 @@ class Purgely {
 		// Initialize the key collector.
 		$this::$surrogate_keys_header = new Purgely_Surrogate_Keys_Header();
 
-		// Initialize the surrogate control header.
+        // Initialize cache control header.
+        $this::$cache_control_headers = new Purgely_Cache_Control_Header();
+
+        // Initialize the surrogate control header.
 		$this::$surrogate_control_header = new Purgely_Surrogate_Control_Header();
 
 		// Add the surrogate keys.
@@ -211,16 +214,6 @@ class Purgely {
 	}
 
 	/**
-	 * Add a key to the list.
-	 *
-	 * @param  string $key The key to add to the list.
-	 * @return array             The full list of keys.
-	 */
-	public function add_key( $key ) {
-		return $this::$surrogate_keys_header->add_key( $key );
-	}
-
-	/**
 	 * Set the TTL for the object and send the header.
 	 *
 	 * This is the main function for setting the TTL for the page.
@@ -265,34 +258,11 @@ class Purgely {
 			return;
 		}
 
-		$headers = $this::$cache_control_headers;
+		$cache_control = $this::$cache_control_headers;
 
-		do_action( 'purgely_pre_send_cache_control', $headers );
-
-		if ( is_array( $headers ) ) {
-			foreach ( $headers as $header_object ) {
-				$header_object->send_header();
-			}
-		}
-
-		do_action( 'purgely_post_send_cache_control', $headers );
-	}
-
-	/**
-	 * Adds a new cache control header.
-	 *
-	 * @param  int    $seconds   The time to set the directive for.
-	 * @param  string $directive The cache control directive to set.
-	 * @return array                   Array of cache control headers to send.
-	 */
-	public function add_cache_control_header( $seconds, $directive ) {
-        // TODO - remove this if Cache header is not to be used
-		$header    = new Purgely_Cache_Control_Header( $seconds, $directive );
-		$headers   = $this::$cache_control_headers;
-		$headers[] = $header;
-
-		$this::$cache_control_headers = $headers;
-		return $this::$cache_control_headers;
+		do_action( 'purgely_pre_send_cache_control', $cache_control );
+        $cache_control->send_header();
+		do_action( 'purgely_post_send_cache_control', $cache_control );
 	}
 
 	/**

@@ -15,6 +15,15 @@ abstract class Purgely_Header {
 	 */
 	protected $_header_name = '';
 
+    /**
+     * Headers used.
+     *
+     * @since 1.1.1.
+     *
+     * @var array Headers that will be built and set
+     */
+    protected $_headers= array();
+
 	/**
 	 * The surrogate key value.
 	 *
@@ -24,6 +33,23 @@ abstract class Purgely_Header {
 	 */
 	protected $_value = '';
 
+    /**
+     * Construct the object.
+     *
+     * @since 1.1.1.
+     */
+    public function __construct() {
+        $this->set_header_name( $this->_header_name );
+        $this->build_original_headers();
+    }
+
+    /**
+     * Sets original headers
+     *
+     * @since 1.1.1.
+     */
+    public function build_original_headers(){}
+
 	/**
 	 * Send the key by setting the header.
 	 *
@@ -32,8 +58,7 @@ abstract class Purgely_Header {
 	 * @return void
 	 */
 	public function send_header() {
-	    // TODO check surrogate-key size - how to handle exceeding size? custom thing that will be always purged?
-		header( $this->_header_name . ': ' . $this->get_value(), false );
+        header( $this->_header_name . ': ' . $this->get_value(), false );
 	}
 
 	/**
@@ -48,16 +73,22 @@ abstract class Purgely_Header {
 		$this->_header_name = $header_name;
 	}
 
-	/**
-	 * Return the header name.
-	 *
-	 * @since 1.0.0.
-	 *
-	 * @return string The header name.
-	 */
-	public function get_header_name() {
-		return $this->_header_name;
-	}
+    /**
+     * Build header string based on current headers
+     *
+     * @since 1.1.1.
+     *
+     * @return string
+     */
+    public function build_header_value()
+    {
+        $headers = '';
+        foreach($this->_headers as $name => $val) {
+            $headers .= $name . '=' . $val . ', ';
+        }
+
+        return rtrim($headers, ', ');
+    }
 
 	/**
 	 * Set the header value.
@@ -79,6 +110,44 @@ abstract class Purgely_Header {
 	 * @return string The header value.
 	 */
 	public function get_value() {
-		return $this->_value;
-	}
+        return $this->build_header_value();
+    }
+
+    /**
+     * Edit headers - allows to overwrite or add new headers
+     *
+     * @since 1.1.1.
+     *
+     * @param array $key
+     */
+    public function edit_headers($key)
+    {
+        if(is_array($key)) {
+            foreach($key as $k => $val) {
+                $this->_headers[$k] = $val;
+            }
+        }
+    }
+
+    /**
+     * Remove wanted headers
+     *
+     * @since 1.1.1.
+     *
+     * @param array|string $key
+     */
+    public function unset_headers($key)
+    {
+        if(is_array($key)) {
+            foreach($key as $k) {
+                if(!empty($this->_headers[$k])) {
+                    unset($this->_headers[$k]);
+                }
+            }
+        } else {
+            if(!empty($this->_headers[$key])) {
+                unset($this->_headers[$key]);
+            }
+        }
+    }
 }
