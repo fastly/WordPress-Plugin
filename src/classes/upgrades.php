@@ -42,24 +42,28 @@ class Upgrades {
     protected function upgrade1_1_1()
     {
         // Convert old fastly credentials to new storing type
-        $data = array();
-        $data['fastly_hostname'] = get_option( 'fastly_hostname', false );
-        $data['fastly_api_hostname'] = get_option( 'fastly_api_hostname', false );
-        $data['fastly_api_port'] = get_option( 'fastly_api_port', false );
-        $data['fastly_page'] = get_option( 'fastly_page', false ); // TODO needed? for welcome page with hostname and port
-        $data['fastly_log_purges'] = get_option( 'fastly_log_purges', false );
-        $data['fastly_api_soft'] = get_option( 'fastly_api_soft', false );
-        $data['fastly_api_key'] = get_option( 'fastly_api_key', false );
-        $data['fastly_service_id'] = get_option( 'fastly_service_id', false );
+        $data_general = array();
+        $data_advanced = array();
+        $data_general['fastly_api_hostname'] = get_option( 'fastly_api_hostname', false );
+        $data_general['fastly_api_key'] = get_option( 'fastly_api_key', false );
+        $data_general['fastly_service_id'] = get_option( 'fastly_service_id', false );
+        $data_advanced['fastly_log_purges'] = get_option( 'fastly_log_purges', false );
 
-        foreach($data as $k => $single){
+        foreach($data_general as $k => $single){
             if($single === false || empty($single)) {
-                unset($data[$k]);
+                unset($data_general[$k]);
+            }
+        }
+
+        foreach($data_advanced as $k => $single){
+            if($single === false || empty($single)) {
+                unset($data_advanced[$k]);
             }
         }
 
         // Update data
-        update_option('fastly-settings', $data);
+        update_option('fastly-settings-general', $data_general);
+        update_option('fastly-settings-advanced', $data_advanced);
 
         // Update version
         update_option( "fastly-schema-version", '1.1.1' );

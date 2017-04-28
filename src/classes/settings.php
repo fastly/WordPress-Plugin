@@ -95,7 +95,8 @@ class Purgely_Settings {
 
 		if ( empty( $negotiated_settings ) ) {
 			$registered_settings = self::get_registered_settings();
-			$saved_settings      = get_option( 'fastly-settings', array() );
+			$saved_settings      = get_option( 'fastly-settings-general', array() );
+			$saved_settings      = array_merge($saved_settings, get_option( 'fastly-settings-advanced', array() ));
 			$negotiated_settings = array();
 
 			foreach ( $registered_settings as $key => $values ) {

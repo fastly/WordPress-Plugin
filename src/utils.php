@@ -111,11 +111,8 @@ function purgely_get_option( $name ) {
  */
 function purgely_get_options() {
 	$option_keys = array(
-		'fastly_hostname',
-		'fastly_api_port',
 		'fastly_api_key',
 		'fastly_service_id',
-        'fastly_page',
         'fastly_log_purges',
         'fastly_debug_mode',
         'fastly_vcl_version',
@@ -140,7 +137,8 @@ function purgely_get_options() {
 		}
 	}
 
-	$options = get_option( 'fastly-settings', $options );
+	$options = get_option( 'fastly-settings-general', $options );
+	$options = array_merge($options, get_option( 'fastly-settings-advanced', $options ));
 
 	return $options;
 }
@@ -177,12 +175,21 @@ function purgely_sanitize_checkbox( $value ) {
  * @return array
  */
 function test_fastly_api_connection($hostname, $service_id, $api_key) {
+
+    if(empty($hostname) || empty($service_id) || empty($api_key)) {
+        return array('status' => false, 'message' => __('Please enter credentials first'));
+    }
+
     $url = $hostname . '/service/' . $service_id;
     $headers = array(
         'Fastly-Key' => $api_key,
         'Accept' => 'application/json'
     );
-    $response = Requests::get($url, $headers);
+    try {
+        $response = Requests::get($url, $headers);
+    } catch (Exception $e) {
+        return array('status' => false, 'message' => $e->getMessage());
+    }
 
     if($response->success) {
         return array('status' => true, 'message' => __('Connection Successful!'));

@@ -47,15 +47,34 @@ class Purgely_Settings_Page {
 	 * @return void
 	 */
 	function add_admin_menu() {
-		add_submenu_page(
-			'options-general.php',
-			__( 'Fastly', 'purgely' ),
-			__( 'Fastly', 'purgely' ),
-			'manage_options',
-			'fastly',
-			array( $this, 'options_page' )
-		);
+        add_menu_page(
+            __( 'Fastly General', 'purgely' ),
+            __( 'Fastly', 'purgely' ),
+            'manage_options',
+            'fastly',
+            array( $this, 'options_page' )
+        );
+
+        add_submenu_page(
+            'fastly',
+            __( 'Fastly General Options', 'purgely' ),
+            __( 'General', 'purgely' ),
+            'manage_options',
+            'fastly',
+            array( $this, 'options_page' )
+        );
+
+        add_submenu_page(
+            'fastly',
+            __( 'Fastly Advanced Options', 'purgely' ),
+            __( 'Advanced', 'purgely' ),
+            'manage_options',
+            'fastly-advanced',
+            array( $this, 'options_page_advanced' )
+        );
 	}
+
+
 
 	/**
 	 * Initialize all of the settings.
@@ -65,34 +84,41 @@ class Purgely_Settings_Page {
 	 * @return void
 	 */
 	function settings_init() {
-		// Set up the option name, "fastly-settings". All values will be in this array.
+		// Set up the option name, "fastly-settings-general". All general values will be in this array.
 		register_setting(
-			'fastly-settings',
-			'fastly-settings',
+			'fastly-settings-general',
+			'fastly-settings-general',
 			array( $this, 'sanitize_settings' )
 		);
+
+        // Set up the option name, "fastly-settings-advanced". All advanced values will be in this array.
+        register_setting(
+            'fastly-settings-advanced',
+            'fastly-settings-advanced',
+            array( $this, 'sanitize_settings' )
+        );
 
 		// Set up the settings section.
 		add_settings_section(
 			'purgely-fastly_settings',
 			__( 'Fastly settings', 'purgely' ),
 			array( $this, 'fastly_settings_callback' ),
-			'fastly-settings'
+			'fastly-settings-general'
 		);
 
         add_settings_section(
             'purgely-fastly_settings',
             __( 'Fastly settings', 'purgely' ),
             array( $this, 'fastly_settings_newcomers' ),
-            'fastly-settings'
+            'fastly-settings-general'
         );
 
-		// Register all of the individual settings.
+		// Register all of the GENERAL settings.
 		add_settings_field(
 			'fastly_api_key',
 			__( 'API Key', 'purgely' ),
 			array( $this, 'fastly_api_key_render' ),
-			'fastly-settings',
+			'fastly-settings-general',
 			'purgely-fastly_settings'
 		);
 
@@ -100,7 +126,7 @@ class Purgely_Settings_Page {
 			'fastly_service_id',
 			__( 'Service ID', 'purgely' ),
 			array( $this, 'fastly_service_id_render' ),
-			'fastly-settings',
+			'fastly-settings-general',
 			'purgely-fastly_settings'
 		);
 
@@ -108,7 +134,7 @@ class Purgely_Settings_Page {
 			'fastly_api_hostname',
 			__( 'API Endpoint', 'purgely' ),
 			array( $this, 'fastly_api_hostname_render' ),
-			'fastly-settings',
+			'fastly-settings-general',
 			'purgely-fastly_settings'
 		);
 
@@ -119,7 +145,7 @@ class Purgely_Settings_Page {
                 'fastly_update_vcl',
                 __( 'Update VCL', 'purgely' ),
                 array( $this, 'fastly_update_vcl_render' ),
-                'fastly-settings',
+                'fastly-settings-general',
                 'purgely-fastly_settings'
             );
         }
@@ -128,64 +154,64 @@ class Purgely_Settings_Page {
             'fastly_test_connection',
             __( '', 'purgely' ),
             array( $this, 'fastly_test_connection_render' ),
-            'fastly-settings',
+            'fastly-settings-general',
             'purgely-fastly_settings'
         );
 
-		// Set up the general settings.
-		add_settings_section(
-			'purgely-general_settings',
+        // Register all of the ADVANCED settings.
+        add_settings_section(
+			'purgely-advanced_settings',
 			__( 'General settings', 'purgely' ),
 			array( $this, 'general_settings_callback' ),
-			'fastly-settings'
+			'fastly-settings-advanced'
 		);
 
 		add_settings_field(
 			'surrogate_control_ttl',
 			__( 'Surrogate Cache TTL (in Seconds)', 'purgely' ),
 			array( $this, 'surrogate_control_render' ),
-			'fastly-settings',
-			'purgely-general_settings'
+			'fastly-settings-advanced',
+			'purgely-advanced_settings'
 		);
 
         add_settings_field(
             'cache_control_ttl',
             __( 'Cache TTL (in Seconds)', 'purgely' ),
             array( $this, 'cache_control_render' ),
-            'fastly-settings',
-            'purgely-general_settings'
+            'fastly-settings-advanced',
+            'purgely-advanced_settings'
         );
 
 		add_settings_field(
 			'default_purge_type',
 			__( 'Default Purge Type', 'purgely' ),
 			array( $this, 'default_purge_type_render' ),
-			'fastly-settings',
-			'purgely-general_settings'
+			'fastly-settings-advanced',
+			'purgely-advanced_settings'
 		);
 
 		add_settings_field(
 			'allow_purge_all',
 			__( 'Allow Full Cache Purges', 'purgely' ),
 			array( $this, 'allow_purge_all_render' ),
-			'fastly-settings',
-			'purgely-general_settings'
+			'fastly-settings-advanced',
+			'purgely-advanced_settings'
 		);
 
         add_settings_field(
             'fastly_log_purges',
             __( 'Log purges in error log', 'purgely' ),
             array( $this, 'fastly_log_purges_render' ),
-            'fastly-settings',
-            'purgely-general_settings'
+            'fastly-settings-advanced',
+            'purgely-advanced_settings'
         );
 
         add_settings_field(
             'fastly_debug_mode',
             __( 'Log requests in error log', 'purgely' ),
             array( $this, 'fastly_debug_mode_render' ),
-            'fastly-settings',
-            'purgely-general_settings'
+            'fastly-settings-advanced',
+            'purgely-advanced_settings'
         );
 
 		// Set up the stale content settings.
@@ -193,14 +219,14 @@ class Purgely_Settings_Page {
 			'purgely-stale_settings',
 			__( 'Content revalidation settings', 'purgely' ),
 			array( $this, 'stale_settings_callback' ),
-			'fastly-settings'
+			'fastly-settings-advanced'
 		);
 
 		add_settings_field(
 			'enable_stale_while_revalidate',
 			__( 'Enable Stale while Revalidate', 'purgely' ),
 			array( $this, 'enable_stale_while_revalidate_render' ),
-			'fastly-settings',
+			'fastly-settings-advanced',
 			'purgely-stale_settings'
 		);
 
@@ -208,7 +234,7 @@ class Purgely_Settings_Page {
 			'stale_while_revalidate_ttl',
 			__( 'Stale while Revalidate TTL (in Seconds)', 'purgely' ),
 			array( $this, 'stale_while_revalidate_ttl_render' ),
-			'fastly-settings',
+			'fastly-settings-advanced',
 			'purgely-stale_settings'
 		);
 
@@ -216,7 +242,7 @@ class Purgely_Settings_Page {
 			'enable_stale_if_error',
 			__( 'Enable Stale if Error', 'purgely' ),
 			array( $this, 'enable_stale_if_error_render' ),
-			'fastly-settings',
+			'fastly-settings-advanced',
 			'purgely-stale_settings'
 		);
 
@@ -224,7 +250,7 @@ class Purgely_Settings_Page {
 			'stale_if_error_ttl',
 			__( 'Stale if Error TTL (in Seconds)', 'purgely' ),
 			array( $this, 'stale_if_error_ttl_render' ),
-			'fastly-settings',
+			'fastly-settings-advanced',
 			'purgely-stale_settings'
 		);
 	}
@@ -261,7 +287,7 @@ class Purgely_Settings_Page {
 	public function fastly_api_key_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings[fastly_api_key]' value='<?php echo esc_attr( $options['fastly_api_key'] ); ?>'>
+		<input type='text' name='fastly-settings-general[fastly_api_key]' value='<?php echo esc_attr( $options['fastly_api_key'] ); ?>'>
 		<em><strong><?php esc_html_e( 'Required for surrogate key and full cache purges', 'purgely' ); ?></strong></em>
 		<p class="description">
 			<?php esc_html_e( 'API key for the Fastly account associated with this site.', 'purgely' ); ?>
@@ -289,7 +315,7 @@ class Purgely_Settings_Page {
 	public function fastly_service_id_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings[fastly_service_id]' value='<?php echo esc_attr( $options['fastly_service_id'] ); ?>'>
+		<input type='text' name='fastly-settings-general[fastly_service_id]' value='<?php echo esc_attr( $options['fastly_service_id'] ); ?>'>
 		<em><strong><?php esc_html_e( 'Required for surrogate key and full cache purges', 'purgely' ); ?></strong></em>
 		<p class="description">
 			<?php esc_html_e( 'Fastly service ID for this site.', 'purgely' ); ?>
@@ -317,7 +343,7 @@ class Purgely_Settings_Page {
 	public function fastly_api_hostname_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings[fastly_api_hostname]' value='<?php echo esc_attr( $options['fastly_api_hostname'] ); ?>'>
+		<input type='text' name='fastly-settings-general[fastly_api_hostname]' value='<?php echo esc_attr( $options['fastly_api_hostname'] ); ?>'>
 		<p class="description">
 			<?php esc_html_e( 'API endpoint for this service.', 'purgely' ); ?>
 		</p>
@@ -403,7 +429,7 @@ class Purgely_Settings_Page {
             return;
         }
 
-        $url = admin_url( 'options-general.php?page=fastly' );
+        $url = menu_page_url('fastly', false);
         $purgely_instance = get_purgely_instance();
         $upgrades = new Upgrades($purgely_instance);
 
@@ -469,7 +495,7 @@ class Purgely_Settings_Page {
 	public function surrogate_control_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings[surrogate_control_ttl]' value='<?php echo esc_attr( $options['surrogate_control_ttl'] ); ?>'>
+		<input type='text' name='fastly-settings-advanced[surrogate_control_ttl]' value='<?php echo esc_attr( $options['surrogate_control_ttl'] ); ?>'>
 		<p class="description">
 			<?php esc_html_e( 'This setting controls the "surrogate-control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely' ); ?>
 		</p>
@@ -486,7 +512,7 @@ class Purgely_Settings_Page {
     public function cache_control_render() {
         $options = Purgely_Settings::get_settings();
         ?>
-        <input type='text' name='fastly-settings[cache_control_ttl]' value='<?php echo esc_attr( $options['cache_control_ttl'] ); ?>'>
+        <input type='text' name='fastly-settings-advanced[cache_control_ttl]' value='<?php echo esc_attr( $options['cache_control_ttl'] ); ?>'>
         <p class="description">
             <?php esc_html_e( 'This setting controls the "cache-control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely' ); ?>
         </p>
@@ -508,7 +534,7 @@ class Purgely_Settings_Page {
 			'instant' => __( 'Instant', 'purgely' ),
 		);
 		?>
-		<select name="fastly-settings[default_purge_type]">
+		<select name="fastly-settings-advanced[default_purge_type]">
 			<?php foreach ( $purge_types as $key => $label ) : ?>
 				<option value="<?php echo esc_attr( $key ); ?>"<?php selected( $options['default_purge_type'], $key ); ?>><?php echo esc_html( $label ); ?></option>
 			<?php endforeach; ?>
@@ -538,8 +564,8 @@ class Purgely_Settings_Page {
 	public function allow_purge_all_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='radio' name='fastly-settings[allow_purge_all]' <?php checked( isset( $options['allow_purge_all'] ) && true === $options['allow_purge_all'] ); ?> value='true'>Yes&nbsp;
-		<input type='radio' name='fastly-settings[allow_purge_all]' <?php checked( isset( $options['allow_purge_all'] ) && false === $options['allow_purge_all'] ); ?> value='false'>No
+		<input type='radio' name='fastly-settings-advanced[allow_purge_all]' <?php checked( isset( $options['allow_purge_all'] ) && true === $options['allow_purge_all'] ); ?> value='true'>Yes&nbsp;
+		<input type='radio' name='fastly-settings-advanced[allow_purge_all]' <?php checked( isset( $options['allow_purge_all'] ) && false === $options['allow_purge_all'] ); ?> value='false'>No
 		<p class="description">
 			<?php esc_html_e( 'The full cache purging behavior available to WP CLI must be explicitly enabled in order for it to work. Purging the entire cache can cause significant site stability issues and is disable by default.', 'purgely' ); ?>
 		</p>
@@ -556,8 +582,8 @@ class Purgely_Settings_Page {
     public function fastly_log_purges_render() {
         $options = Purgely_Settings::get_settings();
         ?>
-        <input type='radio' name='fastly-settings[fastly_log_purges]' <?php checked( isset( $options['fastly_log_purges'] ) && true === $options['fastly_log_purges'] ); ?> value='true'>Yes&nbsp;
-        <input type='radio' name='fastly-settings[fastly_log_purges]' <?php checked( isset( $options['fastly_log_purges'] ) && false === $options['fastly_log_purges'] ); ?> value='false'>No
+        <input type='radio' name='fastly-settings-advanced[fastly_log_purges]' <?php checked( isset( $options['fastly_log_purges'] ) && true === $options['fastly_log_purges'] ); ?> value='true'>Yes&nbsp;
+        <input type='radio' name='fastly-settings-advanced[fastly_log_purges]' <?php checked( isset( $options['fastly_log_purges'] ) && false === $options['fastly_log_purges'] ); ?> value='false'>No
         <p class="description">
             <?php esc_html_e( 'Log all purges in error_log', 'purgely' ); ?>
         </p>
@@ -574,8 +600,8 @@ class Purgely_Settings_Page {
     public function fastly_debug_mode_render() {
         $options = Purgely_Settings::get_settings();
         ?>
-        <input type='radio' name='fastly-settings[fastly_debug_mode]' <?php checked( isset( $options['fastly_debug_mode'] ) && true === $options['fastly_debug_mode'] ); ?> value='true'>Yes&nbsp;
-        <input type='radio' name='fastly-settings[fastly_debug_mode]' <?php checked( isset( $options['fastly_debug_mode'] ) && false === $options['fastly_debug_mode'] ); ?> value='false'>No
+        <input type='radio' name='fastly-settings-advanced[fastly_debug_mode]' <?php checked( isset( $options['fastly_debug_mode'] ) && true === $options['fastly_debug_mode'] ); ?> value='true'>Yes&nbsp;
+        <input type='radio' name='fastly-settings-advanced[fastly_debug_mode]' <?php checked( isset( $options['fastly_debug_mode'] ) && false === $options['fastly_debug_mode'] ); ?> value='false'>No
         <p class="description">
             <?php esc_html_e( 'Log all setting update requests in error_log', 'purgely' ); ?>
         </p>
@@ -603,8 +629,8 @@ class Purgely_Settings_Page {
 	public function enable_stale_while_revalidate_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='radio' name='fastly-settings[enable_stale_while_revalidate]' <?php checked( isset( $options['enable_stale_while_revalidate'] ) && true === $options['enable_stale_while_revalidate'] ); ?> value='true'>Yes&nbsp;
-		<input type='radio' name='fastly-settings[enable_stale_while_revalidate]' <?php checked( isset( $options['enable_stale_while_revalidate'] ) && false === $options['enable_stale_while_revalidate'] ); ?> value='false'>No
+		<input type='radio' name='fastly-settings-advanced[enable_stale_while_revalidate]' <?php checked( isset( $options['enable_stale_while_revalidate'] ) && true === $options['enable_stale_while_revalidate'] ); ?> value='true'>Yes&nbsp;
+		<input type='radio' name='fastly-settings-advanced[enable_stale_while_revalidate]' <?php checked( isset( $options['enable_stale_while_revalidate'] ) && false === $options['enable_stale_while_revalidate'] ); ?> value='false'>No
 		<p class="description">
 			<?php
 			printf(
@@ -630,7 +656,7 @@ class Purgely_Settings_Page {
 	public function stale_while_revalidate_ttl_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings[stale_while_revalidate_ttl]' value='<?php echo esc_attr( $options['stale_while_revalidate_ttl'] ); ?>'>
+		<input type='text' name='fastly-settings-advanced[stale_while_revalidate_ttl]' value='<?php echo esc_attr( $options['stale_while_revalidate_ttl'] ); ?>'>
 		<p class="description">
 			<?php esc_html_e( 'This setting determines the amount of time that stale content will be served while new content is generated.', 'purgely' ); ?>
 		</p>
@@ -647,8 +673,8 @@ class Purgely_Settings_Page {
 	public function enable_stale_if_error_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='radio' name='fastly-settings[enable_stale_if_error]' <?php checked( isset( $options['enable_stale_if_error'] ) && true === $options['enable_stale_if_error'] ); ?> value='true'>Yes&nbsp;
-		<input type='radio' name='fastly-settings[enable_stale_if_error]' <?php checked( isset( $options['enable_stale_if_error'] ) && false === $options['enable_stale_if_error'] ); ?> value='false'>No
+		<input type='radio' name='fastly-settings-advanced[enable_stale_if_error]' <?php checked( isset( $options['enable_stale_if_error'] ) && true === $options['enable_stale_if_error'] ); ?> value='true'>Yes&nbsp;
+		<input type='radio' name='fastly-settings-advanced[enable_stale_if_error]' <?php checked( isset( $options['enable_stale_if_error'] ) && false === $options['enable_stale_if_error'] ); ?> value='false'>No
 		<p class="description">
 			<?php
 			printf(
@@ -674,7 +700,7 @@ class Purgely_Settings_Page {
 	public function stale_if_error_ttl_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings[stale_if_error_ttl]' value='<?php echo esc_attr( $options['stale_if_error_ttl'] ); ?>'>
+		<input type='text' name='fastly-settings-advanced[stale_if_error_ttl]' value='<?php echo esc_attr( $options['stale_if_error_ttl'] ); ?>'>
 		<p class="description">
 			<?php esc_html_e( 'This setting determines the amount of time that stale content will be served while the origin is returning an error state.', 'purgely' ); ?>
 		</p>
@@ -705,14 +731,38 @@ class Purgely_Settings_Page {
                     <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL .'static/logo_white.gif'; ?>"><br><span style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
                 </div>
 				<?php
-				settings_fields( 'fastly-settings' );
-				do_settings_sections( 'fastly-settings' );
+				settings_fields( 'fastly-settings-general' );
+				do_settings_sections( 'fastly-settings-general' );
 				submit_button();
 				?>
 			</form>
 		</div>
 		<?php
 	}
+
+    /**
+     * Print the settings page.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function options_page_advanced() {
+        ?>
+        <div class="wrap">
+            <form action='options.php' method='post'>
+                <div id="fastly-admin" class="wrap">
+                    <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL .'static/logo_white.gif'; ?>"><br><span style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
+                </div>
+                <?php
+                settings_fields( 'fastly-settings-advanced' );
+                do_settings_sections( 'fastly-settings-advanced' );
+                submit_button();
+                ?>
+            </form>
+        </div>
+        <?php
+    }
 
 	/**
 	 * Sanitize all of the setting.
