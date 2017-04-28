@@ -41,13 +41,32 @@ class Purgely {
 	private static $cache_control_headers = array();
 
 	/**
-	 * Current plugin version.
+	 * Last plugin version.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @var   string    The semantically versioned plugin version number.
+	 * @var   string    Plugin verision for db schema.
 	 */
 	var $version = '1.1.1';
+
+    /**
+     * Currently installed plugin version.
+     *
+     * @since 1.1.1
+     *
+     * @var   string    Currently installed plugin version number. Increment when making schema and code changes
+     */
+    var $current_version = null;
+
+    /**
+     * Last vcl version.
+     *
+     *
+     * @since 1.0.0
+     *
+     * @var   string    Last updated vcl version. Increment when makin vcl changes
+     */
+    var $vcl_last_version = '1.1.1';
 
 	/**
 	 * File path to the plugin dir (e.g., /var/www/mysite/wp-content/plugins/purgely).
@@ -107,13 +126,17 @@ class Purgely {
 		// Set the main paths for the plugin.
 		$this->root_dir  = dirname( __FILE__ );
 		$this->src_dir   = $this->root_dir . '/src';
+		$this->vcl_dir   = $this->root_dir . '/vcl_snippets';
 		$this->file_path = $this->root_dir . '/' . basename( __FILE__ );
 		$this->url_base  = untrailingslashit( plugins_url( '/', __FILE__ ) );
+        $this->current_version = get_option( "fastly-schema-version", false );
 
-		// Include dependent files.
+        // Include dependent files.
 		include $this->src_dir . '/config.php';
 		include $this->src_dir . '/utils.php';
 		include $this->src_dir . '/classes/settings.php';
+		include $this->src_dir . '/classes/upgrades.php';
+		include $this->src_dir . '/classes/vcl-handler.php';
 		include $this->src_dir . '/classes/related-urls.php';
 		include $this->src_dir . '/classes/related-surrogate-keys.php';
 		include $this->src_dir . '/classes/purge-request-collection.php';
@@ -131,11 +154,9 @@ class Purgely {
 		// Handle all automatic purges.
 		include $this->src_dir . '/wp-purges.php';
 
-        $installed_ver = get_option( "fastly-schema-version", false );
-        // First install upgrade
-        if(!$installed_ver) {
-            $this->upgrade();
-        }
+        // First install DB schema changes
+        $upgrades = new Upgrades( $this );
+        $upgrades->check_and_run_upgrades();
 
 		// Initialize the key collector.
 		$this::$surrogate_keys_header = new Purgely_Surrogate_Keys_Header();
@@ -275,43 +296,6 @@ class Purgely {
 	public function load_plugin_textdomain() {
 		load_plugin_textdomain( 'purgely', false, basename( dirname( __FILE__ ) ) . '/languages/' );
 	}
-
-    /**
-     * Manages schema/data upgrades for new versions
-     *
-     * @since 1.1.1.
-     *
-     * @return void
-     */
-	public function upgrade()
-    {
-
-        if(get_option('fastly-settings')) {
-            return;
-        }
-
-        // Convert old fastly credentials to new storing type
-        $data = array();
-        $data['fastly_hostname'] = get_option( 'fastly_hostname', false );
-        $data['fastly_api_hostname'] = get_option( 'fastly_api_hostname', false );
-        $data['fastly_api_port'] = get_option( 'fastly_api_port', false );
-        $data['fastly_page'] = get_option( 'fastly_page', false ); // ?????? needed? for welcome page with hostname and port
-        $data['fastly_log_purges'] = get_option( 'fastly_log_purges', false );
-        $data['fastly_api_soft'] = get_option( 'fastly_api_soft', false );
-        $data['fastly_api_key'] = get_option( 'fastly_api_key', false );
-        $data['fastly_service_id'] = get_option( 'fastly_service_id', false );
-
-        foreach($data as $k => $single){
-            if($single === false || empty($single)) {
-                unset($data[$k]);
-            }
-        }
-
-        // Update data
-        update_option('fastly-settings', $data);
-        // Update version
-        update_option( "fastly-schema-version", '1.1.1' );
-    }
 }
 
 /**

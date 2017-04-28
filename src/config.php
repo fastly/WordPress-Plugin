@@ -110,3 +110,25 @@ if ( ! defined( 'PURGELY_DEFAULT_PURGE_TYPE' ) ) {
 if ( ! defined( 'PURGELY_FASTLY_LOG_PURGES' ) ) {
     define( 'PURGELY_FASTLY_LOG_PURGES', false );
 }
+
+/**
+ * Set the default purges logging
+ *
+ * The currently supported values are "true" and "false".
+ *
+ * @since 1.1.1.
+ */
+if ( ! defined( 'PURGELY_FASTLY_DEBUG_MODE' ) ) {
+    define( 'PURGELY_FASTLY_DEBUG_MODE', false );
+}
+
+/**
+ * Set the default purges logging
+ *
+ * The currently supported values are "true" and "false".
+ *
+ * @since 1.1.1.
+ */
+if ( ! defined( 'PURGELY_FASTLY_VCL_VERSION' ) ) {
+    define( 'PURGELY_FASTLY_VCL_VERSION', false );
+}

@@ -31,13 +31,13 @@ class Purgely_Settings_Page {
 	 * Initiate actions.
 	 *
 	 * @since 1.0.0.
-	 *
-	 * @return Purgely_Settings_Page
 	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
-	}
+        add_action( 'admin_action_fastly_vcl_update', array( $this, 'fastly_vcl_update_run' ) );
+        add_action('wp_ajax_test_fastly_connection', array( $this, 'test_fastly_connection_callback'));
+    }
 
 	/**
 	 * Setup the configuration screen for the plugin.
@@ -112,6 +112,26 @@ class Purgely_Settings_Page {
 			'purgely-fastly_settings'
 		);
 
+        // Execute only if first time, or if requires updating
+        $purgely_instance = get_purgely_instance();
+        if(version_compare(get_option('fastly_vcl_version'), $purgely_instance->vcl_last_version, '<')) {
+            add_settings_field(
+                'fastly_update_vcl',
+                __( 'Update VCL', 'purgely' ),
+                array( $this, 'fastly_update_vcl_render' ),
+                'fastly-settings',
+                'purgely-fastly_settings'
+            );
+        }
+
+        add_settings_field(
+            'fastly_test_connection',
+            __( '', 'purgely' ),
+            array( $this, 'fastly_test_connection_render' ),
+            'fastly-settings',
+            'purgely-fastly_settings'
+        );
+
 		// Set up the general settings.
 		add_settings_section(
 			'purgely-general_settings',
@@ -156,6 +176,14 @@ class Purgely_Settings_Page {
             'fastly_log_purges',
             __( 'Log purges in error log', 'purgely' ),
             array( $this, 'fastly_log_purges_render' ),
+            'fastly-settings',
+            'purgely-general_settings'
+        );
+
+        add_settings_field(
+            'fastly_debug_mode',
+            __( 'Log requests in error log', 'purgely' ),
+            array( $this, 'fastly_debug_mode_render' ),
             'fastly-settings',
             'purgely-general_settings'
         );
@@ -296,6 +324,130 @@ class Purgely_Settings_Page {
 		<?php
 	}
 
+    /**
+     * Render the setting input.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function fastly_update_vcl_render() {
+        ?>
+        <form action="" method="post">
+            <input type="hidden" name="action" value="fastly_vcl_update">
+            <?php wp_nonce_field( 'update_vcl', 'fastly_vcl_update_wpnonce' ); ?>
+            <?php submit_button( 'Update VCL' ); ?>
+        </form>
+        <?php
+    }
+
+    /**
+     * Render the test connection button.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function fastly_test_connection_render() {
+        ?>
+        <input type='button' class='button button-secondary' id="test-connection-btn" value="TEST CONNECTION" />
+        <div id="test-connection-response"></div>
+        <script type = 'text/javascript'>
+            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
+            jQuery(document).ready(function($) {
+                jQuery('#test-connection-btn').click( function() {
+                    $.ajax({
+                        method: 'GET',
+                        url: url,
+                        data: {
+                            action : 'test_fastly_connection'
+                        },
+                        success: function(response) {
+                            document.getElementById('test-connection-response').innerHTML = '';
+                            if(response.status) {
+                                var button_elem = jQuery('#test-connection-btn');
+                                if(button_elem.hasClass('button-secondary')) {
+                                    button_elem.toggleClass('button-secondary');
+                                    button_elem.toggleClass('button-primary');
+                                }
+                            }
+                            document.getElementById('test-connection-response').innerHTML = response.message;
+                        },
+                        dataType: 'json'
+                    });
+                });
+            });
+        </script>
+        <?php
+    }
+
+    /**
+     * Test connection callback
+     */
+    function test_fastly_connection_callback() {
+        $hostname = Purgely_Settings::get_setting('fastly_api_hostname');
+        $service_id = Purgely_Settings::get_setting('fastly_service_id');
+        $api_key = Purgely_Settings::get_setting('fastly_api_key');
+
+        $result = test_fastly_api_connection($hostname, $service_id, $api_key);
+        echo json_encode($result);
+
+        die();
+    }
+
+    /**
+     * Update VCL callback
+     */
+    public function fastly_vcl_update_run() {
+        if(!wp_verify_nonce( $_POST['fastly_vcl_update_wpnonce'], 'update_vcl')) {
+            return;
+        }
+
+        $url = admin_url( 'options-general.php?page=fastly' );
+        $purgely_instance = get_purgely_instance();
+        $upgrades = new Upgrades($purgely_instance);
+
+        // Upgrades for version 1.1.1
+        if(version_compare(get_option('fastly_vcl_version'), $purgely_instance->vcl_last_version, '<')) {
+            $result = $upgrades->vcl_upgrade_1_1_1();
+
+            if(is_array($result)) {
+                $url = $url . '&notice=0';
+            } else {
+                $url = $url . '&notice=1';
+                // Update vcl_version
+                update_option( "fastly_vcl_version", $purgely_instance->vcl_last_version );
+            }
+        }
+
+        wp_safe_redirect($url);
+    }
+
+    /**
+     * Shows error notice
+     * @param $msg
+     */
+    public function error_notice($msg){
+        ?>
+        <div class="notice notice-error">
+            <p><?php echo __($msg); ?></p>
+        </div>
+        <?php
+    }
+
+
+    /**
+     * Shows success notice
+     * @param $msg
+     */
+    public function success_notice($msg){
+        ?>
+        <div class="notice notice-success">
+            <p><?php echo __($msg); ?></p>
+        </div>
+        <?php
+    }
+
 	/**
 	 * Print the description general settings section.
 	 *
@@ -412,6 +564,24 @@ class Purgely_Settings_Page {
         <?php
     }
 
+    /**
+     * Render the setting input.
+     *
+     * @since 1.1.1.
+     *
+     * @return void
+     */
+    public function fastly_debug_mode_render() {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='radio' name='fastly-settings[fastly_debug_mode]' <?php checked( isset( $options['fastly_debug_mode'] ) && true === $options['fastly_debug_mode'] ); ?> value='true'>Yes&nbsp;
+        <input type='radio' name='fastly-settings[fastly_debug_mode]' <?php checked( isset( $options['fastly_debug_mode'] ) && false === $options['fastly_debug_mode'] ); ?> value='false'>No
+        <p class="description">
+            <?php esc_html_e( 'Log all setting update requests in error_log', 'purgely' ); ?>
+        </p>
+        <?php
+    }
+
 	/**
 	 * Print the description for the stale content settings.
 	 *
@@ -521,6 +691,15 @@ class Purgely_Settings_Page {
 	public function options_page() {
 		?>
 		<div class="wrap">
+            <?php $notice = isset($_GET['notice']) ? $_GET['notice'] : false; ?>
+            <?php
+
+            if($notice === '0') :
+                $this->error_notice('Upgrade failed, turn on debugging and check logs.');
+            elseif($notice === '1') :
+                $this->success_notice('Successfully Upgraded!');
+            endif;
+            ?>
 			<form action='options.php' method='post'>
                 <div id="fastly-admin" class="wrap">
                     <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL .'static/logo_white.gif'; ?>"><br><span style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
@@ -530,7 +709,6 @@ class Purgely_Settings_Page {
 				do_settings_sections( 'fastly-settings' );
 				submit_button();
 				?>
-
 			</form>
 		</div>
 		<?php

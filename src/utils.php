@@ -117,6 +117,8 @@ function purgely_get_options() {
 		'fastly_service_id',
         'fastly_page',
         'fastly_log_purges',
+        'fastly_debug_mode',
+        'fastly_vcl_version',
 		'allow_purge_all',
 		'fastly_api_hostname',
 		'enable_stale_while_revalidate',
@@ -165,4 +167,28 @@ function purgely_sanitize_key( $key ) {
  */
 function purgely_sanitize_checkbox( $value ) {
 	return ( in_array( $value, array( '1', 1, 'true', true ), true ) );
+}
+
+/**
+ * Function for testing Fastly API connection
+ * @param $hostname
+ * @param $service_id
+ * @param $api_key
+ * @return array
+ */
+function test_fastly_api_connection($hostname, $service_id, $api_key) {
+    $url = $hostname . '/service/' . $service_id;
+    $headers = array(
+        'Fastly-Key' => $api_key,
+        'Accept' => 'application/json'
+    );
+    $response = Requests::get($url, $headers);
+
+    if($response->success) {
+        return array('status' => true, 'message' => __('Connection Successful!'));
+    } else {
+        $message = json_decode($response->body);
+        $message = $message->msg;
+        return array('status' => false, 'message' => $message);
+    }
 }

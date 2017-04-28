@@ -116,8 +116,6 @@ class Purgely_Purge {
                     $request['url'] = $request_url;
                     $request['headers'] = $remote_request_args['headers'];
                     $request['type'] = $remote_request_args['method'];
-//                    $request['headers']['Fastly-Debug'] = 1; // TODO on off switch with logging possibility?
-
                     $requests[] = $request;
                 }
 

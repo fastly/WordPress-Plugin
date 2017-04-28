@@ -37,6 +37,14 @@ class Purgely_Settings {
                 'sanitize_callback' => 'purgely_sanitize_checkbox',
                 'default'           => PURGELY_FASTLY_LOG_PURGES,
             ),
+            'fastly_vcl_version'               => array(
+                'sanitize_callback' => 'purgely_sanitize_checkbox',
+                'default'           => PURGELY_FASTLY_VCL_VERSION,
+            ),
+            'fastly_debug_mode'               => array(
+                'sanitize_callback'         => 'purgely_sanitize_checkbox',
+                'default'               => PURGELY_FASTLY_DEBUG_MODE,
+            ),
 			'fastly_api_hostname'                  => array(
 				'sanitize_callback' => 'esc_url',
 				'default'           => PURGELY_API_ENDPOINT,

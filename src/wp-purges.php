@@ -59,11 +59,10 @@ class Purgely_Purges {
 	 */
 	private function _purge_actions() {
 		return array(
-//		    'edited_terms',// runs on add and delete taxonomy too? check, edited_term_taxonomy needed also?// https://codex.wordpress.org/Plugin_API/Action_Reference
 			'save_post',
 			'deleted_post',
 			'trashed_post',
-			'delete_attachment',// comments? after_setup_theme ??
+			'delete_attachment',
 		);
 	}
 }
