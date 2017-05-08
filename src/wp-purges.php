@@ -41,7 +41,8 @@ class Purgely_Purges {
 	 * @param  int $post_id Post ID.
 	 * @return void
 	 */
-	public function purge( $post_id , $argsss) {
+	public function purge( $post_id ) {
+
 		if ( ! in_array( get_post_status( $post_id ), array( 'publish', 'trash' ) ) ) {
 			return;
 		}

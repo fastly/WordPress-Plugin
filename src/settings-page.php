@@ -116,7 +116,7 @@ class Purgely_Settings_Page {
 		// Register all of the GENERAL settings.
 		add_settings_field(
 			'fastly_api_key',
-			__( 'API Key', 'purgely' ),
+			__( 'Fastly API token', 'purgely' ),
 			array( $this, 'fastly_api_key_render' ),
 			'fastly-settings-general',
 			'purgely-fastly_settings'

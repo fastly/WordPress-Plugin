@@ -163,9 +163,11 @@ class Purgely_Surrogate_Key_Collection {
 		$keys           = array();
         $terms = get_the_terms( $post_id, $taxonomy );
 
-        foreach($terms as $term) {
-            if( isset($term->term_id)) {
-                $keys[] = 't-' . $term->term_id;
+        if($terms) {
+            foreach($terms as $term) {
+                if( isset($term->term_id)) {
+                    $keys[] = 't-' . $term->term_id;
+                }
             }
         }
 

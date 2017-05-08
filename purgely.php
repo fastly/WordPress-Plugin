@@ -204,6 +204,11 @@ class Purgely {
 	 * @return void
 	 */
 	public function set_standard_keys() {
+
+        if ( is_user_logged_in() ) {
+            return;
+        }
+
 		global $wp_query;
 		$key_collection = new Purgely_Surrogate_Key_Collection( $wp_query );
 		$keys           = $key_collection->get_keys();
@@ -223,6 +228,11 @@ class Purgely {
 	 * @return void
 	 */
 	public function send_surrogate_keys() {
+
+        if ( is_user_logged_in() ) {
+            return;
+        }
+
 		$keys_header = $this::$surrogate_keys_header;
 		$keys        = apply_filters( 'purgely_surrogate_keys', $keys_header->get_keys() );
 
