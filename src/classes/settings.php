@@ -42,8 +42,8 @@ class Purgely_Settings {
                 'default'           => PURGELY_FASTLY_VCL_VERSION,
             ),
             'fastly_debug_mode'               => array(
-                'sanitize_callback'         => 'purgely_sanitize_checkbox',
-                'default'               => PURGELY_FASTLY_DEBUG_MODE,
+                'sanitize_callback' => 'purgely_sanitize_checkbox',
+                'default'           => PURGELY_FASTLY_DEBUG_MODE,
             ),
 			'fastly_api_hostname'                  => array(
 				'sanitize_callback' => 'esc_url',
@@ -77,6 +77,26 @@ class Purgely_Settings {
 				'sanitize_callback' => 'sanitize_key',
 				'default'           => PURGELY_DEFAULT_PURGE_TYPE,
 			),
+            'webhooks_url_base'            => array(
+                'sanitize_callback' => 'esc_url',
+                'default'           => PURGELY_WEBHOOKS_URL_BASE,
+            ),
+            'webhooks_url_endpoint'            => array(
+                'sanitize_callback' => 'esc_html',
+                'default'           => PURGELY_WEBHOOKS_URL_ENDPOINT,
+            ),
+            'webhooks_username'            => array(
+                'sanitize_callback' => 'sanitize_key',
+                'default'           => PURGELY_WEBHOOKS_USERNAME,
+            ),
+            'webhooks_channel'            => array(
+                'sanitize_callback' => 'sanitize_key',
+                'default'           => PURGELY_WEBHOOKS_CHANNEL,
+            ),
+            'webhooks_activate'            => array(
+                'sanitize_callback' => 'purgely_sanitize_checkbox',
+                'default'           => PURGELY_WEBHOOKS_ACTIVATE,
+            ),
 		);
 	}
 
@@ -97,6 +117,7 @@ class Purgely_Settings {
 			$registered_settings = self::get_registered_settings();
 			$saved_settings      = get_option( 'fastly-settings-general', array() );
 			$saved_settings      = array_merge($saved_settings, get_option( 'fastly-settings-advanced', array() ));
+			$saved_settings      = array_merge($saved_settings, get_option( 'fastly-settings-webhooks', array() ));
 			$negotiated_settings = array();
 
 			foreach ( $registered_settings as $key => $values ) {

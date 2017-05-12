@@ -25,29 +25,11 @@ function purgely_sanitize_surrogate_key( $key ) {
 function purgely_purge_url( $url, $purge_args = array() ) {
 	if ( isset( $purge_args['related'] ) && true === $purge_args['related'] ) {
 		$purgely = new Purgely_Purge_Request_Collection( $url, $purge_args );
-		$purgely->purge_related( $purgely->get_purge_args() );
+		return $purgely->purge_related( $purgely->get_purge_args() );
 	} else {
 		$purgely = new Purgely_Purge();
-		$purgely->purge( 'url', $url, $purge_args );
+		return $purgely->purge( 'url', $url, $purge_args );
 	}
-
-	return $purgely->get_result();
-}
-
-/**
- * Purge a surrogate key.
- *
- * @since  1.0.0.
- *
- * @param  string $key        The surrogate key to purge.
- * @param  array  $purge_args Additional args to pass to the purge request.
- * TODO replace completley with purgely_purge_surrogate_key_collection
- * @return array|bool|WP_Error                   The purge response.
- */
-function purgely_purge_surrogate_key( $key, $purge_args = array() ) {
-	$purgely = new Purgely_Purge();
-	$purgely->purge( 'surrogate-key', $key, $purge_args );
-	return $purgely->get_result();
 }
 
 /**
@@ -61,8 +43,7 @@ function purgely_purge_surrogate_key( $key, $purge_args = array() ) {
  */
 function purgely_purge_surrogate_key_collection ( $keys, $purge_args = array() ) {
     $purgely = new Purgely_Purge();
-    $purgely->purge( 'surrogate-key-collection', $keys, $purge_args );
-    return $purgely->get_result();
+    return $purgely->purge( 'key-collection', $keys, $purge_args );
 }
 
 /**
@@ -76,9 +57,7 @@ function purgely_purge_surrogate_key_collection ( $keys, $purge_args = array() )
 function purgely_purge_all( $purge_args = array() ) {
 	$purgely    = new Purgely_Purge();
 	$purge_args = array_merge( array( 'allow-all' => Purgely_Settings::get_setting( 'allow_purge_all' ) ), $purge_args );
-
-	$purgely->purge( 'all', '', $purge_args );
-	return $purgely->get_result();
+	return $purgely->purge( 'all', '', $purge_args );
 }
 
 /**
@@ -139,6 +118,7 @@ function purgely_get_options() {
 
 	$options = get_option( 'fastly-settings-general', $options );
 	$options = array_merge($options, get_option( 'fastly-settings-advanced', $options ));
+	$options = array_merge($options, get_option( 'fastly-settings-webhooks', $options ));
 
 	return $options;
 }
@@ -187,15 +167,80 @@ function test_fastly_api_connection($hostname, $service_id, $api_key) {
     );
     try {
         $response = Requests::get($url, $headers);
+
+        if($response->success) {
+            $message = __('Connection Successful!');
+        } else {
+            $message = json_decode($response->body);
+            $message = $message->msg;
+        }
+        return array('status' => $response->success, 'message' => $message);
     } catch (Exception $e) {
         return array('status' => false, 'message' => $e->getMessage());
     }
+}
 
-    if($response->success) {
-        return array('status' => true, 'message' => __('Connection Successful!'));
-    } else {
-        $message = json_decode($response->body);
-        $message = $message->msg;
-        return array('status' => false, 'message' => $message);
+/**
+ * Sends message to slack via webhooks
+ * @param $message
+ */
+function sendWebHook($message) {
+
+    $webhook_url_base = Purgely_Settings::get_setting('webhooks_url_base');
+    $webhook_url = Purgely_Settings::get_setting('webhooks_url_endpoint');
+    $username = Purgely_Settings::get_setting('webhooks_username');
+    $channel = Purgely_Settings::get_setting('webhooks_channel');
+
+    $request_uri = $webhook_url_base . $webhook_url;
+    $headers = array('Content-type: application/json');
+    $data = json_encode(
+        array(
+            'text' => $message,
+            'username' => $username,
+            'channel' => '#' . $channel,
+            'icon_emoji'=> ':airplane:'
+        )
+    );
+
+    try {
+        $response = Requests::request($request_uri, $headers, $data , Requests::POST);
+        if(!$response->success) {
+            if(Purgely_Settings::get_setting( 'fastly_log_purges' )) {
+                error_log("Webhooks request failed, error: " . json_decode($response->body));
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+}
+
+/**
+ * Test slack webhooks connection in admin
+ * @return array
+ */
+function testWebHook() {
+
+    $webhook_url_base = Purgely_Settings::get_setting('webhooks_url_base');
+    $webhook_url = Purgely_Settings::get_setting('webhooks_url_endpoint');
+    $username = Purgely_Settings::get_setting('webhooks_username');
+    $channel = Purgely_Settings::get_setting('webhooks_channel');
+
+    $request_uri = $webhook_url_base . $webhook_url;
+    $headers = array('Content-type: application/json');
+    $data = json_encode(
+        array(
+            'text' => 'Connection successful!',
+            'username' => $username,
+            'channel' => '#' . $channel,
+            'icon_emoji'=> ':airplane:'
+        )
+    );
+
+    try {
+        $response = Requests::request($request_uri, $headers, $data , Requests::POST);
+        $message = $response->success ? __('Connection Successful!') : __($response->body);
+        return array('status' => $response->success, 'message' => $message);
+    } catch (Exception $e) {
+        return array('status' => false, 'message' => $e->getMessage());
     }
 }

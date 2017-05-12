@@ -36,7 +36,7 @@ class Purgely_Purges {
 	}
 
 	/**
-	 * Callback for post changing events to purge URLs.
+	 * Callback for post changing events to purge keys.
 	 *
 	 * @param  int $post_id Post ID.
 	 * @return void
@@ -46,6 +46,18 @@ class Purgely_Purges {
 		if ( ! in_array( get_post_status( $post_id ), array( 'publish', 'trash' ) ) ) {
 			return;
 		}
+
+        // Check credentials
+        $fastly_hostname      = Purgely_Settings::get_setting( 'fastly_api_hostname' );
+        $fastly_service_id = Purgely_Settings::get_setting( 'fastly_service_id' );
+        $fastly_api_key = Purgely_Settings::get_setting( 'fastly_api_key' );
+		$test = test_fastly_api_connection($fastly_hostname, $fastly_service_id, $fastly_api_key);
+		if(!$test['status']) {
+            if(Purgely_Settings::get_setting( 'fastly_log_purges' )) {
+                error_log($test['message']);
+                return;
+            }
+        }
 
         $related_collection_object = new Purgely_Related_Surrogate_Keys( $post_id );
         $collection = $related_collection_object->locate_all();
