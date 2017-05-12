@@ -149,12 +149,20 @@ class Vcl_Handler {
                     if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
                         error_log(json_decode($response->body));
                     }
+                    if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
+                        $message = 'VCL update failed : ' . json_decode($response->body);
+                        sendWebHook($message);
+                    }
                 }
             }
         } catch (Exception $e) {
             $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
             if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
                 error_log($e->getMessage());
+            }
+            if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
+                $message = 'VCL update failed : ' . $e->getMessage();
+                sendWebHook($message);
             }
             return false;
         }

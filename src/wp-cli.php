@@ -114,7 +114,7 @@ if ( ! class_exists( 'Purgely_Command' ) ) :
 			if ( 'url' === $type ) {
 				$result = $this->_purge_url( $thing, $purge_args );
 
-				if ( 'success' === $result ) {
+				if ($result) {
 					WP_CLI::success( sprintf( __( 'purged %s', 'purgely' ), esc_url( $thing ) ) );
 				} else {
 					WP_CLI::error( __( 'URL could not be purged', 'purgely' ) );
@@ -122,7 +122,7 @@ if ( ! class_exists( 'Purgely_Command' ) ) :
 			} else if ( 'key' === $type ) {
 				$result = $this->_purge_key( $thing, $purge_args );
 
-				if ( 'success' === $result ) {
+				if ($result) {
 					WP_CLI::success( sprintf( __( 'purged %s', 'purgely' ), purgely_sanitize_surrogate_key( $thing ) ) );
 				} else {
 					WP_CLI::error( __( 'key could not be purged', 'purgely' ) );
@@ -130,7 +130,7 @@ if ( ! class_exists( 'Purgely_Command' ) ) :
 			} else if ( 'all' === $type ) {
 				$result = $this->_purge_all( $purge_args );
 
-				if ( 'success' === $result ) {
+				if ($result) {
 					WP_CLI::success( __( 'purged all', 'purgely' ) );
 				} else {
 					WP_CLI::error( __( 'cache could not be purged', 'purgely' ) );
@@ -139,7 +139,7 @@ if ( ! class_exists( 'Purgely_Command' ) ) :
 				foreach ( $args as $id ) {
 					$result = $this->_purge_id( $id, $purge_args );
 
-					if ( 'success' === $result ) {
+					if ($result) {
 						WP_CLI::success( sprintf( __( 'purged %d %s', 'purgely' ), absint( $id ), get_permalink( $id ) ) );
 					} else {
 						// Where other tasks error out, only warn here so other posts can be purged.
@@ -215,7 +215,7 @@ if ( ! class_exists( 'Purgely_Command' ) ) :
 		 * @return array|bool|WP_Error                   The purge response.
 		 */
 		private function _purge_key( $key, $purge_args ) {
-			return purgely_purge_surrogate_key( $key, $purge_args );
+			return purgely_purge_surrogate_key_collection( array($key), $purge_args );
 		}
 
 		/**

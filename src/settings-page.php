@@ -37,6 +37,7 @@ class Purgely_Settings_Page {
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
         add_action( 'admin_action_fastly_vcl_update', array( $this, 'fastly_vcl_update_run' ) );
         add_action('wp_ajax_test_fastly_connection', array( $this, 'test_fastly_connection_callback'));
+        add_action('wp_ajax_test_fastly_webhooks_connection', array( $this, 'test_fastly_webhooks_connection_callback'));
     }
 
 	/**
@@ -72,6 +73,15 @@ class Purgely_Settings_Page {
             'fastly-advanced',
             array( $this, 'options_page_advanced' )
         );
+
+        add_submenu_page(
+            'fastly',
+            __( 'Fastly Webhooks', 'purgely' ),
+            __( 'Webhooks', 'purgely' ),
+            'manage_options',
+            'fastly-webhooks',
+            array( $this, 'options_page_webhooks' )
+        );
 	}
 
 
@@ -98,6 +108,13 @@ class Purgely_Settings_Page {
             array( $this, 'sanitize_settings' )
         );
 
+        // Set up the option name, "fastly-settings-webhooks". All webhooks values will be in this array.
+        register_setting(
+            'fastly-settings-webhooks',
+            'fastly-settings-webhooks',
+            array( $this, 'sanitize_settings' )
+        );
+
 		// Set up the settings section.
 		add_settings_section(
 			'purgely-fastly_settings',
@@ -108,7 +125,7 @@ class Purgely_Settings_Page {
 
         add_settings_section(
             'purgely-fastly_settings',
-            __( 'Fastly settings', 'purgely' ),
+            __( 'General settings', 'purgely' ),
             array( $this, 'fastly_settings_newcomers' ),
             'fastly-settings-general'
         );
@@ -161,7 +178,7 @@ class Purgely_Settings_Page {
         // Register all of the ADVANCED settings.
         add_settings_section(
 			'purgely-advanced_settings',
-			__( 'General settings', 'purgely' ),
+			__( 'Advanced settings', 'purgely' ),
 			array( $this, 'general_settings_callback' ),
 			'fastly-settings-advanced'
 		);
@@ -253,6 +270,64 @@ class Purgely_Settings_Page {
 			'fastly-settings-advanced',
 			'purgely-stale_settings'
 		);
+
+        // Set up the webhooks settings.
+        add_settings_section(
+            'purgely-webhooks_settings',
+            __( 'Webhooks settings', 'purgely' ),
+            array( $this, 'webhooks_settings_callback' ),
+            'fastly-settings-webhooks'
+        );
+
+        // Register all of the webhooks settings
+        add_settings_field(
+            'webhooks_url_base',
+            __( 'Webhooks URL Base', 'purgely' ),
+            array( $this, 'webhooks_url_base_render' ),
+            'fastly-settings-webhooks',
+            'purgely-webhooks_settings'
+        );
+
+		// Register all of the webhooks settings
+        add_settings_field(
+            'webhooks_url_endpoint',
+            __( 'Webhooks URL Endpoint', 'purgely' ),
+            array( $this, 'webhooks_url_endpoint_render' ),
+            'fastly-settings-webhooks',
+            'purgely-webhooks_settings'
+        );
+
+        add_settings_field(
+            'webhooks_username',
+            __( 'Webhooks Username', 'purgely' ),
+            array( $this, 'webhooks_username_render' ),
+            'fastly-settings-webhooks',
+            'purgely-webhooks_settings'
+        );
+
+        add_settings_field(
+            'webhooks_channel',
+            __( 'Webhooks Channel', 'purgely' ),
+            array( $this, 'webhooks_channel_render' ),
+            'fastly-settings-webhooks',
+            'purgely-webhooks_settings'
+        );
+
+        add_settings_field(
+            'webhooks_activate',
+            __( 'Activate for purging', 'purgely' ),
+            array( $this, 'webhooks_activate_render' ),
+            'fastly-settings-webhooks',
+            'purgely-webhooks_settings'
+        );
+
+        add_settings_field(
+            'webhooks_test_connection',
+            __( '', 'purgely' ),
+            array( $this, 'webhooks_test_connection_render' ),
+            'fastly-settings-webhooks',
+            'purgely-webhooks_settings'
+        );
 	}
 
     /**
@@ -408,6 +483,46 @@ class Purgely_Settings_Page {
     }
 
     /**
+     * Render the test connection button.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function webhooks_test_connection_render() {
+        ?>
+        <input type='button' class='button button-secondary' id="test-connection-btn" value="TEST CONNECTION" />
+        <div id="test-connection-response"></div>
+        <script type = 'text/javascript'>
+            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
+            jQuery(document).ready(function($) {
+                jQuery('#test-connection-btn').click( function() {
+                    $.ajax({
+                        method: 'GET',
+                        url: url,
+                        data: {
+                            action : 'test_fastly_webhooks_connection'
+                        },
+                        success: function(response) {
+                            document.getElementById('test-connection-response').innerHTML = '';
+                            if(response.status) {
+                                var button_elem = jQuery('#test-connection-btn');
+                                if(button_elem.hasClass('button-secondary')) {
+                                    button_elem.toggleClass('button-secondary');
+                                    button_elem.toggleClass('button-primary');
+                                }
+                            }
+                            document.getElementById('test-connection-response').innerHTML = response.message;
+                        },
+                        dataType: 'json'
+                    });
+                });
+            });
+        </script>
+        <?php
+    }
+
+    /**
      * Test connection callback
      */
     function test_fastly_connection_callback() {
@@ -418,6 +533,15 @@ class Purgely_Settings_Page {
         $result = test_fastly_api_connection($hostname, $service_id, $api_key);
         echo json_encode($result);
 
+        die();
+    }
+
+    /**
+     * Test webhooks connection callback
+     */
+    function test_fastly_webhooks_connection_callback() {
+        $result = testWebHook();
+        echo json_encode($result);
         die();
     }
 
@@ -619,6 +743,17 @@ class Purgely_Settings_Page {
 		esc_html_e( 'This section allows you to configure how content is handled as it is revalidated. It is important that proper consideration is given to how content is regenerated after it expires from cache. The default settings take a conservative approach by allowing stale content to be served while new content is regenerated in the background.', 'purgely' );
 	}
 
+    /**
+     * Print the description for the webhooks settings.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function webhooks_settings_callback() {
+        esc_html_e( 'This section allows you to configure webhooks for slack.', 'purgely' );
+    }
+
 	/**
 	 * Render the setting input.
 	 *
@@ -707,8 +842,94 @@ class Purgely_Settings_Page {
 		<?php
 	}
 
+    /**
+     * Render the setting input.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function webhooks_url_base_render() {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='text' name='fastly-settings-webhooks[webhooks_url_base]' value='<?php echo esc_attr( $options['webhooks_url_base'] ); ?>'>
+        <p class="description">
+            <?php esc_html_e( 'Slack URL base.', 'purgely' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function webhooks_url_endpoint_render() {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='text' name='fastly-settings-webhooks[webhooks_url_endpoint]' value='<?php echo esc_attr( $options['webhooks_url_endpoint'] ); ?>'>
+        <p class="description">
+            <?php esc_html_e( 'Slack URL endpoint.', 'purgely' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function webhooks_username_render() {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='text' name='fastly-settings-webhooks[webhooks_username]' value='<?php echo esc_attr( $options['webhooks_username'] ); ?>'>
+        <p class="description">
+            <?php esc_html_e( 'Slack username.', 'purgely' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function webhooks_channel_render() {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        #<input type='text' name='fastly-settings-webhooks[webhooks_channel]' value='<?php echo esc_attr( $options['webhooks_channel'] ); ?>'>
+        <p class="description">
+            <?php esc_html_e( 'Slack channel.', 'purgely' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function webhooks_activate_render() {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='radio' name='fastly-settings-webhooks[webhooks_activate]' <?php checked( isset( $options['webhooks_activate'] ) && true === $options['webhooks_activate'] ); ?> value='true'>Yes&nbsp;
+        <input type='radio' name='fastly-settings-webhooks[webhooks_activate]' <?php checked( isset( $options['webhooks_activate'] ) && false === $options['webhooks_activate'] ); ?> value='false'>No
+        <p class="description">
+            <?php esc_html_e( 'The full cache purging behavior available to WP CLI must be explicitly enabled in order for it to work. Purging the entire cache can cause significant site stability issues and is disable by default.', 'purgely' ); ?>
+        </p>
+        <?php
+    }
+
 	/**
-	 * Print the settings page.
+	 * Print the general settings page.
 	 *
 	 * @since 1.0.0.
 	 *
@@ -741,7 +962,7 @@ class Purgely_Settings_Page {
 	}
 
     /**
-     * Print the settings page.
+     * Print the advanced settings page.
      *
      * @since 1.0.0.
      *
@@ -757,6 +978,30 @@ class Purgely_Settings_Page {
                 <?php
                 settings_fields( 'fastly-settings-advanced' );
                 do_settings_sections( 'fastly-settings-advanced' );
+                submit_button();
+                ?>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     * Print the webhooks settings page.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function options_page_webhooks() {
+        ?>
+        <div class="wrap">
+            <form action='options.php' method='post'>
+                <div id="fastly-admin" class="wrap">
+                    <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL .'static/logo_white.gif'; ?>"><br><span style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
+                </div>
+                <?php
+                settings_fields( 'fastly-settings-webhooks' );
+                do_settings_sections( 'fastly-settings-webhooks' );
                 submit_button();
                 ?>
             </form>

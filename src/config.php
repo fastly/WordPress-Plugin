@@ -132,3 +132,48 @@ if ( ! defined( 'PURGELY_FASTLY_DEBUG_MODE' ) ) {
 if ( ! defined( 'PURGELY_FASTLY_VCL_VERSION' ) ) {
     define( 'PURGELY_FASTLY_VCL_VERSION', false );
 }
+
+/**
+ * Set the default webhooks url base
+ *
+ * @since 1.1.1.
+ */
+if ( ! defined( 'PURGELY_WEBHOOKS_URL_BASE' ) ) {
+    define( 'PURGELY_WEBHOOKS_URL_BASE', 'https://hooks.slack.com/services/' );
+}
+
+/**
+ * Set the default webhooks url endpoint
+ *
+ * @since 1.1.1.
+ */
+if ( ! defined( 'PURGELY_WEBHOOKS_URL_ENDPOINT' ) ) {
+    define( 'PURGELY_WEBHOOKS_URL_ENDPOINT', '' );
+}
+
+/**
+ * Set the default webhooks username
+ *
+ * @since 1.1.1.
+ */
+if ( ! defined( 'PURGELY_WEBHOOKS_USERNAME' ) ) {
+    define( 'PURGELY_WEBHOOKS_USERNAME', '' );
+}
+
+/**
+ * Set the default webhooks channel
+ *
+ * @since 1.1.1.
+ */
+if ( ! defined( 'PURGELY_WEBHOOKS_CHANNEL' ) ) {
+    define( 'PURGELY_WEBHOOKS_CHANNEL', 'general' );
+}
+
+/**
+ * webhooks activation
+ *
+ * @since 1.1.1.
+ */
+if ( ! defined( 'PURGELY_WEBHOOKS_ACTIVATE' ) ) {
+    define( 'PURGELY_WEBHOOKS_ACTIVATE', false );
+}

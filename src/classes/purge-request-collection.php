@@ -81,10 +81,10 @@ class Purgely_Purge_Request_Collection {
 	 * @since 1.0.0.
 	 *
 	 * @param  array $purge_args The arguments to send to the purge request.
-	 * @return array                   The list of purge request responses.
+	 * @return bool                   The list of purge request responses.
 	 */
 	public function purge_related( $purge_args = array() ) {
-		$responses = array();
+        $response = true;
 		$urls      = $this->get_urls();
 
 		// Iterate through each and purge.
@@ -92,109 +92,13 @@ class Purgely_Purge_Request_Collection {
 			foreach ( $urls as $categories ) {
 				foreach ( $categories as $url ) {
 					$purge             = new Purgely_Purge();
-					$responses[ $url ] = $purge->purge( 'url', $url, $purge_args );
-
-					// Record the object.
-					$this->set_purge_request( $purge );
+					if($purge->purge( 'url', $url, $purge_args ) !== true) {
+					    $response = false;
+                    }
 				}
 			}
 		}
-
-		$this->set_responses( $responses );
-
-		return $responses;
-	}
-
-	/**
-	 * Get the collective results of the purge requests.
-	 *
-	 * @since 1.0.0.
-	 *
-	 * @return string    "success" if all purges are successful, "failure" if one or more requests fails.
-	 */
-	public function get_result() {
-		$responses = $this->get_responses();
-		$result    = 'success';
-
-		if ( count( $responses ) > 0 ) {
-			foreach ( $responses as $response ) {
-				if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-					$result = 'failure';
-				}
-			}
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Get all of the Purgely_Purge objects.
-	 *
-	 * @since 1.0.0.
-	 *
-	 * @return Purgely_Purge    The list of Purgely_Purge objects.
-	 */
-	public function get_purge_requests() {
-		return $this->_purge_requests;
-	}
-
-	/**
-	 * Set the purge requests object.
-	 *
-	 * @since 1.0.0.
-	 *
-	 * @param  array $purge_requests A list of Purgely_Purge objects.
-	 * @return void
-	 */
-	public function set_purge_requests( $purge_requests ) {
-		$this->_purge_requests = $purge_requests;
-	}
-
-	/**
-	 * Set an individual purge request object.
-	 *
-	 * @since 1.0.0.
-	 *
-	 * @param  Purgely_Purge $purge_request A Purgely_Purge object.
-	 * @return void
-	 */
-	public function set_purge_request( $purge_request ) {
-		$this->_purge_requests[] = $purge_request;
-	}
-
-	/**
-	 * Get all of the purge responses.
-	 *
-	 * @since 1.0.0.
-	 *
-	 * @return array    The list of responses.
-	 */
-	public function get_responses() {
-		return $this->_responses;
-	}
-
-	/**
-	 * Set all responses.
-	 *
-	 * @since 1.0.0.
-	 *
-	 * @param  array $responses A list of HTTP responses.
-	 * @return void
-	 */
-	public function set_responses( $responses ) {
-		$this->_responses = $responses;
-	}
-
-	/**
-	 * Set an individual response.
-	 *
-	 * @since 1.0.0.
-	 *
-	 * @param  WP_Error|object $response An individual purge response.
-	 * @return void
-	 */
-	public function set_response( $response ) {
-		$this->_responses[] = $response;
+		return $response;
 	}
 
 	/**
