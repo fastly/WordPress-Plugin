@@ -77,12 +77,8 @@ class Purgely_Settings {
 				'sanitize_callback' => 'sanitize_key',
 				'default'           => PURGELY_DEFAULT_PURGE_TYPE,
 			),
-            'webhooks_url_base'            => array(
-                'sanitize_callback' => 'esc_url',
-                'default'           => PURGELY_WEBHOOKS_URL_BASE,
-            ),
             'webhooks_url_endpoint'            => array(
-                'sanitize_callback' => 'esc_html',
+                'sanitize_callback' => 'esc_url',
                 'default'           => PURGELY_WEBHOOKS_URL_ENDPOINT,
             ),
             'webhooks_username'            => array(

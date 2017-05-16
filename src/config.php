@@ -134,21 +134,12 @@ if ( ! defined( 'PURGELY_FASTLY_VCL_VERSION' ) ) {
 }
 
 /**
- * Set the default webhooks url base
- *
- * @since 1.1.1.
- */
-if ( ! defined( 'PURGELY_WEBHOOKS_URL_BASE' ) ) {
-    define( 'PURGELY_WEBHOOKS_URL_BASE', 'https://hooks.slack.com/services/' );
-}
-
-/**
  * Set the default webhooks url endpoint
  *
  * @since 1.1.1.
  */
 if ( ! defined( 'PURGELY_WEBHOOKS_URL_ENDPOINT' ) ) {
-    define( 'PURGELY_WEBHOOKS_URL_ENDPOINT', '' );
+    define( 'PURGELY_WEBHOOKS_URL_ENDPOINT', 'https://hooks.slack.com/services/' );
 }
 
 /**
