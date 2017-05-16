@@ -186,12 +186,10 @@ function test_fastly_api_connection($hostname, $service_id, $api_key) {
  */
 function sendWebHook($message) {
 
-    $webhook_url_base = Purgely_Settings::get_setting('webhooks_url_base');
     $webhook_url = Purgely_Settings::get_setting('webhooks_url_endpoint');
     $username = Purgely_Settings::get_setting('webhooks_username');
     $channel = Purgely_Settings::get_setting('webhooks_channel');
 
-    $request_uri = $webhook_url_base . $webhook_url;
     $headers = array('Content-type: application/json');
     $data = json_encode(
         array(
@@ -203,9 +201,9 @@ function sendWebHook($message) {
     );
 
     try {
-        $response = Requests::request($request_uri, $headers, $data , Requests::POST);
+        $response = Requests::request($webhook_url, $headers, $data , Requests::POST);
         if(!$response->success) {
-            if(Purgely_Settings::get_setting( 'fastly_log_purges' )) {
+            if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
                 error_log("Webhooks request failed, error: " . json_decode($response->body));
             }
         }
@@ -220,12 +218,10 @@ function sendWebHook($message) {
  */
 function testWebHook() {
 
-    $webhook_url_base = Purgely_Settings::get_setting('webhooks_url_base');
     $webhook_url = Purgely_Settings::get_setting('webhooks_url_endpoint');
     $username = Purgely_Settings::get_setting('webhooks_username');
     $channel = Purgely_Settings::get_setting('webhooks_channel');
 
-    $request_uri = $webhook_url_base . $webhook_url;
     $headers = array('Content-type: application/json');
     $data = json_encode(
         array(
@@ -237,10 +233,18 @@ function testWebHook() {
     );
 
     try {
-        $response = Requests::request($request_uri, $headers, $data , Requests::POST);
+        $response = Requests::request($webhook_url, $headers, $data , Requests::POST);
         $message = $response->success ? __('Connection Successful!') : __($response->body);
+
+        if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
+            error_log('Webhooks - test connection: ' . $response->body);
+        }
+
         return array('status' => $response->success, 'message' => $message);
     } catch (Exception $e) {
+        if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
+            error_log('Webhooks - test connection: ' . $e->getMessage());
+        }
         return array('status' => false, 'message' => $e->getMessage());
     }
 }

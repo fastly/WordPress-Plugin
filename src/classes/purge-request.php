@@ -6,6 +6,22 @@
  * purges. Additionally, it can set soft purges and purge links related to the passed URL.
  */
 class Purgely_Purge {
+
+    /** Purge all **/
+    const ALL = 'all';
+
+    /** Purge url **/
+    const URL = 'url';
+
+    /** Purge by Surrogate-Key collection **/
+    const KEY_COLLECTION = 'key-collection';
+
+    /**
+     * Collection of possible purges
+     * @var array
+     */
+    static private $_purge_types = array(self::ALL, self::URL, self::KEY_COLLECTION);
+
 	/**
 	 * The url or surrogate key to purge.
 	 *
@@ -30,7 +46,7 @@ class Purgely_Purge {
 	 */
 	public function purge( $type = 'url', $thing = '', $purge_args = array() ) {
 		if ( 'all' === $type && ( ! isset( $purge_args['allow-all'] ) || true !== $purge_args['allow-all'] ) ) {
-			return false;
+			return array('status' => false, 'message' => __('Enable Allow Full Cache Purges first '));
 		} else {
 			return $this->_issue_purge_request( $type, $thing );
 		}
@@ -45,7 +61,7 @@ class Purgely_Purge {
 	 */
 	private function _issue_purge_request( $type = 'url', $thing = '' ) {
 
-        if ( !in_array( $type, array( 'all', 'key-collection', 'url' ) ) ) {
+        if ( !in_array( $type, self::$_purge_types ) ) {
             return false;
         }
 
@@ -56,18 +72,29 @@ class Purgely_Purge {
         $headers = $this->_build_headers();
         $request_uri = $this->_build_request_uri_for_purge( $type );
 
-		if ($request_uri && !empty($thing)) {
+		if (($request_uri && !empty($thing)) || ($request_uri && $type = self::ALL)) {
 		    try {
                 $response = Requests::request($request_uri, $headers, array(), Requests::POST);
                 if(!$response->success) {
-                    if(Purgely_Settings::get_setting( 'fastly_log_purges' )) {
-                        error_log("Purging " . $request_uri . " - " . json_decode($response->body));
+                    if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
+                        error_log("Purging " . $request_uri . " - " . $response->body);
+                    }
+                }
+
+                // Log purges in logs
+                if(Purgely_Settings::get_setting( 'fastly_log_purges' )) {
+                    $status = $response->success ? 'OK' : 'FAIL';
+                    if($type == self::ALL || $type == self::URL) {
+                        error_log("Purging " . $request_uri . " - " . $status);
+                    } else {
+                        error_log("Purging Keys " . implode(' ', $thing). " - " . $status);
                     }
                 }
 
                 // Send Slack Webhooks request message
                 if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                    $message = 'Purged keys : ' . $headers['Surrogate-Key'];
+                    $msg = isset($headers['Surrogate-Key']) ? $headers['Surrogate-Key'] : self::ALL;
+                    $message = 'Purged keys : ' . $msg;
                     sendWebHook($message);
                 }
 
@@ -97,8 +124,10 @@ class Purgely_Purge {
 
         // Add Surrogate-Key header
         // TODO - if header size exceeded, split in multiple request
-        $keys = implode(' ', $this->get_thing());
-        $headers['Surrogate-Key'] = $keys;
+        if(!empty($this->get_thing())) {
+            $keys = implode(' ', $this->get_thing());
+            $headers['Surrogate-Key'] = $keys;
+        }
 
         return $headers;
     }
