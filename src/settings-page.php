@@ -35,8 +35,8 @@ class Purgely_Settings_Page {
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
-        add_action( 'admin_action_fastly_vcl_update', array( $this, 'fastly_vcl_update_run' ) );
         add_action('wp_ajax_test_fastly_connection', array( $this, 'test_fastly_connection_callback'));
+        add_action('wp_ajax_fastly_vcl_update', array( $this, 'fastly_vcl_update_callback'));
         add_action('wp_ajax_test_fastly_webhooks_connection', array( $this, 'test_fastly_webhooks_connection_callback'));
         add_action('wp_ajax_purge_all', array( $this, 'purge_all_callback'));
     }
@@ -162,7 +162,7 @@ class Purgely_Settings_Page {
             add_settings_field(
                 'fastly_update_vcl',
                 __( 'Update VCL', 'purgely' ),
-                array( $this, 'fastly_update_vcl_render' ),
+                array( $this, 'fastly_vcl_update_render' ),
                 'fastly-settings-general',
                 'purgely-fastly_settings'
             );
@@ -443,6 +443,44 @@ class Purgely_Settings_Page {
     }
 
     /**
+     * Render the vcl update button.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function fastly_vcl_update_render() {
+        ?>
+        <input type='button' class='button button-secondary' id="vcl-update-btn" value="VCL UPDATE" />
+        <div id="vcl-update-response"><?php echo __('(make sure you save before proceeding)'); ?></div>
+        <script type = 'text/javascript'>
+            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
+            jQuery(document).ready(function($) {
+                jQuery('#vcl-update-btn').click( function() {
+                    $.ajax({
+                        method: 'GET',
+                        url: url,
+                        data: {
+                            action : 'fastly_vcl_update'
+                        },
+                        success: function(response) {
+                            document.getElementById('vcl-update-response').innerHTML = '';
+                            console.log(response);
+                            if(response.status) {
+                                var button_elem = jQuery('#vcl-update-btn');
+                                button_elem.hide();
+                            }
+                            document.getElementById('vcl-update-response').innerHTML = response.message;
+                        },
+                        dataType: 'json'
+                    });
+                });
+            });
+        </script>
+        <?php
+    }
+
+    /**
      * Render the test connection button.
      *
      * @since 1.0.0.
@@ -452,7 +490,7 @@ class Purgely_Settings_Page {
     public function fastly_test_connection_render() {
         ?>
         <input type='button' class='button button-secondary' id="test-connection-btn" value="TEST CONNECTION" />
-        <div id="test-connection-response"></div>
+        <div id="test-connection-response"><?php echo __('(make sure you save before proceeding)'); ?></div>
         <script type = 'text/javascript'>
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             jQuery(document).ready(function($) {
@@ -491,12 +529,12 @@ class Purgely_Settings_Page {
      */
     public function webhooks_test_connection_render() {
         ?>
-        <input type='button' class='button button-secondary' id="test-connection-btn" value="TEST CONNECTION" />
-        <div id="test-connection-response"></div>
+        <input type='button' class='button button-secondary' id="test-webhooks-connection-btn" value="TEST CONNECTION" />
+        <div id="test-connection-response"><?php echo __('(make sure you save before proceeding)'); ?></div>
         <script type = 'text/javascript'>
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             jQuery(document).ready(function($) {
-                jQuery('#test-connection-btn').click( function() {
+                jQuery('#test-webhooks-connection-btn').click( function() {
                     $.ajax({
                         method: 'GET',
                         url: url,
@@ -506,7 +544,7 @@ class Purgely_Settings_Page {
                         success: function(response) {
                             document.getElementById('test-connection-response').innerHTML = '';
                             if(response.status) {
-                                var button_elem = jQuery('#test-connection-btn');
+                                var button_elem = jQuery('#test-webhooks-connection-btn');
                                 if(button_elem.hasClass('button-secondary')) {
                                     button_elem.toggleClass('button-secondary');
                                     button_elem.toggleClass('button-primary');
@@ -577,6 +615,31 @@ class Purgely_Settings_Page {
     }
 
     /**
+     * Vcl update callback
+     */
+    function fastly_vcl_update_callback() {
+        $purgely_instance = get_purgely_instance();
+        $upgrades = new Upgrades($purgely_instance);
+
+        $result = array();
+        // Upgrades for version 1.1.1
+        if(version_compare(get_option('fastly_vcl_version'), $purgely_instance->vcl_last_version, '<')) {
+            $result = $upgrades->vcl_upgrade_1_1_1();
+
+            if(is_array($result)) {
+                $result = array('status' => false, 'message' => __($result[0]));
+            } else {
+                // Update vcl_version
+                update_option( "fastly_vcl_version", $purgely_instance->vcl_last_version );
+                $result = array('status' => true, 'message' => __('Successfully upgraded!'));
+            }
+        }
+        echo json_encode($result);
+
+        die();
+    }
+
+    /**
      * Test webhooks connection callback
      */
     function test_fastly_webhooks_connection_callback() {
@@ -595,59 +658,6 @@ class Purgely_Settings_Page {
         }
         echo json_encode($result);
         die();
-    }
-
-    /**
-     * Update VCL callback
-     */
-    public function fastly_vcl_update_run() {
-        if(!wp_verify_nonce( $_POST['fastly_vcl_update_wpnonce'], 'update_vcl')) {
-            return;
-        }
-
-        $url = menu_page_url('fastly', false);
-        $purgely_instance = get_purgely_instance();
-        $upgrades = new Upgrades($purgely_instance);
-
-        // Upgrades for version 1.1.1
-        if(version_compare(get_option('fastly_vcl_version'), $purgely_instance->vcl_last_version, '<')) {
-            $result = $upgrades->vcl_upgrade_1_1_1();
-
-            if(is_array($result)) {
-                $url = $url . '&notice=0';
-            } else {
-                $url = $url . '&notice=1';
-                // Update vcl_version
-                update_option( "fastly_vcl_version", $purgely_instance->vcl_last_version );
-            }
-        }
-
-        wp_safe_redirect($url);
-    }
-
-    /**
-     * Shows error notice
-     * @param $msg
-     */
-    public function error_notice($msg){
-        ?>
-        <div class="notice notice-error">
-            <p><?php echo __($msg); ?></p>
-        </div>
-        <?php
-    }
-
-
-    /**
-     * Shows success notice
-     * @param $msg
-     */
-    public function success_notice($msg){
-        ?>
-        <div class="notice notice-success">
-            <p><?php echo __($msg); ?></p>
-        </div>
-        <?php
     }
 
 	/**
@@ -973,15 +983,6 @@ class Purgely_Settings_Page {
 	public function options_page() {
 		?>
 		<div class="wrap">
-            <?php $notice = isset($_GET['notice']) ? $_GET['notice'] : false; ?>
-            <?php
-
-            if($notice === '0') :
-                $this->error_notice('Upgrade failed, turn on debugging and check logs.');
-            elseif($notice === '1') :
-                $this->success_notice('Successfully Upgraded!');
-            endif;
-            ?>
 			<form action='options.php' method='post'>
                 <div id="fastly-admin" class="wrap">
                     <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL .'static/logo_white.gif'; ?>"><br><span style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
