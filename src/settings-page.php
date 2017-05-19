@@ -3,6 +3,12 @@
  * Singleton for setting up Purgely settings.
  */
 class Purgely_Settings_Page {
+
+    /**
+     * Size of input fields in admin
+     */
+    const INPUT_SIZE = 35;
+
 	/**
 	 * The one instance of Purgely_Settings_Page.
 	 *
@@ -362,7 +368,7 @@ class Purgely_Settings_Page {
 	public function fastly_api_key_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings-general[fastly_api_key]' value='<?php echo esc_attr( $options['fastly_api_key'] ); ?>'>
+		<input type='text' name='fastly-settings-general[fastly_api_key]' value='<?php echo esc_attr( $options['fastly_api_key'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
 		<em><strong><?php esc_html_e( 'Required for surrogate key and full cache purges', 'purgely' ); ?></strong></em>
 		<p class="description">
 			<?php esc_html_e( 'API key for the Fastly account associated with this site.', 'purgely' ); ?>
@@ -390,7 +396,7 @@ class Purgely_Settings_Page {
 	public function fastly_service_id_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings-general[fastly_service_id]' value='<?php echo esc_attr( $options['fastly_service_id'] ); ?>'>
+		<input type='text' name='fastly-settings-general[fastly_service_id]' value='<?php echo esc_attr( $options['fastly_service_id'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
 		<em><strong><?php esc_html_e( 'Required for surrogate key and full cache purges', 'purgely' ); ?></strong></em>
 		<p class="description">
 			<?php esc_html_e( 'Fastly service ID for this site.', 'purgely' ); ?>
@@ -418,7 +424,7 @@ class Purgely_Settings_Page {
 	public function fastly_api_hostname_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings-general[fastly_api_hostname]' value='<?php echo esc_attr( $options['fastly_api_hostname'] ); ?>'>
+		<input type='text' name='fastly-settings-general[fastly_api_hostname]' value='<?php echo esc_attr( $options['fastly_api_hostname'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
 		<p class="description">
 			<?php esc_html_e( 'API endpoint for this service.', 'purgely' ); ?>
 		</p>
@@ -681,7 +687,7 @@ class Purgely_Settings_Page {
 	public function surrogate_control_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings-advanced[surrogate_control_ttl]' value='<?php echo esc_attr( $options['surrogate_control_ttl'] ); ?>'>
+		<input type='text' name='fastly-settings-advanced[surrogate_control_ttl]' value='<?php echo esc_attr( $options['surrogate_control_ttl'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
 		<p class="description">
 			<?php esc_html_e( 'This setting controls the "surrogate-control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely' ); ?>
 		</p>
@@ -698,7 +704,7 @@ class Purgely_Settings_Page {
     public function cache_control_render() {
         $options = Purgely_Settings::get_settings();
         ?>
-        <input type='text' name='fastly-settings-advanced[cache_control_ttl]' value='<?php echo esc_attr( $options['cache_control_ttl'] ); ?>'>
+        <input type='text' name='fastly-settings-advanced[cache_control_ttl]' value='<?php echo esc_attr( $options['cache_control_ttl'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
             <?php esc_html_e( 'This setting controls the "cache-control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely' ); ?>
         </p>
@@ -853,7 +859,7 @@ class Purgely_Settings_Page {
 	public function stale_while_revalidate_ttl_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings-advanced[stale_while_revalidate_ttl]' value='<?php echo esc_attr( $options['stale_while_revalidate_ttl'] ); ?>'>
+		<input type='text' name='fastly-settings-advanced[stale_while_revalidate_ttl]' value='<?php echo esc_attr( $options['stale_while_revalidate_ttl'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
 		<p class="description">
 			<?php esc_html_e( 'This setting determines the amount of time that stale content will be served while new content is generated.', 'purgely' ); ?>
 		</p>
@@ -897,7 +903,7 @@ class Purgely_Settings_Page {
 	public function stale_if_error_ttl_render() {
 		$options = Purgely_Settings::get_settings();
 		?>
-		<input type='text' name='fastly-settings-advanced[stale_if_error_ttl]' value='<?php echo esc_attr( $options['stale_if_error_ttl'] ); ?>'>
+		<input type='text' name='fastly-settings-advanced[stale_if_error_ttl]' value='<?php echo esc_attr( $options['stale_if_error_ttl'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
 		<p class="description">
 			<?php esc_html_e( 'This setting determines the amount of time that stale content will be served while the origin is returning an error state.', 'purgely' ); ?>
 		</p>
@@ -914,7 +920,7 @@ class Purgely_Settings_Page {
     public function webhooks_url_endpoint_render() {
         $options = Purgely_Settings::get_settings();
         ?>
-        <input type='text' name='fastly-settings-webhooks[webhooks_url_endpoint]' value='<?php echo esc_attr( $options['webhooks_url_endpoint'] ); ?>'>
+        <input type='text' name='fastly-settings-webhooks[webhooks_url_endpoint]' value='<?php echo esc_attr( $options['webhooks_url_endpoint'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
             <?php esc_html_e( 'Slack URL endpoint.', 'purgely' ); ?>
         </p>
@@ -931,7 +937,7 @@ class Purgely_Settings_Page {
     public function webhooks_username_render() {
         $options = Purgely_Settings::get_settings();
         ?>
-        <input type='text' name='fastly-settings-webhooks[webhooks_username]' value='<?php echo esc_attr( $options['webhooks_username'] ); ?>'>
+        <input type='text' name='fastly-settings-webhooks[webhooks_username]' value='<?php echo esc_attr( $options['webhooks_username'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
             <?php esc_html_e( 'Slack username.', 'purgely' ); ?>
         </p>
@@ -948,7 +954,7 @@ class Purgely_Settings_Page {
     public function webhooks_channel_render() {
         $options = Purgely_Settings::get_settings();
         ?>
-        #<input type='text' name='fastly-settings-webhooks[webhooks_channel]' value='<?php echo esc_attr( $options['webhooks_channel'] ); ?>'>
+        #<input type='text' name='fastly-settings-webhooks[webhooks_channel]' value='<?php echo esc_attr( $options['webhooks_channel'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
             <?php esc_html_e( 'Slack channel.', 'purgely' ); ?>
         </p>
