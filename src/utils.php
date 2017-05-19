@@ -169,7 +169,9 @@ function test_fastly_api_connection($hostname, $service_id, $api_key) {
         $response = Requests::get($url, $headers);
 
         if($response->success) {
-            $message = __('Connection Successful!');
+            $response_body = json_decode($response->body);
+            $service_name = $response_body->name;
+            $message = __('Connection Successful on service *' . $service_name . "*");
         } else {
             $message = json_decode($response->body);
             $message = $message->msg;

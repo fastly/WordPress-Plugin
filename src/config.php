@@ -77,7 +77,7 @@ if ( ! defined( 'PURGELY_STALE_IF_ERROR_TTL' ) ) {
  * @since 1.0.0.
  */
 if ( ! defined( 'PURGELY_SURROGATE_CONTROL_TTL' ) ) {
-	define( 'PURGELY_SURROGATE_CONTROL_TTL', 1800 ); // 30 minutes
+	define( 'PURGELY_SURROGATE_CONTROL_TTL', 86400 ); // 24 hours
 }
 
 /**
@@ -148,7 +148,7 @@ if ( ! defined( 'PURGELY_WEBHOOKS_URL_ENDPOINT' ) ) {
  * @since 1.1.1.
  */
 if ( ! defined( 'PURGELY_WEBHOOKS_USERNAME' ) ) {
-    define( 'PURGELY_WEBHOOKS_USERNAME', '' );
+    define( 'PURGELY_WEBHOOKS_USERNAME', 'wordpress-bot' );
 }
 
 /**

@@ -355,7 +355,7 @@ class Purgely_Settings_Page {
 	 * @return void
 	 */
 	public function fastly_settings_callback() {
-		esc_html_e( 'Please enter details related to your Fastly account. A Fastly API key and service ID are required for some operations (e.g., surrogate key and full cache purges). ', 'purgely' );
+		esc_html_e( 'Please enter details related to your Fastly account. A Fastly API token and service ID are required for some operations (e.g., surrogate key and full cache purges). ', 'purgely' );
 	}
 
 	/**
@@ -371,14 +371,14 @@ class Purgely_Settings_Page {
 		<input type='text' name='fastly-settings-general[fastly_api_key]' value='<?php echo esc_attr( $options['fastly_api_key'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
 		<em><strong><?php esc_html_e( 'Required for surrogate key and full cache purges', 'purgely' ); ?></strong></em>
 		<p class="description">
-			<?php esc_html_e( 'API key for the Fastly account associated with this site.', 'purgely' ); ?>
+			<?php esc_html_e( 'API token for the Fastly account associated with this site.', 'purgely' ); ?>
 			<?php
 			printf(
 				esc_html__( 'Please see Fastly\'s documentation for %s.', 'purgely' ),
 				sprintf(
 					'<a href="%1$s" target="_blank">%2$s</a>',
 					'https://docs.fastly.com/guides/account-management-and-security/finding-and-managing-your-account-info#finding-and-regenerating-your-api-key',
-					esc_html__( 'more information on finding your API key', 'purgely' )
+					esc_html__( 'more information on finding your API token', 'purgely' )
 				)
 			);
 			?>
@@ -688,7 +688,7 @@ class Purgely_Settings_Page {
         ?>
         <input type='text' name='fastly-settings-advanced[cache_control_ttl]' value='<?php echo esc_attr( $options['cache_control_ttl'] ); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
-            <?php esc_html_e( 'This setting controls the "cache-control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely' ); ?>
+            <?php esc_html_e( 'This setting controls the "cache-control" header\'s "max-age" value. It specifies how long end users/browsers should cache pages', 'purgely' ); ?>
         </p>
         <?php
     }
@@ -741,7 +741,7 @@ class Purgely_Settings_Page {
 		<input type='radio' name='fastly-settings-advanced[allow_purge_all]' <?php checked( isset( $options['allow_purge_all'] ) && true === $options['allow_purge_all'] ); ?> value='true'>Yes&nbsp;
 		<input type='radio' name='fastly-settings-advanced[allow_purge_all]' <?php checked( isset( $options['allow_purge_all'] ) && false === $options['allow_purge_all'] ); ?> value='false'>No
 		<p class="description">
-			<?php esc_html_e( 'The full cache purging behavior available to WP CLI must be explicitly enabled in order for it to work. Purging the entire cache can cause significant site stability issues and is disable by default.', 'purgely' ); ?>
+			<?php esc_html_e( 'The full cache purging behavior available to WP CLI must be explicitly enabled in order for it to work. Purging the entire cache can cause significant site stability issues and is disabled by default.', 'purgely' ); ?>
 		</p>
 		<?php
 	}
