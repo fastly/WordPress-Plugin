@@ -43,4 +43,3 @@
       remove req.http.Cookie;
     }
   }
-
