@@ -97,7 +97,7 @@ class Upgrades {
             ),
             'condition' => array(
                 array(
-                    'name' => 'wordpress_request1',
+                    'name' => 'wordpress_plugin_request1',
                     'statement' => 'req.http.x-pass',
                     'type' => 'REQUEST',
                     'priority' => 90
@@ -105,9 +105,9 @@ class Upgrades {
             ),
             'setting' => array(
                 array(
-                    'name' => 'wordpress_setting1',
+                    'name' => 'wordpress_plugin_setting1',
                     'action' => 'pass',
-                    'request_condition' => 'wordpress_request1'
+                    'request_condition' => 'wordpress_plugin_request1'
                 )
             )
         );
