@@ -96,7 +96,7 @@ class Vcl_Handler {
         }
 
         // Check if any of the data is set
-        if(!($this->_vcl_data || $this->_condition_data || $this->_setting_data)) {
+        if(empty($this->_vcl_data) && empty($this->_condition_data) && empty($this->_setting_data)) {
             $this->add_error(__('No update data set, please specify, vcl, condition or setting data'));
             return false;
         }
@@ -109,25 +109,22 @@ class Vcl_Handler {
 
             $requests = array();
 
-
             if(!empty($this->_vcl_data)) {
-                $requests[] = $this->prepare_vcl();
+                $requests = array_merge($requests, $this->prepare_vcl());
             }
 
             if(!empty($this->_condition_data)) {
-                $requests[] = $this->prepare_condition();
+                $requests = array_merge($requests, $this->prepare_condition());
             }
 
             if(!empty($this->_setting_data)) {
-                $requests[] = $this->prepare_setting();
+                $requests = array_merge($requests, $this->prepare_setting());
             }
 
             if(!$this->validate_version()) {
                 $this->add_error(__('Version not validated'));
                 return false;
             }
-
-            $requests[] = $this->prepare_activate_version();
 
             // Set Request Headers
             foreach($requests as $key => $request) {
@@ -147,14 +144,33 @@ class Vcl_Handler {
                     $pass = false;
                     $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
                     if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                        error_log(json_decode($response->body));
+                        error_log($response->body);
                     }
                     if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                        $message = 'VCL update failed : ' . json_decode($response->body);
+                        $message = 'VCL update failed : ' . $response->body;
                         sendWebHook($message);
                     }
                 }
             }
+
+            // Activate version if vcl is successfully uploaded
+            if($pass) {
+                $request = $this->prepare_activate_version();
+
+                $response = Requests::request($request['url'], $request['headers'], array(), $request['type']);
+                if(!$response->success) {
+                    $pass = false;
+                    $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
+                    if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
+                        error_log($response->body);
+                    }
+                    if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
+                        $message = 'VCL update failed : ' . $response->body;
+                        sendWebHook($message);
+                    }
+                }
+            }
+
         } catch (Exception $e) {
             $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
             if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
@@ -176,39 +192,46 @@ class Vcl_Handler {
      */
     public function prepare_vcl() {
         // Prepare VCL data content
-        if(!empty($this->_vcl_data['type'])) {
-            $this->_vcl_data['name'] = 'wordpress_' . $this->_vcl_data['type'];
-            $this->_vcl_data['dynamic'] = 0;
-            $this->_vcl_data['priority'] = 50;
-            if(file_exists($this->_vcl_data['vcl_dir'] . '/' . $this->_vcl_data['type'] . '.vcl')) {
-                $this->_vcl_data['content'] = file_get_contents($this->_vcl_data['vcl_dir'] . '/' . $this->_vcl_data['type'] . '.vcl');
-                unset($this->_vcl_data['vcl_dir']);
+
+        $requests = array();
+        foreach ($this->_vcl_data as $key => $single_vcl_data) {
+            if (!empty($single_vcl_data['type'])) {
+                $single_vcl_data['name'] = 'wordpress_' . $single_vcl_data['type'];
+                $single_vcl_data['dynamic'] = 0;
+                $single_vcl_data['priority'] = 50;
+                if (file_exists($single_vcl_data['vcl_dir'] . '/' . $single_vcl_data['type'] . '.vcl')) {
+                    $single_vcl_data['content'] = file_get_contents($single_vcl_data['vcl_dir'] . '/' . $single_vcl_data['type'] . '.vcl');
+                    unset($single_vcl_data['vcl_dir']);
+                } else {
+                    $this->add_error(__('VCL file does not exist.'));
+                    return false;
+                }
+
+                if($this->check_if_vcl_exists($single_vcl_data['name'])) {
+                    $requests[] = $this->prepare_update_vcl($single_vcl_data);
+                } else {
+                    $requests[] = $this->prepare_insert_vcl($single_vcl_data);
+                }
             } else {
-                $this->add_error(__('VCL file does not exist.'));
+                $this->add_error(__('VCL type not set.'));
                 return false;
             }
-        } else {
-            $this->add_error(__('VCL type not set.'));
-            return false;
         }
 
-        if($this->check_if_vcl_exists()) {
-            return $this->prepare_update_vcl();
-        } else {
-            return $this->prepare_insert_vcl();
-        }
+        return $requests;
     }
 
     /**
      * Checks if VCL exists
+     * @name string
      * @return bool
      */
-    public function check_if_vcl_exists() {
+    public function check_if_vcl_exists($name) {
         if(empty($this->_last_version_data)) {
             return false;
         }
 
-        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet/' . $this->_vcl_data['name'];
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet/' . $name;
         $response = Requests::get($url, $this->_headers_get);
 
         return $response->success;
@@ -216,14 +239,15 @@ class Vcl_Handler {
 
     /**
      * Prepares request for updating existing VCL
+     * @data array
      * @return array
      */
-    public function prepare_update_vcl() {
-        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet/' . $this->_vcl_data['name'];
+    public function prepare_update_vcl($data) {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet/' . $data['name'];
 
         $request = array(
             'url' => $url,
-            'data' => $this->_vcl_data,
+            'data' => $data,
             'type' => Requests::PUT
         );
 
@@ -232,14 +256,15 @@ class Vcl_Handler {
 
     /**
      * Prepare request for inserting new VCL
+     * @data array
      * @return array
      */
-    public function prepare_insert_vcl() {
+    public function prepare_insert_vcl($data) {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet';
 
         $request = array(
             'url' => $url,
-            'data' => $this->_vcl_data,
+            'data' => $data,
             'type' => Requests::POST
         );
 
@@ -290,57 +315,66 @@ class Vcl_Handler {
      */
     public function prepare_condition() {
         // Prepare condition content
-        foreach(array('name', 'statement', 'type', 'priority') as $item) {
-            if(empty($this->_condition_data[$item])) {
+        $requests = array();
+        foreach($this->_condition_data as $single_condition_data) {
+            if(empty($single_condition_data['name']) ||
+                empty($single_condition_data['statement']) ||
+                empty($single_condition_data['type']) ||
+                empty($single_condition_data['priority'])
+            ) {
                 $this->add_error(__('Condition data not properly set.'));
                 return false;
+            } else {
+                if($this->get_condition($single_condition_data['name'])) {
+                    $requests[] = $this->prepare_update_condition($single_condition_data);
+                } else {
+                    $requests[] = $this->prepare_insert_condition($single_condition_data);
+                }
             }
         }
-
-        if($this->get_condition()) {
-            return $this->prepare_update_condition();
-        } else {
-            return $this->prepare_insert_condition();
-        }
+        return $requests;
     }
 
     /**
      * Fetches condition by condition name
+     * @name string
      * @return bool
      */
-    public function get_condition() {
-        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $this->_condition_data['name'];
+    public function get_condition($name) {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $name;
         $response = Requests::get($url, $this->_headers_get);
         return $response->success;
     }
 
     /**
-     * Prepare condition for insert
+     * Prepare condition for update
+     * @data array
      * @return array
      */
-    public function prepare_insert_condition() {
-        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition';
+    public function prepare_update_condition($data) {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $data['name'];
 
         $request = array(
             'url' => $url,
-            'data' => $this->_condition_data,
-            'type' => Requests::POST
+            'data' => $data,
+            'type' => Requests::PUT
         );
 
         return $request;
     }
 
     /**
-     * Prepare condition for update
+     * Prepare condition for insert
+     * @data
      * @return array
      */
-    public function prepare_update_condition() {
-        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $this->_condition_data['name'];
+    public function prepare_insert_condition($data) {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition';
 
         $request = array(
             'url' => $url,
-            'data' => $this->_condition_data,
-            'type' => Requests::PUT
+            'data' => $data,
+            'type' => Requests::POST
         );
 
         return $request;
@@ -352,57 +386,65 @@ class Vcl_Handler {
      */
     public function prepare_setting() {
         // Prepare setting content
-        foreach(array('name', 'action', 'request_condition') as $item) {
-            if(empty($this->_setting_data[$item])) {
+        $requests = array();
+        foreach($this->_setting_data as $single_setting_data) {
+            if(empty($single_setting_data['name']) ||
+                empty($single_setting_data['action']) ||
+                empty($single_setting_data['request_condition'])
+            ) {
                 $this->add_error(__('Setting data not properly set.'));
                 return false;
+            } else {
+                if($this->get_setting($single_setting_data['name'])) {
+                    $requests[] = $this->prepare_update_setting($single_setting_data);
+                } else {
+                    $requests[] = $this->prepare_insert_setting($single_setting_data);
+                }
             }
         }
-
-        if($this->get_setting()) {
-            return $this->prepare_update_setting();
-        } else {
-            return $this->prepare_insert_setting();
-        }
+        return $requests;
     }
 
     /**
      * Fetches setting by condition name
+     * @name string
      * @return bool
      */
-    public function get_setting() {
-        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings/' . $this->_setting_data['name'];
+    public function get_setting($name) {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings/' . $name;
         $response = Requests::get($url, $this->_headers_get);
         return $response->success;
     }
 
     /**
-     * Prepares Insert setting data
+     * Prepares update setting data
+     * @data array
      * @return array
      */
-    public function prepare_insert_setting() {
-        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings';
+    public function prepare_update_setting($data) {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings/' . $data['name'];
 
         $request = array(
             'url' => $url,
-            'data' => $this->_setting_data,
-            'type' => Requests::POST
+            'data' => $data,
+            'type' => Requests::PUT
         );
 
         return $request;
     }
 
     /**
-     * Prepares update setting data
+     * Prepares Insert setting data
+     * @data array
      * @return array
      */
-    public function prepare_update_setting() {
-        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings/' . $this->_setting_data['name'];
+    public function prepare_insert_setting($data) {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings';
 
         $request = array(
             'url' => $url,
-            'data' => $this->_setting_data,
-            'type' => Requests::PUT
+            'data' => $data,
+            'type' => Requests::POST
         );
 
         return $request;
@@ -427,7 +469,8 @@ class Vcl_Handler {
 
         $request = array(
             'url' => $url,
-            'type' => Requests::PUT
+            'type' => Requests::PUT,
+            'headers' => $this->_headers_get
         );
 
         return $request;

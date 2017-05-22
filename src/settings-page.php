@@ -432,23 +432,6 @@ class Purgely_Settings_Page {
 	}
 
     /**
-     * Render the setting input.
-     *
-     * @since 1.0.0.
-     *
-     * @return void
-     */
-    public function fastly_update_vcl_render() {
-        ?>
-        <form action="" method="post">
-            <input type="hidden" name="action" value="fastly_vcl_update">
-            <?php wp_nonce_field( 'update_vcl', 'fastly_vcl_update_wpnonce' ); ?>
-            <?php submit_button( 'Update VCL' ); ?>
-        </form>
-        <?php
-    }
-
-    /**
      * Render the vcl update button.
      *
      * @since 1.0.0.
@@ -463,6 +446,7 @@ class Purgely_Settings_Page {
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             jQuery(document).ready(function($) {
                 jQuery('#vcl-update-btn').click( function() {
+                    document.getElementById('vcl-update-response').innerHTML = "<?php echo __('Processing...'); ?>";
                     $.ajax({
                         method: 'GET',
                         url: url,
@@ -470,8 +454,6 @@ class Purgely_Settings_Page {
                             action : 'fastly_vcl_update'
                         },
                         success: function(response) {
-                            document.getElementById('vcl-update-response').innerHTML = '';
-                            console.log(response);
                             if(response.status) {
                                 var button_elem = jQuery('#vcl-update-btn');
                                 button_elem.hide();
