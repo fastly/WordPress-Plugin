@@ -6,15 +6,7 @@ Tested up to: 4.5.2
 Stable tag: trunk
 License: GPLv2
 
-Integrates Fastly with WordPress' publishing tools. Deprecated: use Condé Nast's "Purgely" plugin instead.
-
-== Deprecated ==
-
-This is the official Fastly plugin for WordPress. It is deprecated and we recommend using Condé Nast's "Purgely" plugin instead.
-
-The official code repository for this plugin is available here:
-
-  https://github.com/fastly/WordPress-Plugin/
+Integrates Fastly with WordPress' publishing tools.
 
 == Description ==
 
@@ -70,6 +62,8 @@ function custom_headers_edit($header_object)
 
 = 1.1.1 =
 * Code from purgely integrated into fastly
+* Added ability to upload VCL snippets directly from the plugin
+* Added webhooks support (Slack focused) to log purges and other critical events
 
 = 1.1 = 
 * Include fixes for header sending
