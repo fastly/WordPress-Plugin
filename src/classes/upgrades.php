@@ -78,22 +78,41 @@ class Upgrades {
         $vcl_dir = $this->_main_instance->vcl_dir;
         $data = array(
             'vcl' => array(
-                'vcl_dir' => $vcl_dir,
-                'type' => 'recv',
-
+                array(
+                    'vcl_dir' => $vcl_dir,
+                    'type' => 'recv'
+                ),
+                array(
+                    'vcl_dir' => $vcl_dir,
+                    'type' => 'deliver',
+                ),
+                array(
+                    'vcl_dir' => $vcl_dir,
+                    'type' => 'error',
+                ),
+                array(
+                    'vcl_dir' => $vcl_dir,
+                    'type' => 'fetch',
+                )
             ),
             'condition' => array(
-                'name' => 'wordpress_request1',
-                'statement' => 'req.http.x-pass',
-                'type' => 'REQUEST',
-                'priority' => 90
+                array(
+                    'name' => 'wordpress_request1',
+                    'statement' => 'req.http.x-pass',
+                    'type' => 'REQUEST',
+                    'priority' => 90
+                )
             ),
             'setting' => array(
-                'name' => 'wordpress_setting1',
-                'action' => 'pass',
-                'request_condition' => 'wordpress_request1'
+                array(
+                    'name' => 'wordpress_setting1',
+                    'action' => 'pass',
+                    'request_condition' => 'wordpress_request1'
+                )
             )
         );
+
+        $errors = array();
 
         $vcl = new Vcl_Handler( $data );
         if(!$vcl->execute()) {
@@ -103,8 +122,14 @@ class Upgrades {
                     error_log($error);
                 }
             }
-            return $vcl->get_errors();
+
+            $errors = array_merge($errors, $vcl->get_errors());
         }
+
+        if(!empty($errors)) {
+            return $errors;
+        }
+
         return true;
     }
 }
