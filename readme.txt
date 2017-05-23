@@ -27,7 +27,10 @@ You can either install from source (you're looking at it), or from the WordPress
 3. Set up the Fastly plugin inside your WordPress admin panel
 4. Once the plugin is installed into your WordPress instance, you will need to enter your API token and Service ID into the plugin's configuration page. 
 5. That's it! Everything should just work. In order to route production traffic through Fastly, you will likely need to change some records with your domain registrar. Refer to Fastly's documentation for more instructions about which CNAME records to use. 
-6. In order to get the most value out of Fastly, you should create a VCL Snippet on your Fastly service which allows you to define some custom logic for how the Fastly CDN should handle requests to your WordPress instance. For more information, or if you have any problems, please email us.
+6. In order to get the most value out of Fastly, you should create a number of VCL Snippets that let you define some custom logic for how the Fastly CDN should handle requests to your WordPress instance. You can add Snippets to your service from the side menu when editing the configuration of your Service version. These are the Snippets that you should create:
+https://github.com/fastly/WordPress-Plugin/tree/master/vcl_snippets
+
+For more information, or if you have any problems, please email us.
 
 _Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour._
 
