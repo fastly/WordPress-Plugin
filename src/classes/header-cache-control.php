@@ -3,7 +3,7 @@
  * Class for managing cache control headers.
  *
  * This class extends the Purgely_Header class to control Cache-Control header behavior. In particular, this is only
- * intended to work for the `stale-while-revalidate` and `stale-if-error` directives.
+ * intended to work for the `max-age` directive.
  */
 class Purgely_Cache_Control_Header extends Purgely_Header {
 
