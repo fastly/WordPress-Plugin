@@ -1,28 +1,22 @@
 === Fastly ===
-Contributors: fastly
+Contributors: Fastly, Inchoo
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
-Requires at least: 3.2
-Tested up to: 4.5.2
+Requires at least: 4.6.2
+Tested up to: 4.7.5
 Stable tag: trunk
 License: GPLv2
 
-Integrates Fastly with WordPress' publishing tools.
+Integrates Fastly with WordPress publishing tools.
+
+This is the official Fastly plugin for WordPress.
+
+The official code repository for this plugin is available here:
+
+https://github.com/fastly/WordPress-Plugin/
 
 == Description ==
-
-Take a look at the inline comments in the [code](https://github.com/fastly/WordPress-Plugin/tree/master/lib) for an in depth description. But, the plugin:
-
-- Pulls in the [Fastly API](http://docs.fastly.com/api)
-- Wires Instant Purging into the publishing process, keeping content up to date
-- Includes an admin panel in `wp-admin`
-
-Using this plugin means you won't have to purge content in Fastly when you make changes to your WordPress content. Purges will automatically happen with no need for manual intervention.
-
-== Installation ==
-
-You can either install from source (you're looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
-
-1. To proceed with configuration you will need to sign up for Fastly (at fastly.com/signup) and create and activate a new service. Details of how to create and activate a new service can be found at Fastly's documentation. You will also need to find your Service ID and make a note of the string. 
+Usage:
+1. To proceed with configuration you will need to sign up for Fastly (at fastly.com/signup) and create and activate a new service. Details of how to create and activate a new service can be found at Fastly's documentation. You will also need to find your Service ID and make a note of the string.
 2. From Fastly's configuration interface, crete an API token with the default scope and access level. Make a note of the credential. 
 3. Set up the Fastly plugin inside your WordPress admin panel
 4. Once the plugin is installed into your WordPress instance, you will need to enter your API token and Service ID into the plugin's configuration page. 
@@ -34,49 +28,80 @@ For more information, or if you have any problems, please email us.
 
 _Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour._
 
-_Note: you can enable "soft" purging for urls. You can read more about soft purging [here](https://www.fastly.com/blog/introducing-soft-purge-more-efficient-way-mark-outdated-content) and [here](https://docs.fastly.com/guides/purging/soft-purges)._
+- Pulls in the [Fastly API](http://docs.fastly.com/api)
+- Integrates purging in post/page/taxonomies publishing
+- Includes an admin panel in `wp-admin`
+- Integrates some of the advanced purging options from Fastly API
+- Allows to monitor purging using webhooks for slack
 
-== Prequisites ==
+Using this plugin means you won\'t have to purge content in Fastly when you make changes to your WordPress content. Purges will automatically happen with no need for manual intervention.
 
-The server must have "php5-curl" installed on the server you are hosting Wordpress with e.g
+Customization:
 
-  `sudo apt-get install php5-curl`
+Available wordpress hooks (add_action) on:
 
-== Customization ==
+Editing purging keys output
+ purgely_pre_send_keys
+ purgely_post_send_keys
+    functions: add_keys
 
-If you need to edit/add/remove headers (for now only Surrogate-Control) outputed by the plugin, it can be done by hooking with wordpress add_action on tag "purgely_post_send_surrogate_control"
-and "purgely_post_send_surrogate_control", and calling on object "unset_headers" function for removing headers, or "edit_headers" function for rewriting or adding new headers.
+Editing surrogate control headers output(max-age, stale-while-revalidate, stale-if-error)
+ purgely_pre_send_surrogate_control
+ purgely_post_send_surrogate_control
+    functions: edit_headers, unset_headers
 
-Example (add this to your theme function.php) :
+Edit cache control headers output (max-age)
+ purgely_pre_send_cache_control
+ purgely_post_send_cache_control
+    functions: edit_headers, unset_headers
 
-add_action('purgely_pre_send_surrogate_control', 'custom_headers_edit');
+Example:
+add_action(\'purgely_pre_send_surrogate_control\', \'custom_headers_edit\');
 function custom_headers_edit($header_object)
 {
-  $header_object->edit_headers(array('custom-header' => '555', 'max-age' => '99'));
+  $header_object->edit_headers(array(\'custom-header\' => \'555\', \'max-age\' => \'99\'));
 }
 
-== Screenshots ==
+== Installation ==
+You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
 
-1. Configuration
+0. Register on `https://www.fastly.com/signup`
+1. Register new Service with your domain and obtain API token and Service ID
+2. Deploy the new Version of the Service.
+3. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
+4. Verify connection by pressing `TEST CONNECTION` button.
+5. If connection is ok, press `Update VCL` button
+6. That\'s it! Everything should just work. :metal: If you have any problems, email us.
+
+Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour.
+
+== Screenshots ==
+1. Fastly General Tab
+2. Fastly Advanced Tab
+3. Fastly Webhooks Tab
 
 == Changelog ==
-
 = 1.1.1 =
-* Code from purgely integrated into fastly
-* Added ability to upload VCL snippets directly from the plugin
+* Some Purgely plugin functionalities integrated into Fastly (along with some advanced options)
+* Purging by Surrogate-Keys is used instead of purging by url
 * Added webhooks support (Slack focused) to log purges and other critical events
+* Added debugging logs option, purge all button for emergency
+* Advanced options: Surrogate Cache TTL, Cache TTL, Default Purge Type, Allow Full Cache Purges, Log purges in error log,
+Debug mode, Enable Stale while Revalidate, Stale while Revalidate TTL, Enable Stale if Error, Stale if Error TTL.
+* Fastly VCL update
+* Curl no longer needed
 
-= 1.1 = 
+= 1.1 =
 * Include fixes for header sending
-* Enable "soft" purging
+* Enable \"soft\" purging
 
 = 1.0 =
 * Mark as deprecated
 * Recommend Purgely from Condé Nast
 * Add in link to GitHub repo
 
-= 0.99 = 
-* Add a guard function for cURL prequisite 
+= 0.99 =
+* Add a guard function for cURL prequisite
 * Bring up to date with WP Plugin repo standards
 
 = 0.98 =
@@ -86,7 +111,7 @@ function custom_headers_edit($header_object)
 * Use WP HTTP API methods
 * Properly register scripts
 
-= 0.94 = 
+= 0.94 =
 * Change to using PURGE not POST for purges
 * Correct URL building for comments purger
 
@@ -117,9 +142,9 @@ function custom_headers_edit($header_object)
 
 Fastly is the only real-time content delivery network designed to seamlessly integrate with your development stack.
 
-Fastly provides real-time updating of content and the ability to cache dynamic as well as static content. For any content that is truly uncacheable, we'll accelerate it. 
+Fastly provides real-time updating of content and the ability to cache dynamic as well as static content. For any content that is truly uncacheable, we'll accelerate it.
 
-In addition we allow you to update your configuration in seconds, provide real time log and stats streaming, powerful edge scripting capabilities, and TLS termination (amongst many other features).  
+In addition we allow you to update your configuration in seconds, provide real time log and stats streaming, powerful edge scripting capabilities, and TLS termination (amongst many other features).
 
 == License ==
 
@@ -139,3 +164,5 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+== Upgrade Notice ==
+Additional features with improvements in purging precision and Fastly API options
