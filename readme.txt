@@ -73,7 +73,7 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 = 1.1.1 =
 * Some Purgely plugin functionalities integrated into Fastly (along with some advanced options)
 * Purging by Surrogate-Keys is used instead of purging by url
-* Integrated webhooks for slack (monitoring for purges and vcl updates)
+* Added webhooks support (Slack focused) to log purges and other critical events
 * Added debugging logs option, purge all button for emergency
 * Advanced options: Surrogate Cache TTL, Cache TTL, Default Purge Type, Allow Full Cache Purges, Log purges in error log,
 Debug mode, Enable Stale while Revalidate, Stale while Revalidate TTL, Enable Stale if Error, Stale if Error TTL.

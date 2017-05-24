@@ -196,7 +196,7 @@ class Vcl_Handler {
         $requests = array();
         foreach ($this->_vcl_data as $key => $single_vcl_data) {
             if (!empty($single_vcl_data['type'])) {
-                $single_vcl_data['name'] = 'wordpress_' . $single_vcl_data['type'];
+                $single_vcl_data['name'] = 'wordpressplugin_' . $single_vcl_data['type'];
                 $single_vcl_data['dynamic'] = 0;
                 $single_vcl_data['priority'] = 50;
                 if (file_exists($single_vcl_data['vcl_dir'] . '/' . $single_vcl_data['type'] . '.vcl')) {

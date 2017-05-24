@@ -39,7 +39,7 @@ msgid "General settings"
 msgstr ""
 
 #: src/settings-page.php:118
-msgid "Cache TTL (in Seconds)"
+msgid "Cache TTL for end users (in Seconds)"
 msgstr ""
 
 #: src/settings-page.php:126
@@ -72,7 +72,7 @@ msgstr ""
 
 #: src/settings-page.php:189
 msgid ""
-"Please enter details related to your Fastly account. A Fastly API key and "
+"Please enter details related to your Fastly account. A Fastly API token and "
 "service ID are required for some operations (e.g., surrogate key and full "
 "cache purges). "
 msgstr ""
@@ -82,7 +82,7 @@ msgid "Required for surrogate key and full cache purges"
 msgstr ""
 
 #: src/settings-page.php:205
-msgid "API key for the Fastly account associated with this site."
+msgid "API token for the Fastly account associated with this site."
 msgstr ""
 
 #: src/settings-page.php:208 src/settings-page.php:236
@@ -90,7 +90,7 @@ msgid "Please see Fastly's documentation for %s."
 msgstr ""
 
 #: src/settings-page.php:212
-msgid "more information on finding your API key"
+msgid "more information on finding your API token"
 msgstr ""
 
 #: src/settings-page.php:233
@@ -143,7 +143,7 @@ msgstr ""
 msgid ""
 "The full cache purging behavior available to WP CLI must be explicitly "
 "enabled in order for it to work. Purging the entire cache can cause "
-"significant site stability issues and is disable by default."
+"significant site stability issues and is disabled by default."
 msgstr ""
 
 #: src/settings-page.php:354
