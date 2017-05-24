@@ -22,14 +22,15 @@ Using this plugin means you won't have to purge content in Fastly when you make 
 
 You can either install from source (you're looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
 
-0. If you don't already have it send us a support request asking to have the WordPress feature turned on for your account.
-1. Add a new WordPress config to a Service and set up the path to the Wordpress install. Examples:
-  - If your blog is at `http://blog.example.com/`, your path is `/`
-  - If your blog is at `http://example.com/blog/`, your path is `/blog/`
-2. Deploy the new Version of the Service.
-3. With your API key and the Service id in hand, install the plugin under WordPress.
-4. Set up the Fastly plugin inside your Wordpress config panel - you should just have to input the API key and the Service id that you noted in the last step.
-5. That's it! Everything should just work. :metal: If you have any problems, email us.
+1. To proceed with configuration you will need to sign up for Fastly (at fastly.com/signup) and create and activate a new service. Details of how to create and activate a new service can be found at Fastly's documentation. You will also need to find your Service ID and make a note of the string. 
+2. From Fastly's configuration interface, crete an API token with the default scope and access level. Make a note of the credential. 
+3. Set up the Fastly plugin inside your WordPress admin panel
+4. Once the plugin is installed into your WordPress instance, you will need to enter your API token and Service ID into the plugin's configuration page. 
+5. That's it! Everything should just work. In order to route production traffic through Fastly, you will likely need to change some records with your domain registrar. Refer to Fastly's documentation for more instructions about which CNAME records to use. 
+6. In order to get the most value out of Fastly, you should create a number of VCL Snippets that let you define some custom logic for how the Fastly CDN should handle requests to your WordPress instance. You can add Snippets to your service from the side menu when editing the configuration of your Service version. These are the Snippets that you should create:
+https://github.com/fastly/WordPress-Plugin/tree/master/vcl_snippets
+
+For more information, or if you have any problems, please email us.
 
 _Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour._
 
