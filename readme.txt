@@ -127,5 +127,31 @@ Debug mode, Enable Stale while Revalidate, Stale while Revalidate TTL, Enable St
 * Change PURGE methodology
 * Performance enhancements
 
+== About Fastly ==
+
+Fastly is the only real-time content delivery network designed to seamlessly integrate with your development stack.
+
+Fastly provides real-time updating of content and the ability to cache dynamic as well as static content. For any content that is truly uncacheable, we'll accelerate it.
+
+In addition we allow you to update your configuration in seconds, provide real time log and stats streaming, powerful edge scripting capabilities, and TLS termination (amongst many other features).
+
+== License ==
+
+Fastly.com WordPress Plugin
+Copyright (C) 2011,2012,2013,2014,2015 Fastly.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 == Upgrade Notice ==
 Additional features with improvements in purging precision and Fastly API options
