@@ -16,6 +16,17 @@ https://github.com/fastly/WordPress-Plugin/
 
 == Description ==
 Usage:
+1. To proceed with configuration you will need to sign up for Fastly (at fastly.com/signup) and create and activate a new service. Details of how to create and activate a new service can be found at Fastly's documentation. You will also need to find your Service ID and make a note of the string.
+2. From Fastly's configuration interface, crete an API token with the default scope and access level. Make a note of the credential. 
+3. Set up the Fastly plugin inside your WordPress admin panel
+4. Once the plugin is installed into your WordPress instance, you will need to enter your API token and Service ID into the plugin's configuration page. 
+5. That's it! Everything should just work. In order to route production traffic through Fastly, you will likely need to change some records with your domain registrar. Refer to Fastly's documentation for more instructions about which CNAME records to use. 
+6. In order to get the most value out of Fastly, you should create a number of VCL Snippets that let you define some custom logic for how the Fastly CDN should handle requests to your WordPress instance. You can add Snippets to your service from the side menu when editing the configuration of your Service version. These are the Snippets that you should create:
+https://github.com/fastly/WordPress-Plugin/tree/master/vcl_snippets
+
+For more information, or if you have any problems, please email us.
+
+_Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour._
 
 - Pulls in the [Fastly API](http://docs.fastly.com/api)
 - Integrates purging in post/page/taxonomies publishing
