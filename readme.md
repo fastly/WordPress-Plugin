@@ -1,10 +1,11 @@
-=== Fastly ===
-Contributors: Fastly, Inchoo
-Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
-Requires at least: 4.6.2
-Tested up to: 4.7.5
-Stable tag: trunk
-License: GPLv2
+# Fastly 
+
+* Contributors: Fastly, Inchoo
+* Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
+* Requires at least: 4.6.2
+* Tested up to: 4.7.5
+* Stable tag: trunk
+* License: GPLv2
 
 Integrates Fastly with WordPress publishing tools.
 
@@ -12,11 +13,12 @@ This is the official Fastly plugin for WordPress.
 
 The official code repository for this plugin is available here:
 
-https://github.com/fastly/WordPress-Plugin/
+[https://github.com/fastly/WordPress-Plugin/]
 
-== Description ==
+## Description
+
 Usage:
-1. To proceed with configuration you will need to sign up for Fastly (at fastly.com/signup) and create and activate a new service. Details of how to create and activate a new service can be found at Fastly's documentation. You will also need to find your Service ID and make a note of the string.
+1. To proceed with configuration you will need to sign up for Fastly (at [https://fastly.com/signup]) and create and activate a new service. Details of how to create and activate a new service can be found at Fastly's documentation. You will also need to find your Service ID and make a note of the string.
 2. From Fastly's configuration interface, crete an API token with the default scope and access level. Make a note of the credential. 
 3. Set up the Fastly plugin inside your WordPress admin panel
 4. Once the plugin is installed into your WordPress instance, you will need to enter your API token and Service ID into the plugin's configuration page. 
@@ -62,11 +64,11 @@ function custom_headers_edit($header_object)
   $header_object->edit_headers(array(\'custom-header\' => \'555\', \'max-age\' => \'99\'));
 }
 
-== Installation ==
+## Installation
 You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
 
-0. Register on `https://www.fastly.com/signup`
-1. Register new Service with your domain and obtain API token and Service ID
+0. Register on [https://www.fastly.com/signup]
+1. Add a new Service with your domain and create an API token by visiting [https://manage.fastly.com/tokens/personal]
 2. Deploy the new Version of the Service.
 3. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
 4. Verify connection by pressing `TEST CONNECTION` button.
@@ -75,13 +77,15 @@ You can either install from source (you\'re looking at it), or from the WordPres
 
 Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour.
 
-== Screenshots ==
+## Screenshots
+
 1. Fastly General Tab
 2. Fastly Advanced Tab
 3. Fastly Webhooks Tab
 
-== Changelog ==
-= 1.1.1 =
+## Changelog
+
+### 1.1.1
 * Some Purgely plugin functionalities integrated into Fastly (along with some advanced options)
 * Purging by Surrogate-Keys is used instead of purging by url
 * Added webhooks support (Slack focused) to log purges and other critical events
@@ -91,54 +95,54 @@ Debug mode, Enable Stale while Revalidate, Stale while Revalidate TTL, Enable St
 * Fastly VCL update
 * Curl no longer needed
 
-= 1.1 =
+### 1.1
 * Include fixes for header sending
 * Enable \"soft\" purging
 
-= 1.0 =
+### 1.0
 * Mark as deprecated
 * Recommend Purgely from Condé Nast
 * Add in link to GitHub repo
 
-= 0.99 =
+### 0.99
 * Add a guard function for cURL prequisite
 * Bring up to date with WP Plugin repo standards
 
-= 0.98 =
+### 0.98
 * Security fixes for XSS/CSRF
 * Only load CSS/JS on admin page
 * Properly enqueue scripts and styles
 * Use WP HTTP API methods
 * Properly register scripts
 
-= 0.94 =
+### 0.94
 * Change to using PURGE not POST for purges
 * Correct URL building for comments purger
 
-= 0.92 =
+### 0.92
 * Fix bug in port addition
 
-= 0.91 =
+### 0.91
 * Make work in PHP 5.3
 
-= 0.9 =
+### 0.9
 * Fix comment purging
 
-= 0.8 =
+### 0.8
 * Fix url purging
 
-= 0.7 =
+### 0.7
 * Fix category purging
 
-= 0.6 =
+### 0.6
 * Remove bogus error_log call
 
-= 0.5 =
+### 0.5
 * Switch to using curl
 * Change PURGE methodology
 * Performance enhancements
 
-== About Fastly ==
+## bout Fastly
 
 Fastly is the only real-time content delivery network designed to seamlessly integrate with your development stack.
 
@@ -146,10 +150,10 @@ Fastly provides real-time updating of content and the ability to cache dynamic a
 
 In addition we allow you to update your configuration in seconds, provide real time log and stats streaming, powerful edge scripting capabilities, and TLS termination (amongst many other features).
 
-== License ==
+## License
 
 Fastly.com WordPress Plugin
-Copyright (C) 2011,2012,2013,2014,2015 Fastly.com
+Copyright (C) 2011,2012,2013,2014,2015,2016,2017 Fastly.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -164,5 +168,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-== Upgrade Notice ==
+## Upgrade Notice
+
 Additional features with improvements in purging precision and Fastly API options
