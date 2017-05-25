@@ -38,31 +38,40 @@ _Note: you may have to disable other caching plugins like W3TotalCache to avoid 
 
 Using this plugin means you won\'t have to purge content in Fastly when you make changes to your WordPress content. Purges will automatically happen with no need for manual intervention.
 
-Customization:
+### Customization:
 
 Available wordpress hooks (add_action) on:
 
-Editing purging keys output
- purgely_pre_send_keys
- purgely_post_send_keys
-    functions: add_keys
+* Editing purging keys output
+<code>
+purgely_pre_send_keys
+purgely_post_send_keys
+functions: add_keys
+</code>
 
-Editing surrogate control headers output(max-age, stale-while-revalidate, stale-if-error)
- purgely_pre_send_surrogate_control
- purgely_post_send_surrogate_control
-    functions: edit_headers, unset_headers
+* Editing surrogate control headers output(max-age, stale-while-revalidate, stale-if-error)
+<code>
+purgely_pre_send_surrogate_control
+purgely_post_send_surrogate_control
+functions: edit_headers, unset_headers
+</code>
 
-Edit cache control headers output (max-age)
- purgely_pre_send_cache_control
- purgely_post_send_cache_control
-    functions: edit_headers, unset_headers
+* Edit cache control headers output (max-age)
+<code>
+purgely_pre_send_cache_control
+purgely_post_send_cache_control
+functions: edit_headers, unset_headers
+</code>
 
 Example:
+
+<code>
 add_action(\'purgely_pre_send_surrogate_control\', \'custom_headers_edit\');
-function custom_headers_edit($header_object)
-{
+
+function custom_headers_edit($header_object) {
   $header_object->edit_headers(array(\'custom-header\' => \'555\', \'max-age\' => \'99\'));
 }
+</code>
 
 ## Installation
 You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
@@ -142,7 +151,7 @@ Debug mode, Enable Stale while Revalidate, Stale while Revalidate TTL, Enable St
 * Change PURGE methodology
 * Performance enhancements
 
-## bout Fastly
+## About Fastly
 
 Fastly is the only real-time content delivery network designed to seamlessly integrate with your development stack.
 
