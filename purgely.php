@@ -3,7 +3,7 @@
 Plugin Name: Fastly
 Plugin URI: http://fastly.com/
 Description: Configuration and cache purging for the Fastly CDN.
-Author: Fastly.com
+Authors: Zack Tollman (github.com/tollmanz), WIRED Tech Team (github.com/CondeNast) & Fastly
 Version: 1.1.1
 Author URI: http://fastly.com/
 */
