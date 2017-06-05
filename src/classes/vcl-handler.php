@@ -114,7 +114,12 @@ class Vcl_Handler {
             }
 
             if(!empty($this->_condition_data)) {
-                $requests = array_merge($requests, $this->prepare_condition());
+                $conditions = $this->prepare_condition();
+                if(false === $conditions) {
+                    $this->add_error(__('Unable to insert new condition'));
+                    return false;
+                }
+                $requests = array_merge($requests, $conditions);
             }
 
             if(!empty($this->_setting_data)) {
@@ -328,7 +333,8 @@ class Vcl_Handler {
                 if($this->get_condition($single_condition_data['name'])) {
                     $requests[] = $this->prepare_update_condition($single_condition_data);
                 } else {
-                    $requests[] = $this->prepare_insert_condition($single_condition_data);
+                    // Do insert here because condition is needed before setting (requests are not sent in order)
+                    return $this->insert_condition($single_condition_data);
                 }
             }
         }
@@ -368,7 +374,7 @@ class Vcl_Handler {
      * @data
      * @return array
      */
-    public function prepare_insert_condition($data) {
+    public function insert_condition($data) {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition';
 
         $request = array(
@@ -377,7 +383,13 @@ class Vcl_Handler {
             'type' => Requests::POST
         );
 
-        return $request;
+        $response = Requests::request($request['url'], $this->_headers_post, $request['data'], $request['type']);
+
+        if($response->success) {
+            return array();
+        } else {
+            return false;
+        }
     }
 
     /**
