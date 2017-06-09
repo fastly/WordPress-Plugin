@@ -36,6 +36,12 @@ class Vcl_Handler {
     /** Last active version data */
     protected $_last_version_data;
 
+    /** Next cloned version number */
+    public $_next_cloned_version_num = null;
+
+    /** Last active version number */
+    public $_last_active_version_num = null;
+
     /** Last cloned version number */
     protected $_last_cloned_version;
 
@@ -76,14 +82,19 @@ class Vcl_Handler {
 
         $this->_last_version_data = $this->get_last_version();
 
+        if($this->_last_version_data) {
+            $this->_last_active_version_num = $this->_last_version_data->number;
+        }
+
         return;
     }
 
     /**
      * Main execute function, takes values inserted into constructor, builds requests and sends them via Fastly API
+     * @activate bool
      * @return bool
      */
-    public function execute() {
+    public function execute($activate = false) {
         // Check if there are connection errors from construct
         if(!empty($this->get_errors())) {
             return false;
@@ -159,7 +170,7 @@ class Vcl_Handler {
             }
 
             // Activate version if vcl is successfully uploaded
-            if($pass) {
+            if($pass && $activate) {
                 $request = $this->prepare_activate_version();
 
                 $response = Requests::request($request['url'], $request['headers'], array(), $request['type']);
@@ -170,9 +181,14 @@ class Vcl_Handler {
                         error_log($response->body);
                     }
                     if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                        $message = 'VCL update failed : ' . $response->body;
+                        $message = 'Activation of new version failed : ' . $response->body;
                         sendWebHook($message);
                     }
+                }
+            } elseif($pass && !$activate) {
+                if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
+                    $message = 'VCL updated, but not activated.';
+                    sendWebHook($message);
                 }
             }
 
@@ -284,6 +300,8 @@ class Vcl_Handler {
         $url = $this->_version_base_url;
         $response = Requests::get($url, $this->_headers_get);
         $response_data = json_decode($response->body);
+
+        $this->_next_cloned_version_num = count($response_data) + 1;
 
         foreach($response_data as $key => $version_data) {
             if($version_data->active) {

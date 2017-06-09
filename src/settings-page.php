@@ -42,7 +42,8 @@ class Purgely_Settings_Page {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
         add_action('wp_ajax_test_fastly_connection', array( $this, 'test_fastly_connection_callback'));
-        add_action('wp_ajax_fastly_vcl_update', array( $this, 'fastly_vcl_update_callback'));
+//        add_action('wp_ajax_fastly_vcl_update', array( $this, 'fastly_vcl_update_callback'));
+        add_action('wp_ajax_fastly_vcl_update_ok', array( $this, 'fastly_vcl_update_ok_callback'));
         add_action('wp_ajax_test_fastly_webhooks_connection', array( $this, 'test_fastly_webhooks_connection_callback'));
         add_action('wp_ajax_purge_all', array( $this, 'purge_all_callback'));
     }
@@ -439,31 +440,78 @@ class Purgely_Settings_Page {
      * @return void
      */
     public function fastly_vcl_update_render() {
+        add_thickbox();
+        $message = __('Make sure you have propper credentials.');
+        $service_id = false;
+        $vcl = new Vcl_Handler( array() );
+        if(!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
+            $service_id = purgely_get_option('fastly_service_id');
+            $message = __("You are about to clone active version
+                        {$vcl->_last_active_version_num} for service *{$service_id}*. 
+                        We'll upload VCL snippets to version {$vcl->_next_cloned_version_num}");
+        } else {
+            if(!empty($vcl->get_errors())) {
+                $errors = $vcl->get_errors();
+                $message = $errors[0];
+            }
+        }
         ?>
-        <input type='button' class='button button-secondary' id="vcl-update-btn" value="VCL UPDATE" />
-        <div id="vcl-update-response"><?php echo __('(make sure you save before proceeding)'); ?></div>
+        <div id="vcl-popup-wrapper" style="display:none;">
+            <div id="vcl-main-ui">
+                <div><?php echo $message; ?></div>
+                <?php if($service_id) : ?>
+                    <input type="button" id="vcl-update-btn-ok" class="button button-primary" onclick="vcl_step2()" value="<?php echo __('OK'); ?>"/>
+                    <input type="button" class="button button-secondary" onclick="vcl_step_cancel()" value="<?php echo __('Cancel'); ?>"/>
+                    <?php echo __('Activate new version'); ?><input type="checkbox" id="vcl_activate_new" name="vcl_activate_new" value="1" checked>
+                <?php endif; ?>
+            </div>
+            <div id="vcl-response-msg"></div>
+        </div>
+        <div id="vcl-wrapper">
+            <a href="#TB_inline?width=260&height=260&inlineId=vcl-popup-wrapper" class='button button-secondary thickbox' id="vcl-update-btn">VCL UPDATE</a>
+            <div id="vcl-update-response"><?php echo __('(make sure you save before proceeding)'); ?></div>
+        </div>
+
         <script type = 'text/javascript'>
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
-            jQuery(document).ready(function($) {
-                jQuery('#vcl-update-btn').click( function() {
-                    document.getElementById('vcl-update-response').innerHTML = "<?php echo __('Processing...'); ?>";
-                    $.ajax({
-                        method: 'GET',
-                        url: url,
-                        data: {
-                            action : 'fastly_vcl_update'
-                        },
-                        success: function(response) {
-                            if(response.status) {
+            var activate = 0;
+            var vcl_response_msg = document.getElementById('vcl-response-msg');
+            /** Proceed to step 2 vcl update **/
+            function vcl_step2(){
+                activate = jQuery('#vcl_activate_new').is(":checked") ? 1 : 0;
+
+                jQuery.ajax({
+                    method: 'GET',
+                    url: url,
+                    data: {
+                        action : 'fastly_vcl_update_ok',
+                        activate : activate
+                    },
+                    success: function(response) {
+
+                        console.log(response);
+
+                        if(response.status) {
+                            // Final stage
+                            if(activate === 1) {
                                 var button_elem = jQuery('#vcl-update-btn');
+                                var button_ok_elem = jQuery('#vcl-update-btn-ok');
                                 button_elem.hide();
+                                button_ok_elem.hide();
                             }
-                            document.getElementById('vcl-update-response').innerHTML = response.message;
-                        },
-                        dataType: 'json'
-                    });
+
+                            vcl_response_msg.innerHTML = response.message;
+                        }
+                        document.getElementById('vcl-update-response').innerHTML = response.message;
+                    },
+                    dataType: 'json'
                 });
-            });
+            }
+
+            /** Hide vcl update popup **/
+            function vcl_step_cancel(){
+                jQuery('#TB_closeWindowButton').click();
+            }
         </script>
         <?php
     }
@@ -605,25 +653,36 @@ class Purgely_Settings_Page {
     /**
      * Vcl update callback
      */
-    function fastly_vcl_update_callback() {
+    function fastly_vcl_update_ok_callback() {
         $purgely_instance = get_purgely_instance();
         $upgrades = new Upgrades($purgely_instance);
-
+        $activate = false;
         $result = array();
+
+        if(isset($_GET['activate']) && $_GET['activate'] === '1') {
+            $activate = true;
+        }
+
         // Upgrades for version 1.1.1
         if(version_compare(get_option('fastly_vcl_version'), $purgely_instance->vcl_last_version, '<')) {
             $result = $upgrades->vcl_upgrade_1_1_1();
 
+            if($result === true && $activate) {
+                $message =  __('Successfully upgraded!');
+                // Update vcl_version
+                update_option( "fastly_vcl_version", $purgely_instance->vcl_last_version );
+
+            } elseif($result === true && !$activate) {
+                $message =  __('VCL upgraded, new version NOT activated!');
+            }
+
             if(is_array($result)) {
                 $result = array('status' => false, 'message' => __($result[0]));
             } else {
-                // Update vcl_version
-                update_option( "fastly_vcl_version", $purgely_instance->vcl_last_version );
-                $result = array('status' => true, 'message' => __('Successfully upgraded!'));
+                $result = array('status' => true, 'message' => $message);
             }
         }
         echo json_encode($result);
-
         die();
     }
 

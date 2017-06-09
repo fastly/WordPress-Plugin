@@ -77,7 +77,7 @@ function custom_headers_edit($header_object) {
 You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
 
 0. Register on [https://www.fastly.com/signup]
-1. Add a new Service with your domain and create an API token by visiting [https://manage.fastly.com/tokens/personal]
+1. Add a new Service with your domain and create an API token by visiting [https://manage.fastly.com/account/personal/tokens]
 2. Deploy the new Version of the Service.
 3. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
 4. Verify connection by pressing `TEST CONNECTION` button.

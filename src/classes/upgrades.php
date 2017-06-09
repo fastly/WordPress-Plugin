@@ -71,9 +71,10 @@ class Upgrades {
 
     /**
      * Manual update of vcl, conditions and settings to 1.1.1 version
+     * @param bool
      * @return bool|array
      */
-    public function vcl_upgrade_1_1_1() {
+    public function vcl_upgrade_1_1_1($activate) {
         // Update VCL
         $vcl_dir = $this->_main_instance->vcl_dir;
         $data = array(
@@ -115,7 +116,7 @@ class Upgrades {
         $errors = array();
 
         $vcl = new Vcl_Handler( $data );
-        if(!$vcl->execute()) {
+        if(!$vcl->execute($activate)) {
             //Log if enabled
             if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
                 foreach($vcl->get_errors() as $error) {
