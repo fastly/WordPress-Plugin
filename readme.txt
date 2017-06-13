@@ -17,7 +17,7 @@ https://github.com/fastly/WordPress-Plugin/
 == Description ==
 Usage:
 1. To proceed with configuration you will need to sign up for Fastly (at fastly.com/signup) and create and activate a new service. Details of how to create and activate a new service can be found at Fastly's documentation. You will also need to find your Service ID and make a note of the string.
-2. From Fastly's configuration interface, crete an API token with the default scope and access level. Make a note of the credential. 
+2. From Fastly's configuration interface, create an API token with the default scope and access level. Make a note of the credential. 
 3. Set up the Fastly plugin inside your WordPress admin panel
 4. Once the plugin is installed into your WordPress instance, you will need to enter your API token and Service ID into the plugin's configuration page. 
 5. That's it! Everything should just work. In order to route production traffic through Fastly, you will likely need to change some records with your domain registrar. Refer to Fastly's documentation for more instructions about which CNAME records to use. 
@@ -34,7 +34,7 @@ _Note: you may have to disable other caching plugins like W3TotalCache to avoid 
 - Integrates some of the advanced purging options from Fastly API
 - Allows to monitor purging using webhooks for slack
 
-Using this plugin means you won\'t have to purge content in Fastly when you make changes to your WordPress content. Purges will automatically happen with no need for manual intervention.
+Using this plugin means you won't have to purge content in Fastly when you make changes to your WordPress content. Purges will automatically happen with no need for manual intervention.
 
 Customization:
 
@@ -71,7 +71,7 @@ You can either install from source (you\'re looking at it), or from the WordPres
 3. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
 4. Verify connection by pressing `TEST CONNECTION` button.
 5. If connection is ok, press `Update VCL` button
-6. That\'s it! Everything should just work. :metal: If you have any problems, email us.
+6. That's it! Everything should just work. :metal: If you have any problems, email us.
 
 Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour.
 
