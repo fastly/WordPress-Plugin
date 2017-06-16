@@ -83,7 +83,7 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 <<<<<<< HEAD:readme.md
 ## Changelog
 
-### 1.2
+### 1.2.0
 * Added purge by url
 * Changes regarding logging logic
 * VCL update User Interface changes
