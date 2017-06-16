@@ -3,8 +3,8 @@
 Plugin Name: Fastly
 Plugin URI: http://fastly.com/
 Description: Configuration and cache purging for the Fastly CDN.
-Author: Fastly.com
-Version: 1.1.1
+Authors: Zack Tollman (github.com/tollmanz), WIRED Tech Team (github.com/CondeNast) & Fastly
+Version: 1.2
 Author URI: http://fastly.com/
 */
 
@@ -42,7 +42,7 @@ class Purgely {
 
 	/**
 	 * Last plugin version.
-     * Increment when making schema and code changes.
+     * Increment when making schema and code changes. Also change version in comment above class.
      * If there are schema changes, create function in upgrades class and increment.
      * If just code changes, only increment.
 	 *
