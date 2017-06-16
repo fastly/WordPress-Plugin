@@ -80,20 +80,15 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 2. Fastly Advanced Tab
 3. Fastly Webhooks Tab
 
-<<<<<<< HEAD:readme.md
-## Changelog
+== Changelog ==
 
-### 1.2.0
+= 1.2.0 =
 * Added purge by url
 * Changes regarding logging logic
 * VCL update User Interface changes
 * Fixed and enabled support for wp_cli
 
-### 1.1.1
-=======
-== Changelog ==
 = 1.1.1 =
->>>>>>> upstream/master:readme.txt
 * Some Purgely plugin functionalities integrated into Fastly (along with some advanced options)
 * Purging by Surrogate-Keys is used instead of purging by url
 * Added webhooks support (Slack focused) to log purges and other critical events
