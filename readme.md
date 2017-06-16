@@ -94,6 +94,12 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 ## Changelog
 
+### 1.2
+* Added purge by url
+* Changes regarding logging logic
+* VCL update User Interface changes
+* Fixed and enabled support for wp_cli
+
 ### 1.1.1
 * Some Purgely plugin functionalities integrated into Fastly (along with some advanced options)
 * Purging by Surrogate-Keys is used instead of purging by url

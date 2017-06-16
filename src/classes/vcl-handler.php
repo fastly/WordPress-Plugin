@@ -159,13 +159,9 @@ class Vcl_Handler {
                 if(!$response->success) {
                     $pass = false;
                     $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-                    if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                        error_log($response->body);
-                    }
-                    if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                        $message = 'VCL update failed : ' . $response->body;
-                        sendWebHook($message);
-                    }
+
+                    $message = 'VCL update failed : ' . $response->body;
+                    handle_logging($response, $message);
                 }
             }
 
@@ -177,30 +173,24 @@ class Vcl_Handler {
                 if(!$response->success) {
                     $pass = false;
                     $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-                    if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                        error_log($response->body);
-                    }
-                    if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                        $message = 'Activation of new version failed : ' . $response->body;
-                        sendWebHook($message);
-                    }
+
+                    $message = 'Activation of new version failed : ' . $response->body;
+                    handle_logging($response, $message);
+                } else {
+                    $message = 'VCL updated, version activated : ' . $this->_last_cloned_version;
+                    send_web_hook($message);
                 }
             } elseif($pass && !$activate) {
-                if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
                     $message = 'VCL updated, but not activated.';
-                    sendWebHook($message);
-                }
+                    send_web_hook($message);
             }
 
         } catch (Exception $e) {
             $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-            if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                error_log($e->getMessage());
-            }
-            if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                $message = 'VCL update failed : ' . $e->getMessage();
-                sendWebHook($message);
-            }
+            $message = 'VCL update failed : ' . $e->getMessage();
+            send_web_hook($message);
+            error_log($message);// Force log this, possibly no response object
+
             return false;
         }
 
