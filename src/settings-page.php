@@ -732,7 +732,8 @@ class Purgely_Settings_Page {
      * Purge by URL callback
      */
     function fastly_purge_by_url_callback() {
-        $url = !empty($_GET['purge_url']) ? $_GET['purge_url'] : false;
+        $purge_url = $_GET['purge_url'];
+        $url = !empty($purge_url) ? $purge_url : false;
         $result = array('status' => false, 'message' => __('Enter url you want to purge first.'));
 
         if($url) {
