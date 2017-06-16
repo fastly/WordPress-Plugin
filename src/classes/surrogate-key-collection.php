@@ -4,10 +4,9 @@
  * Collects all Surrogate Keys to add to an individual response.
  */
 class Purgely_Surrogate_Key_Collection {
+
 	/**
 	 * The surrogate key values.
-	 *
-	 * @since 1.0.0.
 	 *
 	 * @var array The surrogate keys that will be set.
 	 */
@@ -15,9 +14,7 @@ class Purgely_Surrogate_Key_Collection {
 
 	/**
 	 * Construct the object.
-	 *
-	 * @since 1.0.0.
-	 *
+     *
 	 * @param  WP_Query $wp_query The main query object.
 	 */
 	public function __construct( $wp_query ) {
@@ -62,8 +59,6 @@ class Purgely_Surrogate_Key_Collection {
 	/**
 	 * Add a key for each post ID to all pages that include the post.
 	 *
-	 * @since 1.0.0.
-	 *
 	 * @param  WP_Query $wp_query The main query.
 	 * @return array       $keys        The "post-{ID}" keys.
 	 */
@@ -79,8 +74,6 @@ class Purgely_Surrogate_Key_Collection {
 
 	/**
 	 * Determine the type of WP template being displayed.
-	 *
-	 * @since 1.0.0.
 	 *
 	 * @param  WP_Query $wp_query The query object to inspect.
 	 * @return string      $key         The template key.
@@ -152,8 +145,6 @@ class Purgely_Surrogate_Key_Collection {
 	/**
 	 * Get the term keys for every term associated with a post.
 	 *
-	 * @since 1.1.1.
-	 *
 	 * @param  int      $post_id  Post ID.
 	 * @param  string   $taxonomy The taxonomy to look for associated terms.
 	 * @param  WP_Query $wp_query The current wp_query to investigate.
@@ -177,8 +168,6 @@ class Purgely_Surrogate_Key_Collection {
     /**
      * Get the term keys for taxonomies.
      *
-     * @since 1.1.1.
-     *
      * @return array The taxonomy combos for the post.
      */
     private function _add_key_terms_taxonomy() {
@@ -198,8 +187,6 @@ class Purgely_Surrogate_Key_Collection {
 	/**
 	 * Get author related to this post.
 	 *
-	 * @since 1.0.0.
-	 *
 	 * @param  WP_Post $post The post object to search for related author information.
 	 * @return array               The related author key.
 	 */
@@ -217,8 +204,6 @@ class Purgely_Surrogate_Key_Collection {
 	/**
 	 * Set the keys variable.
 	 *
-	 * @since 1.0.0.
-	 *
 	 * @param  array $keys Array of Purgely_Surrogate_Key objects.
 	 * @return void
 	 */
@@ -228,8 +213,6 @@ class Purgely_Surrogate_Key_Collection {
 
 	/**
 	 * Set an individual key.
-	 *
-	 * @since 1.0.0.
 	 *
 	 * @param  Purgely_Surrogate_Keys_Header $key Purgely_Surrogate_Key object.
 	 * @return void
@@ -243,8 +226,6 @@ class Purgely_Surrogate_Key_Collection {
 
 	/**
 	 * Get all of the keys to be sent in the headers.
-	 *
-	 * @since 1.0.0.
 	 *
 	 * @return array    Array of Purgely_Surrogate_Key objects
 	 */

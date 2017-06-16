@@ -42,36 +42,30 @@ class Purgely {
 
 	/**
 	 * Last plugin version.
+     * Increment when making schema and code changes.
+     * If there are schema changes, create function in upgrades class and increment.
+     * If just code changes, only increment.
 	 *
-	 * @since 1.0.0
-	 *
-	 * @var   string    Plugin verision for db schema.
+	 * @var   string    Plugin version.
 	 */
-	var $version = '1.1.1';
+	var $version = '1.2';
 
     /**
      * Currently installed plugin version.
      *
-     * @since 1.1.1
-     *
-     * @var   string    Currently installed plugin version number. Increment when making schema and code changes
+     * @var   string    Currently installed plugin version number.
      */
     var $current_version = null;
 
     /**
      * Last vcl version.
      *
-     *
-     * @since 1.0.0
-     *
-     * @var   string    Last updated vcl version. Increment when makin vcl changes
+     * @var   string    Last updated vcl version. Increment when making vcl changes
      */
     var $vcl_last_version = '1.1.1';
 
 	/**
 	 * File path to the plugin dir (e.g., /var/www/mysite/wp-content/plugins/purgely).
-	 *
-	 * @since 1.0.0.
 	 *
 	 * @var   string    Path to the root of this plugin.
 	 */
@@ -80,8 +74,6 @@ class Purgely {
 	/**
 	 * File path to the plugin src files (e.g., /var/www/mysite/wp-content/plugins/purgely/src).
 	 *
-	 * @since 1.0.0.
-	 *
 	 * @var   string    Path to the root of this plugin.
 	 */
 	var $src_dir = '';
@@ -89,16 +81,12 @@ class Purgely {
 	/**
 	 * File path to the plugin main file (e.g., /var/www/mysite/wp-content/plugins/mixed-content-detector/purgely.php).
 	 *
-	 * @since 1.0.0.
-	 *
 	 * @var   string    Path to the plugin's main file.
 	 */
 	var $file_path = '';
 
 	/**
 	 * The URI base for the plugin (e.g., http://domain.com/wp-content/plugins/purgely).
-	 *
-	 * @since 1.0.0.
 	 *
 	 * @var   string    The URI base for the plugin.
 	 */
@@ -137,9 +125,7 @@ class Purgely {
 		include $this->src_dir . '/classes/settings.php';
 		include $this->src_dir . '/classes/upgrades.php';
 		include $this->src_dir . '/classes/vcl-handler.php';
-		include $this->src_dir . '/classes/related-urls.php';
 		include $this->src_dir . '/classes/related-surrogate-keys.php';
-		include $this->src_dir . '/classes/purge-request-collection.php';
 		include $this->src_dir . '/classes/purge-request.php';
         include $this->src_dir . '/classes/surrogate-key-collection.php';
         include $this->src_dir . '/classes/header.php';
@@ -298,8 +284,6 @@ class Purgely {
 
 	/**
 	 * Load the plugin text domain.
-	 *
-	 * @since 1.0.0.
 	 *
 	 * @return void
 	 */

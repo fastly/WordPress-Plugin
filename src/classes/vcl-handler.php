@@ -36,6 +36,12 @@ class Vcl_Handler {
     /** Last active version data */
     protected $_last_version_data;
 
+    /** Next cloned version number */
+    public $_next_cloned_version_num = null;
+
+    /** Last active version number */
+    public $_last_active_version_num = null;
+
     /** Last cloned version number */
     protected $_last_cloned_version;
 
@@ -76,14 +82,19 @@ class Vcl_Handler {
 
         $this->_last_version_data = $this->get_last_version();
 
+        if($this->_last_version_data) {
+            $this->_last_active_version_num = $this->_last_version_data->number;
+        }
+
         return;
     }
 
     /**
      * Main execute function, takes values inserted into constructor, builds requests and sends them via Fastly API
+     * @activate bool
      * @return bool
      */
-    public function execute() {
+    public function execute($activate = false) {
         // Check if there are connection errors from construct
         if(!empty($this->get_errors())) {
             return false;
@@ -148,43 +159,38 @@ class Vcl_Handler {
                 if(!$response->success) {
                     $pass = false;
                     $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-                    if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                        error_log($response->body);
-                    }
-                    if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                        $message = 'VCL update failed : ' . $response->body;
-                        sendWebHook($message);
-                    }
+
+                    $message = 'VCL update failed : ' . $response->body;
+                    handle_logging($response, $message);
                 }
             }
 
             // Activate version if vcl is successfully uploaded
-            if($pass) {
+            if($pass && $activate) {
                 $request = $this->prepare_activate_version();
 
                 $response = Requests::request($request['url'], $request['headers'], array(), $request['type']);
                 if(!$response->success) {
                     $pass = false;
                     $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-                    if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                        error_log($response->body);
-                    }
-                    if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                        $message = 'VCL update failed : ' . $response->body;
-                        sendWebHook($message);
-                    }
+
+                    $message = 'Activation of new version failed : ' . $response->body;
+                    handle_logging($response, $message);
+                } else {
+                    $message = 'VCL updated, version activated : ' . $this->_last_cloned_version;
+                    send_web_hook($message);
                 }
+            } elseif($pass && !$activate) {
+                    $message = 'VCL updated, but not activated.';
+                    send_web_hook($message);
             }
 
         } catch (Exception $e) {
             $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-            if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                error_log($e->getMessage());
-            }
-            if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                $message = 'VCL update failed : ' . $e->getMessage();
-                sendWebHook($message);
-            }
+            $message = 'VCL update failed : ' . $e->getMessage();
+            send_web_hook($message);
+            error_log($message);// Force log this, possibly no response object
+
             return false;
         }
 
@@ -284,6 +290,8 @@ class Vcl_Handler {
         $url = $this->_version_base_url;
         $response = Requests::get($url, $this->_headers_get);
         $response_data = json_decode($response->body);
+
+        $this->_next_cloned_version_num = count($response_data) + 1;
 
         foreach($response_data as $key => $version_data) {
             if($version_data->active) {

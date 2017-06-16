@@ -14,56 +14,7 @@ function purgely_sanitize_surrogate_key( $key ) {
 }
 
 /**
- * Purge a URL.
- *
- * @since  1.0.0.
- *
- * @param  string $url        The URL to purge.
- * @param  array  $purge_args Additional args to pass to the purge request.
- * @return array|bool|WP_Error                   The purge response.
- */
-function purgely_purge_url( $url, $purge_args = array() ) {
-	if ( isset( $purge_args['related'] ) && true === $purge_args['related'] ) {
-		$purgely = new Purgely_Purge_Request_Collection( $url, $purge_args );
-		return $purgely->purge_related( $purgely->get_purge_args() );
-	} else {
-		$purgely = new Purgely_Purge();
-		return $purgely->purge( 'url', $url, $purge_args );
-	}
-}
-
-/**
- * Purge a surrogate key collection.
- *
- * @since  1.1.1.
- *
- * @param  array $keys        The surrogate key collection to purge.
- * @param  array  $purge_args Additional args to pass to the purge request.
- * @return array|bool|WP_Error                   The purge response.
- */
-function purgely_purge_surrogate_key_collection ( $keys, $purge_args = array() ) {
-    $purgely = new Purgely_Purge();
-    return $purgely->purge( 'key-collection', $keys, $purge_args );
-}
-
-/**
- * Purge the whole cache.
- *
- * @since  1.0.0.
- *
- * @param  array $purge_args Additional args to pass to the purge request.
- * @return array|bool|WP_Error                   The purge response.
- */
-function purgely_purge_all( $purge_args = array() ) {
-	$purgely    = new Purgely_Purge();
-	$purge_args = array_merge( array( 'allow-all' => Purgely_Settings::get_setting( 'allow_purge_all' ) ), $purge_args );
-	return $purgely->purge( 'all', '', $purge_args );
-}
-
-/**
  * Get an individual settings value.
- *
- * @since 1.0.0.
  *
  * @param  string $name The name of the option to retrieve.
  * @return string       The option value.
@@ -81,10 +32,7 @@ function purgely_get_option( $name ) {
 
 /**
  * Get all of the Purgely options.
- *
  * Gets the options set by the user and falls back to the constant configuration if the value is not set in options.
- *
- * @since 1.0.0.
  *
  * @return array Array of all Purgely options.
  */
@@ -125,7 +73,6 @@ function purgely_get_options() {
 
 /**
  * Sanitize a Fastly Service ID or API Key.
- *
  * Restricts a value to only a-z, A-Z, and 0-9.
  *
  * @param  string $key Unsantizied key.
@@ -137,8 +84,6 @@ function purgely_sanitize_key( $key ) {
 
 /**
  * Callback function for sanitizing a checkbox setting.
- *
- * @since 1.0.0.
  *
  * @param  mixed $value Unsanitized setting.
  * @return bool         Whether or not value is valid.
@@ -173,6 +118,7 @@ function test_fastly_api_connection($hostname, $service_id, $api_key) {
             $service_name = $response_body->name;
             $message = __('Connection Successful on service *' . $service_name . "*");
         } else {
+            handle_logging($response);
             $message = json_decode($response->body);
             $message = $message->msg;
         }
@@ -186,7 +132,11 @@ function test_fastly_api_connection($hostname, $service_id, $api_key) {
  * Sends message to slack via webhooks
  * @param $message
  */
-function sendWebHook($message) {
+function send_web_hook($message) {
+
+    if(!Purgely_Settings::get_setting( 'webhooks_activate' )) {
+        return;
+    }
 
     $webhook_url = Purgely_Settings::get_setting('webhooks_url_endpoint');
     $username = Purgely_Settings::get_setting('webhooks_username');
@@ -218,7 +168,7 @@ function sendWebHook($message) {
  * Test slack webhooks connection in admin
  * @return array
  */
-function testWebHook() {
+function test_web_hook() {
 
     $webhook_url = Purgely_Settings::get_setting('webhooks_url_endpoint');
     $username = Purgely_Settings::get_setting('webhooks_username');
@@ -249,4 +199,88 @@ function testWebHook() {
         }
         return array('status' => false, 'message' => $e->getMessage());
     }
+}
+
+/**
+ * Do logging where needed
+ * @param Requests_Response $response
+ * @param $message
+ */
+function handle_logging(Requests_Response $response, $message = false) {
+    $debug_mode = Purgely_Settings::get_setting( 'fastly_debug_mode' );
+    $log_purges = Purgely_Settings::get_setting( 'fastly_log_purges' );
+    $log_slack = Purgely_Settings::get_setting( 'webhooks_activate' );
+
+    if($debug_mode || $log_purges || $log_slack) {
+        $msg = get_message_by_status_code($response->status_code);
+        if($message) {
+            $msg = $msg . ' - ' . $message;
+        }
+    } else {
+        return;
+    }
+
+    // Log purges in logs, don't log twice
+    if($log_purges || $debug_mode) {
+        if ($log_purges) {
+            error_log($msg);
+        } elseif ($debug_mode) {
+            if (!$response->success) {
+                error_log($msg);
+            }
+        }
+    }
+
+    // Log message in Slack via Webhooks
+    if($log_slack) {
+        send_web_hook($msg);
+    }
+}
+
+/**
+ * Returns response message based on status code
+ * @param $code
+ * @return string
+ */
+function get_message_by_status_code($code) {
+    switch ($code){
+        case 200:
+            $msg = __($code . ' - OK');
+            break;
+        case 203:
+            $msg = __($code . ' - Non-Authoritative Information');
+            break;
+        case 300:
+            $msg = __($code . ' - Multiple Choices');
+            break;
+        case 301:
+            $msg = __($code . ' - Moved Permanently');
+            break;
+        case 302:
+            $msg = __($code . ' - Moved Temporarily');
+            break;
+        case 401:
+            $msg = __($code . ' - Unauthorized');
+            break;
+        case 404:
+            $msg = __($code . ' - Not Found');
+            break;
+        case 410:
+            $msg = __($code . ' - Gone');
+            break;
+        default:
+            $msg = __('Error occurred, turn on debugging options and check your logs.');
+            break;
+    }
+    return $msg;
+}
+
+/**
+ * Determine if the first arg is a URL.
+ *
+ * @param  string $thing The first argument passed to the function.
+ * @return bool                True if the thing is a URL, false if not.
+ */
+function is_url( $thing ) {
+    return 0 === strpos( $thing, 'http' ) && esc_url_raw( $thing ) === $thing;
 }
