@@ -459,7 +459,8 @@ class Purgely_Settings_Page {
                         {$vcl->_last_active_version_num} for service <b>{$service_id}</b>.
                         We'll upload VCL snippets to version {$vcl->_next_cloned_version_num}");
         } else {
-            if(!empty($vcl->get_errors())) {
+            $errors = $vcl->get_errors();
+            if(!empty($errors)) {
                 $errors = $vcl->get_errors();
                 $message = $errors[0];
             }

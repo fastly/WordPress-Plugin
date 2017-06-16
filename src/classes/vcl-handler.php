@@ -95,8 +95,9 @@ class Vcl_Handler {
      * @return bool
      */
     public function execute($activate = false) {
+        $errors = $this->get_errors();
         // Check if there are connection errors from construct
-        if(!empty($this->get_errors())) {
+        if(!empty($errors)) {
             return false;
         }
 
