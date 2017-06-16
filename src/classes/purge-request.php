@@ -34,34 +34,18 @@ class Purgely_Purge {
 	 *
 	 * @var string The type of purge request.
 	 */
-	private $_type = 'url';
-
-	/**
-	 * Issue the purge request.
-	 *
-	 * @param string $type       The type of purge request.
-	 * @param string $thing      The identifier for the item to purge.
-	 * @param array  $purge_args Additional args to pass to the purge request. TODO implement support if needed
-	 * @return array|bool|WP_Error The response from the purge request.
-	 */
-	public function purge( $type = 'url', $thing = '', $purge_args = array() ) {
-		if ( 'all' === $type && ( ! isset( $purge_args['allow-all'] ) || true !== $purge_args['allow-all'] ) ) {
-			return array('status' => false, 'message' => __('Enable Allow Full Cache Purges first '));
-		} else {
-			return $this->_issue_purge_request( $type, $thing );
-		}
-	}
+	private $_type = null;
 
 	/**
 	 * Issue the purge request.
 	 *
 	 * @param  string $type       The type of purge request.
 	 * @param  string|array $thing      The identifier for the item to purge.
-	 * @return array|bool|WP_Error The response from the purge request.
+     * @return array|bool|WP_Error The response from the purge request.
 	 */
-	private function _issue_purge_request( $type = 'url', $thing = '' ) {
+	public function purge($type = self::URL, $thing = '') {
 
-        if ( !in_array( $type, self::$_purge_types ) ) {
+        if ( !in_array( $type, self::get_purge_types() ) ) {
             return false;
         }
 
@@ -75,28 +59,10 @@ class Purgely_Purge {
 		if (($request_uri && !empty($thing)) || ($request_uri && $type = self::ALL)) {
 		    try {
                 $response = Requests::request($request_uri, $headers, array(), Requests::POST);
-                if(!$response->success) {
-                    if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                        error_log("Purging " . $request_uri . " - " . $response->body);
-                    }
-                }
 
-                // Log purges in logs
-                if(Purgely_Settings::get_setting( 'fastly_log_purges' )) {
-                    $status = $response->success ? 'OK' : 'FAIL';
-                    if($type == self::ALL || $type == self::URL) {
-                        error_log("Purging " . $request_uri . " - " . $status);
-                    } else {
-                        error_log("Purging Keys " . implode(' ', $thing). " - " . $status);
-                    }
-                }
-
-                // Send Slack Webhooks request message
-                if(Purgely_Settings::get_setting( 'webhooks_activate' )) {
-                    $msg = isset($headers['Surrogate-Key']) ? $headers['Surrogate-Key'] : self::ALL;
-                    $message = 'Purged keys : ' . $msg;
-                    sendWebHook($message);
-                }
+                // Do logging where needed
+                $message = $this->_get_purge_data_message();
+                handle_logging($response, $message);
 
                 return $response->success;
             } catch (Exception $e) {
@@ -124,7 +90,8 @@ class Purgely_Purge {
 
         // Add Surrogate-Key header
         // TODO - if header size exceeded, split in multiple request
-        if(!empty($this->get_thing())) {
+        $thing = $this->get_thing();
+        if(!empty($thing) && $this->get_type() === Purgely_Purge::KEY_COLLECTION) {
             $keys = implode(' ', $this->get_thing());
             $headers['Surrogate-Key'] = $keys;
         }
@@ -194,4 +161,27 @@ class Purgely_Purge {
 	public function get_type() {
 		return $this->_type;
 	}
+
+    /**
+     * Prepare message for logging with data being purged
+     * @return string
+     */
+    protected function _get_purge_data_message() {
+        if($this->get_type() === self::URL) {
+            $msg = "Purging URL - " . $this->get_thing();
+        } elseif($this->get_type() === self::KEY_COLLECTION) {
+            $msg = "Purging Keys " . implode(' ', $this->get_thing());
+        } else {
+            $msg = 'Purge All';
+        }
+        return $msg;
+    }
+
+    /**
+     * Get possible purge types
+     * @return array
+     */
+    static function get_purge_types() {
+        return self::$_purge_types;
+    }
 }

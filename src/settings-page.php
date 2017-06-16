@@ -42,7 +42,8 @@ class Purgely_Settings_Page {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'settings_init' ) );
         add_action('wp_ajax_test_fastly_connection', array( $this, 'test_fastly_connection_callback'));
-        add_action('wp_ajax_fastly_vcl_update', array( $this, 'fastly_vcl_update_callback'));
+        add_action('wp_ajax_fastly_vcl_update_ok', array( $this, 'fastly_vcl_update_ok_callback'));
+        add_action('wp_ajax_purge_by_url', array( $this, 'fastly_purge_by_url_callback'));
         add_action('wp_ajax_test_fastly_webhooks_connection', array( $this, 'test_fastly_webhooks_connection_callback'));
         add_action('wp_ajax_purge_all', array( $this, 'purge_all_callback'));
     }
@@ -279,6 +280,14 @@ class Purgely_Settings_Page {
 		);
 
         add_settings_field(
+            'purge_by_url',
+            __( 'Purge by URL', 'purgely' ),
+            array( $this, 'purge_by_url_render' ),
+            'fastly-settings-advanced',
+            'purgely-stale_settings'
+        );
+
+        add_settings_field(
             'purge_all',
             __( '', 'purgely' ),
             array( $this, 'purge_all_render' ),
@@ -439,31 +448,104 @@ class Purgely_Settings_Page {
      * @return void
      */
     public function fastly_vcl_update_render() {
+        add_thickbox();
+        $message = __('Make sure you have proper credentials.');
+        $service_id = false;
+        $vcl = new Vcl_Handler( array() );
+
+        if(!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
+            $service_id = purgely_get_option('fastly_service_id');
+            $message = __("You are about to clone active version
+                        {$vcl->_last_active_version_num} for service <b>{$service_id}</b>.
+                        We'll upload VCL snippets to version {$vcl->_next_cloned_version_num}");
+        } else {
+            $errors = $vcl->get_errors();
+            if(!empty($errors)) {
+                $errors = $vcl->get_errors();
+                $message = $errors[0];
+            }
+        }
         ?>
-        <input type='button' class='button button-secondary' id="vcl-update-btn" value="VCL UPDATE" />
-        <div id="vcl-update-response"><?php echo __('(make sure you save before proceeding)'); ?></div>
+        <div id="vcl-popup-wrapper" style="display:none;">
+            <div id="vcl-main-ui" style="relative;">
+                <p style="margin-bottom:0;padding-bottom:0;"><?php echo $message; ?></p>
+                <?php if($service_id) : ?>
+                    <table class="form-table">
+                        <tbody>
+                        <tr>
+                            <th>
+                                <label for="vcl_activate_new">
+                                    <?php echo __('Activate new version'); ?>
+                                </label>
+                            </th>
+                            <td>
+                                <input type="checkbox" id="vcl_activate_new" name="vcl_activate_new" value="1" checked>
+
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-bottom:.5em;" id="vcl-response-msg"></div>
+                    <div>
+                        <input type="button" id="vcl-update-btn-ok" class="button button-primary" style="margin-right: 1em;" onclick="vcl_step2()" value="<?php echo __('Save Changes'); ?>"/>
+                        <input type="button" class="button button-secondary" onclick="vcl_step_cancel()" value="<?php echo __('Cancel'); ?>"/>
+                    </div>
+                    <span class="spinner" id="vcl-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
+                <?php else: ?>
+                    <p>
+                        <input type="button" class="button button-secondary" onclick="vcl_step_cancel()" value="<?php echo __('Close'); ?>"/>
+                    </p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div id="vcl-wrapper">
+            <a href="#TB_inline?&inlineId=vcl-popup-wrapper&<?php if($service_id) : ?>width=420&height=180<?php else : ?>width=320&height=120<?php endif;?>" name="Confirm VCL Update" class='button button-secondary thickbox' id="vcl-update-btn">VCL UPDATE</a>
+            <em class="description" id="vcl-update-response">
+                <strong style="padding-top: 5px; display: inline-block">
+                    <?php echo __('Make sure to save before proceeding'); ?>
+                </strong>
+            </em>
+        </div>
+
         <script type = 'text/javascript'>
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
-            jQuery(document).ready(function($) {
-                jQuery('#vcl-update-btn').click( function() {
-                    document.getElementById('vcl-update-response').innerHTML = "<?php echo __('Processing...'); ?>";
-                    $.ajax({
-                        method: 'GET',
-                        url: url,
-                        data: {
-                            action : 'fastly_vcl_update'
-                        },
-                        success: function(response) {
-                            if(response.status) {
+            var activate = 0;
+            var vcl_response_msg = document.getElementById('vcl-response-msg');
+            var spinner = jQuery('#vcl-popup-spinner');
+            /** Proceed to step 2 vcl update **/
+            function vcl_step2(){
+                activate = jQuery('#vcl_activate_new').is(":checked") ? 1 : 0;
+                spinner.toggleClass('is-active');
+                jQuery.ajax({
+                    method: 'GET',
+                    url: url,
+                    data: {
+                        action : 'fastly_vcl_update_ok',
+                        activate : activate
+                    },
+                    success: function(response) {
+                        spinner.toggleClass('is-active');
+                        if(response.status) {
+                            // Final stage
+                            if(activate === 1) {
                                 var button_elem = jQuery('#vcl-update-btn');
+                                var button_ok_elem = jQuery('#vcl-update-btn-ok');
                                 button_elem.hide();
+                                button_ok_elem.hide();
                             }
-                            document.getElementById('vcl-update-response').innerHTML = response.message;
-                        },
-                        dataType: 'json'
-                    });
+
+                            vcl_response_msg.innerHTML = response.message;
+                        }
+                        document.getElementById('vcl-update-response').innerHTML = response.message;
+                    },
+                    dataType: 'json'
                 });
-            });
+            }
+
+            /** Hide vcl update popup **/
+            function vcl_step_cancel(){
+                jQuery('#TB_closeWindowButton').click();
+            }
         </script>
         <?php
     }
@@ -478,7 +560,11 @@ class Purgely_Settings_Page {
     public function fastly_test_connection_render() {
         ?>
         <input type='button' class='button button-secondary' id="test-connection-btn" value="TEST CONNECTION" />
-        <div id="test-connection-response"><?php echo __('(make sure you save before proceeding)'); ?></div>
+        <em class="description" id="test-connection-response">
+            <strong style="padding-top: 5px; display: inline-block">
+                <?php echo __('Make sure to save before proceeding'); ?>
+            </strong>
+        </em>
         <script type = 'text/javascript'>
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             jQuery(document).ready(function($) {
@@ -518,7 +604,11 @@ class Purgely_Settings_Page {
     public function webhooks_test_connection_render() {
         ?>
         <input type='button' class='button button-secondary' id="test-webhooks-connection-btn" value="TEST CONNECTION" />
-        <div id="test-connection-response"><?php echo __('(make sure you save before proceeding)'); ?></div>
+        <em class="description" id="test-connection-response">
+            <strong>
+                <?php echo __('Make sure to save before proceeding'); ?>
+            </strong>
+        </em>
         <script type = 'text/javascript'>
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             jQuery(document).ready(function($) {
@@ -605,25 +695,58 @@ class Purgely_Settings_Page {
     /**
      * Vcl update callback
      */
-    function fastly_vcl_update_callback() {
+    function fastly_vcl_update_ok_callback() {
         $purgely_instance = get_purgely_instance();
         $upgrades = new Upgrades($purgely_instance);
-
+        $activate = false;
         $result = array();
+
+        if(isset($_GET['activate']) && $_GET['activate'] === '1') {
+            $activate = true;
+        }
+
         // Upgrades for version 1.1.1
         if(version_compare(get_option('fastly_vcl_version'), $purgely_instance->vcl_last_version, '<')) {
-            $result = $upgrades->vcl_upgrade_1_1_1();
+            $result = $upgrades->vcl_upgrade_1_1_1($activate);
+
+            if($result === true && $activate) {
+                $message =  __('Successfully upgraded!');
+                // Update vcl_version
+                update_option( "fastly_vcl_version", $purgely_instance->vcl_last_version );
+
+            } elseif($result === true && !$activate) {
+                $message =  __('VCL upgraded, new version NOT activated!');
+            }
 
             if(is_array($result)) {
                 $result = array('status' => false, 'message' => __($result[0]));
             } else {
-                // Update vcl_version
-                update_option( "fastly_vcl_version", $purgely_instance->vcl_last_version );
-                $result = array('status' => true, 'message' => __('Successfully upgraded!'));
+                $result = array('status' => true, 'message' => $message);
             }
         }
         echo json_encode($result);
+        die();
+    }
 
+    /**
+     * Purge by URL callback
+     */
+    function fastly_purge_by_url_callback() {
+        $purge_url = $_GET['purge_url'];
+        $url = !empty($purge_url) ? $purge_url : false;
+        $result = array('status' => false, 'message' => __('Enter url you want to purge first.'));
+
+        if($url) {
+            $purgely = new Purgely_Purge();
+            $response = $purgely->purge(Purgely_Purge::URL, $url);
+            if($response) {
+                $result = array('status' => true, 'message' => __('Successfully purged!'));
+            } else {
+                $result = array('status' => false, 'message' => __('Error while purging, check logs.'));
+            }
+        }
+
+        echo json_encode($result);
         die();
     }
 
@@ -631,7 +754,7 @@ class Purgely_Settings_Page {
      * Test webhooks connection callback
      */
     function test_fastly_webhooks_connection_callback() {
-        $result = testWebHook();
+        $result = test_web_hook();
         echo json_encode($result);
         die();
     }
@@ -640,9 +763,19 @@ class Purgely_Settings_Page {
      * Test webhooks connection callback
      */
     function purge_all_callback() {
-        $result = purgely_purge_all();
+
+        if(!Purgely_Settings::get_setting( 'allow_purge_all')) {
+            echo json_encode(array('status' => false, 'message' => __('Allow Full Cache Purges first.')));
+            die();
+        }
+
+        $purgely    = new Purgely_Purge();
+        $result = $purgely->purge( Purgely_Purge::ALL );
+
         if($result === true){
             $result = array('status' => true, 'message' => __('Successfully purged!'));
+        } else {
+            $result = array('status' => false, 'message' => __('Purging failed, check logs!'));
         }
         echo json_encode($result);
         die();
@@ -891,6 +1024,53 @@ class Purgely_Settings_Page {
 		</p>
 		<?php
 	}
+
+    /**
+     * Render the setting input.
+     *
+     * @since 1.0.0.
+     *
+     * @return void
+     */
+    public function purge_by_url_render() {
+        ?>
+        <span class="spinner" id="vcl-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
+        <input type='text' id="purge_by_url" name='purge_by_url' placeholder="<?php echo __('https://example.com/test'); ?>" value='' size="<?php echo self::INPUT_SIZE ?>">
+        <input type="button" class="button button-secondary" id="purge-by-url" value="<?php echo __('Purge URL'); ?>">
+        <p id="purge-by-url-status"></p>
+        <p class="description">
+            <?php esc_html_e( 'Paste the url you want to purge and click Purge URL button', 'purgely' ); ?>
+        </p>
+        <script type = 'text/javascript'>
+            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
+            var purge_url_status = document.getElementById('purge-by-url-status');
+            var spinner = jQuery('#vcl-popup-spinner');
+            var purge_url_value;
+
+            jQuery(document).ready(function($) {
+                jQuery('#purge-by-url').click( function() {
+                    spinner.toggleClass('is-active');
+                    purge_url_value = document.getElementById('purge_by_url').value;
+
+                    $.ajax({
+                        method: 'GET',
+                        url: url,
+                        data: {
+                            action : 'purge_by_url',
+                            purge_url : purge_url_value
+                        },
+                        success: function(response) {
+                            console.log(response);
+                            spinner.toggleClass('is-active');
+                            purge_url_status.innerHTML = response.message;
+                        },
+                        dataType: 'json'
+                    });
+                });
+            });
+        </script>
+        <?php
+    }
 
     /**
      * Render the setting input.

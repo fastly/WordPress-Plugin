@@ -66,7 +66,7 @@ function custom_headers_edit($header_object)
 You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
 
 0. Register on `https://www.fastly.com/signup`
-1. Register new Service with your domain and obtain API token and Service ID
+1. Register new Service with your domain and obtain API token and Service ID [https://manage.fastly.com/account/personal/tokens]
 2. Deploy the new Version of the Service.
 3. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
 4. Verify connection by pressing `TEST CONNECTION` button.
@@ -81,6 +81,13 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 3. Fastly Webhooks Tab
 
 == Changelog ==
+
+= 1.2.0 =
+* Added purge by url
+* Changes regarding logging logic
+* VCL update User Interface changes
+* Fixed and enabled support for wp_cli
+
 = 1.1.1 =
 * Some Purgely plugin functionalities integrated into Fastly (along with some advanced options)
 * Purging by Surrogate-Keys is used instead of purging by url
