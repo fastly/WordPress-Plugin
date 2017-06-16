@@ -459,7 +459,8 @@ class Purgely_Settings_Page {
                         {$vcl->_last_active_version_num} for service <b>{$service_id}</b>.
                         We'll upload VCL snippets to version {$vcl->_next_cloned_version_num}");
         } else {
-            if(!empty($vcl->get_errors())) {
+            $errors = $vcl->get_errors();
+            if(!empty($errors)) {
                 $errors = $vcl->get_errors();
                 $message = $errors[0];
             }
@@ -731,7 +732,8 @@ class Purgely_Settings_Page {
      * Purge by URL callback
      */
     function fastly_purge_by_url_callback() {
-        $url = !empty($_GET['purge_url']) ? $_GET['purge_url'] : false;
+        $purge_url = $_GET['purge_url'];
+        $url = !empty($purge_url) ? $purge_url : false;
         $result = array('status' => false, 'message' => __('Enter url you want to purge first.'));
 
         if($url) {
