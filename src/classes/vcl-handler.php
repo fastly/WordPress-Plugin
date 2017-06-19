@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Class to control the VCL handling.
  */
-class Vcl_Handler {
+class Vcl_Handler
+{
 
     /** VCL data to be processed */
     protected $_vcl_data;
@@ -53,7 +55,8 @@ class Vcl_Handler {
      * Sets data to be processed, sets Credentials
      * Vcl_Handler constructor.
      */
-    public function __construct( $data) {
+    public function __construct($data)
+    {
         $this->_vcl_data = !empty($data['vcl']) ? $data['vcl'] : false;
         $this->_condition_data = !empty($data['condition']) ? $data['condition'] : false;
         $this->_setting_data = !empty($data['setting']) ? $data['setting'] : false;
@@ -63,7 +66,7 @@ class Vcl_Handler {
         $this->_api_key = purgely_get_option('fastly_api_key');
 
         $connection = test_fastly_api_connection($this->_hostname, $this->_service_id, $this->_api_key);
-        if(!$connection['status']) {
+        if (!$connection['status']) {
             $this->add_error(__($connection['message']));
             return;
         }
@@ -82,7 +85,7 @@ class Vcl_Handler {
 
         $this->_last_version_data = $this->get_last_version();
 
-        if($this->_last_version_data) {
+        if ($this->_last_version_data) {
             $this->_last_active_version_num = $this->_last_version_data->number;
         }
 
@@ -94,58 +97,59 @@ class Vcl_Handler {
      * @activate bool
      * @return bool
      */
-    public function execute($activate = false) {
+    public function execute($activate = false)
+    {
         // Check if there are connection errors from construct
         $errors = $this->get_errors();
-        if(!empty($errors)) {
+        if (!empty($errors)) {
             return false;
         }
 
         // Check if last version is fetched
-        if($this->_last_version_data === false) {
+        if ($this->_last_version_data === false) {
             $this->add_error(__('Last version does not exist'));
             return false;
         }
 
         // Check if any of the data is set
-        if(empty($this->_vcl_data) && empty($this->_condition_data) && empty($this->_setting_data)) {
+        if (empty($this->_vcl_data) && empty($this->_condition_data) && empty($this->_setting_data)) {
             $this->add_error(__('No update data set, please specify, vcl, condition or setting data'));
             return false;
         }
 
         try {
-            if(false === $this->clone_last_active_version()) {
+            if (false === $this->clone_last_active_version()) {
                 $this->add_error(__('Unable to clone last version'));
                 return false;
             }
 
             $requests = array();
 
-            if(!empty($this->_vcl_data)) {
+            if (!empty($this->_vcl_data)) {
                 $requests = array_merge($requests, $this->prepare_vcl());
             }
 
-            if(!empty($this->_condition_data)) {
+            if (!empty($this->_condition_data)) {
                 $conditions = $this->prepare_condition();
-                if(false === $conditions) {
+                if (false === $conditions) {
                     $this->add_error(__('Unable to insert new condition'));
                     return false;
                 }
                 $requests = array_merge($requests, $conditions);
             }
 
-            if(!empty($this->_setting_data)) {
+            if (!empty($this->_setting_data)) {
                 $requests = array_merge($requests, $this->prepare_setting());
             }
 
-            if(!$this->validate_version()) {
+            if (!$this->validate_version()) {
                 $this->add_error(__('Version not validated'));
                 return false;
             }
 
             // Set Request Headers
-            foreach($requests as $key => $request) {
-                if(in_array($request['type'], array(Requests::POST, Requests::PUT))) {
+            foreach ($requests as $key => $request) {
+                if (in_array($request['type'], array(Requests::POST, Requests::PUT))) {
                     $requests[$key]['headers'] = $this->_headers_post;
                 } else {
                     $requests[$key]['headers'] = $this->_headers_get;
@@ -156,8 +160,8 @@ class Vcl_Handler {
             $responses = Requests::request_multiple($requests);
 
             $pass = true;
-            foreach($responses as $response) {
-                if(!$response->success) {
+            foreach ($responses as $response) {
+                if (!$response->success) {
                     $pass = false;
                     $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
 
@@ -167,11 +171,11 @@ class Vcl_Handler {
             }
 
             // Activate version if vcl is successfully uploaded
-            if($pass && $activate) {
+            if ($pass && $activate) {
                 $request = $this->prepare_activate_version();
 
                 $response = Requests::request($request['url'], $request['headers'], array(), $request['type']);
-                if(!$response->success) {
+                if (!$response->success) {
                     $pass = false;
                     $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
 
@@ -181,9 +185,9 @@ class Vcl_Handler {
                     $message = 'VCL updated, version activated : ' . $this->_last_cloned_version;
                     send_web_hook($message);
                 }
-            } elseif($pass && !$activate) {
-                    $message = 'VCL updated, but not activated.';
-                    send_web_hook($message);
+            } elseif ($pass && !$activate) {
+                $message = 'VCL updated, but not activated.';
+                send_web_hook($message);
             }
 
         } catch (Exception $e) {
@@ -202,7 +206,8 @@ class Vcl_Handler {
      * Prepares VCL request
      * @return array|bool
      */
-    public function prepare_vcl() {
+    public function prepare_vcl()
+    {
         // Prepare VCL data content
 
         $requests = array();
@@ -219,7 +224,7 @@ class Vcl_Handler {
                     return false;
                 }
 
-                if($this->check_if_vcl_exists($single_vcl_data['name'])) {
+                if ($this->check_if_vcl_exists($single_vcl_data['name'])) {
                     $requests[] = $this->prepare_update_vcl($single_vcl_data);
                 } else {
                     $requests[] = $this->prepare_insert_vcl($single_vcl_data);
@@ -238,8 +243,9 @@ class Vcl_Handler {
      * @name string
      * @return bool
      */
-    public function check_if_vcl_exists($name) {
-        if(empty($this->_last_version_data)) {
+    public function check_if_vcl_exists($name)
+    {
+        if (empty($this->_last_version_data)) {
             return false;
         }
 
@@ -254,7 +260,8 @@ class Vcl_Handler {
      * @data array
      * @return array
      */
-    public function prepare_update_vcl($data) {
+    public function prepare_update_vcl($data)
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet/' . $data['name'];
 
         $request = array(
@@ -271,7 +278,8 @@ class Vcl_Handler {
      * @data array
      * @return array
      */
-    public function prepare_insert_vcl($data) {
+    public function prepare_insert_vcl($data)
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet';
 
         $request = array(
@@ -287,15 +295,16 @@ class Vcl_Handler {
      * Fetch last service version
      * @return bool|int
      */
-    public function get_last_version() {
+    public function get_last_version()
+    {
         $url = $this->_version_base_url;
         $response = Requests::get($url, $this->_headers_get);
         $response_data = json_decode($response->body);
 
         $this->_next_cloned_version_num = count($response_data) + 1;
 
-        foreach($response_data as $key => $version_data) {
-            if($version_data->active) {
+        foreach ($response_data as $key => $version_data) {
+            if ($version_data->active) {
                 return $version_data;
             }
         }
@@ -307,8 +316,9 @@ class Vcl_Handler {
      * Creates and returns cloned version number
      * @return bool
      */
-    public function clone_last_active_version() {
-        if(empty($this->_last_version_data)) {
+    public function clone_last_active_version()
+    {
+        if (empty($this->_last_version_data)) {
             return false;
         }
 
@@ -327,11 +337,12 @@ class Vcl_Handler {
      * Prepares condition for insertion
      * @return array|bool
      */
-    public function prepare_condition() {
+    public function prepare_condition()
+    {
         // Prepare condition content
         $requests = array();
-        foreach($this->_condition_data as $single_condition_data) {
-            if(empty($single_condition_data['name']) ||
+        foreach ($this->_condition_data as $single_condition_data) {
+            if (empty($single_condition_data['name']) ||
                 empty($single_condition_data['statement']) ||
                 empty($single_condition_data['type']) ||
                 empty($single_condition_data['priority'])
@@ -339,7 +350,7 @@ class Vcl_Handler {
                 $this->add_error(__('Condition data not properly set.'));
                 return false;
             } else {
-                if($this->get_condition($single_condition_data['name'])) {
+                if ($this->get_condition($single_condition_data['name'])) {
                     $requests[] = $this->prepare_update_condition($single_condition_data);
                 } else {
                     // Do insert here because condition is needed before setting (requests are not sent in order)
@@ -355,7 +366,8 @@ class Vcl_Handler {
      * @name string
      * @return bool
      */
-    public function get_condition($name) {
+    public function get_condition($name)
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $name;
         $response = Requests::get($url, $this->_headers_get);
         return $response->success;
@@ -366,7 +378,8 @@ class Vcl_Handler {
      * @data array
      * @return array
      */
-    public function prepare_update_condition($data) {
+    public function prepare_update_condition($data)
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $data['name'];
 
         $request = array(
@@ -383,7 +396,8 @@ class Vcl_Handler {
      * @data
      * @return array
      */
-    public function insert_condition($data) {
+    public function insert_condition($data)
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition';
 
         $request = array(
@@ -394,7 +408,7 @@ class Vcl_Handler {
 
         $response = Requests::request($request['url'], $this->_headers_post, $request['data'], $request['type']);
 
-        if($response->success) {
+        if ($response->success) {
             return array();
         } else {
             return false;
@@ -405,18 +419,19 @@ class Vcl_Handler {
      * Prepares setting for insertion
      * @return array|bool
      */
-    public function prepare_setting() {
+    public function prepare_setting()
+    {
         // Prepare setting content
         $requests = array();
-        foreach($this->_setting_data as $single_setting_data) {
-            if(empty($single_setting_data['name']) ||
+        foreach ($this->_setting_data as $single_setting_data) {
+            if (empty($single_setting_data['name']) ||
                 empty($single_setting_data['action']) ||
                 empty($single_setting_data['request_condition'])
             ) {
                 $this->add_error(__('Setting data not properly set.'));
                 return false;
             } else {
-                if($this->get_setting($single_setting_data['name'])) {
+                if ($this->get_setting($single_setting_data['name'])) {
                     $requests[] = $this->prepare_update_setting($single_setting_data);
                 } else {
                     $requests[] = $this->prepare_insert_setting($single_setting_data);
@@ -431,7 +446,8 @@ class Vcl_Handler {
      * @name string
      * @return bool
      */
-    public function get_setting($name) {
+    public function get_setting($name)
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings/' . $name;
         $response = Requests::get($url, $this->_headers_get);
         return $response->success;
@@ -442,7 +458,8 @@ class Vcl_Handler {
      * @data array
      * @return array
      */
-    public function prepare_update_setting($data) {
+    public function prepare_update_setting($data)
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings/' . $data['name'];
 
         $request = array(
@@ -459,7 +476,8 @@ class Vcl_Handler {
      * @data array
      * @return array
      */
-    public function prepare_insert_setting($data) {
+    public function prepare_insert_setting($data)
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings';
 
         $request = array(
@@ -475,7 +493,8 @@ class Vcl_Handler {
      * Validates last cloned version
      * @return bool
      */
-    public function validate_version() {
+    public function validate_version()
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/validate';
         $response = Requests::get($url, $this->_headers_get);
         return $response->success;
@@ -485,7 +504,8 @@ class Vcl_Handler {
      * Activates last cloned version
      * @return array
      */
-    public function prepare_activate_version() {
+    public function prepare_activate_version()
+    {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/activate';
 
         $request = array(
@@ -501,14 +521,16 @@ class Vcl_Handler {
      * Adds new error to error array
      * @param $message
      */
-    public function add_error($message) {
+    public function add_error($message)
+    {
         $this->_errors[] = $message;
     }
 
     /**
      * Fetches logged errors
      */
-    public function get_errors() {
+    public function get_errors()
+    {
         return $this->_errors;
     }
 }

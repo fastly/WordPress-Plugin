@@ -5,7 +5,8 @@
  *
  * Contains new schema upgrades that run automatically on version update, and some manual upgrade functions
  */
-class Upgrades {
+class Upgrades
+{
 
     protected $_main_instance;
 
@@ -16,7 +17,7 @@ class Upgrades {
      *
      * @param $object
      */
-    public function __construct( $object )
+    public function __construct($object)
     {
         $this->_main_instance = $object;
     }
@@ -25,17 +26,16 @@ class Upgrades {
     /**
      * Check version and run new upgrades if there are any
      */
-    public function check_and_run_upgrades() {
+    public function check_and_run_upgrades()
+    {
         // Upgrade to 1.1.1
-        if(version_compare($this->_main_instance->current_version, '1.1.1', '<')) {
+        if (version_compare($this->_main_instance->current_version, '1.1.1', '<')) {
             $this->upgrade1_1_1();
         }
     }
 
     /**
      * Upgrades to 1.1.1 version
-     *
-     * @since 1.1.1.
      *
      * @return void
      */
@@ -44,19 +44,19 @@ class Upgrades {
         // Convert old fastly credentials to new storing type
         $data_general = array();
         $data_advanced = array();
-        $data_general['fastly_api_hostname'] = get_option( 'fastly_api_hostname', false );
-        $data_general['fastly_api_key'] = get_option( 'fastly_api_key', false );
-        $data_general['fastly_service_id'] = get_option( 'fastly_service_id', false );
-        $data_advanced['fastly_log_purges'] = get_option( 'fastly_log_purges', false );
+        $data_general['fastly_api_hostname'] = get_option('fastly_api_hostname', false);
+        $data_general['fastly_api_key'] = get_option('fastly_api_key', false);
+        $data_general['fastly_service_id'] = get_option('fastly_service_id', false);
+        $data_advanced['fastly_log_purges'] = get_option('fastly_log_purges', false);
 
-        foreach($data_general as $k => $single){
-            if($single === false || empty($single)) {
+        foreach ($data_general as $k => $single) {
+            if ($single === false || empty($single)) {
                 unset($data_general[$k]);
             }
         }
 
-        foreach($data_advanced as $k => $single){
-            if($single === false || empty($single)) {
+        foreach ($data_advanced as $k => $single) {
+            if ($single === false || empty($single)) {
                 unset($data_advanced[$k]);
             }
         }
@@ -66,7 +66,7 @@ class Upgrades {
         update_option('fastly-settings-advanced', $data_advanced);
 
         // Update version
-        update_option( "fastly-schema-version", '1.1.1' );
+        update_option("fastly-schema-version", '1.1.1');
     }
 
     /**
@@ -74,7 +74,8 @@ class Upgrades {
      * @param bool
      * @return bool|array
      */
-    public function vcl_upgrade_1_1_1($activate) {
+    public function vcl_upgrade_1_1_1($activate)
+    {
         // Update VCL
         $vcl_dir = $this->_main_instance->vcl_dir;
         $data = array(
@@ -115,11 +116,11 @@ class Upgrades {
 
         $errors = array();
 
-        $vcl = new Vcl_Handler( $data );
-        if(!$vcl->execute($activate)) {
+        $vcl = new Vcl_Handler($data);
+        if (!$vcl->execute($activate)) {
             //Log if enabled
-            if(Purgely_Settings::get_setting( 'fastly_debug_mode' )) {
-                foreach($vcl->get_errors() as $error) {
+            if (Purgely_Settings::get_setting('fastly_debug_mode')) {
+                foreach ($vcl->get_errors() as $error) {
                     error_log($error);
                 }
             }
@@ -127,7 +128,7 @@ class Upgrades {
             $errors = array_merge($errors, $vcl->get_errors());
         }
 
-        if(!empty($errors)) {
+        if (!empty($errors)) {
             return $errors;
         }
 
