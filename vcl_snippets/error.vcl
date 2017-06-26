@@ -6,10 +6,6 @@
             return(deliver_stale);
         }
 
-        /* otherwise, return a synthetic */
-        /* uncomment below and include your HTML response here */
-        /* synthetic {"<!DOCTYPE html><html>Trouble connecting to origin</html>"};
-        return(deliver); */
     }
 
     # error 200

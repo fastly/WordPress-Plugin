@@ -15,9 +15,7 @@
 
   # Do not cache ajax requests except for recent reviews
     set req.http.X-Pass = "1";
-  }
-
-  if (req.url ~ "nocache" ||
+  } if (req.url ~ "nocache" ||
       req.url ~ "(control.php|wp-comments-post.php|wp-login.php|bb-login.php|bb-reset-password.php|register.php)") {
     set req.http.X-Pass = "1";
   }
