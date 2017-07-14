@@ -72,7 +72,7 @@ class Vcl_Handler
         }
 
         // Set credentials based data (API url, headers, last version)
-        $this->_version_base_url = $this->_hostname . '/service/' . $this->_service_id . '/version';
+        $this->_version_base_url = trailingslashit($this->_hostname) . 'service/' . $this->_service_id . '/version';
         $this->_headers_get = array(
             'Fastly-Key' => $this->_api_key,
             'Accept' => 'application/json'
