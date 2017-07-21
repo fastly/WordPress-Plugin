@@ -64,6 +64,14 @@ class Purgely_Settings
                 'sanitize_callback' => 'absint',
                 'default' => PURGELY_STALE_IF_ERROR_TTL,
             ),
+            'use_fastly_cache_tags' => array(
+                'sanitize_callback' => 'purgely_sanitize_checkbox',
+                'default' => PURGELY_USE_FASTLY_CACHE_TAGS,
+            ),
+            'use_fastly_cache_tags_for_custom_post_type' => array(
+                'sanitize_callback' => 'purgely_sanitize_checkbox',
+                'default' => PURGELY_USE_FASTLY_CACHE_TAGS_FOR_CUSTOM_POST_TYPE,
+            ),
             'surrogate_control_ttl' => array(
                 'sanitize_callback' => 'absint',
                 'default' => PURGELY_SURROGATE_CONTROL_TTL,

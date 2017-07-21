@@ -56,6 +56,20 @@ if (!defined('PURGELY_STALE_IF_ERROR_TTL')) {
 }
 
 /**
+ * Set usage of custom cache tags.
+ */
+if (!defined('PURGELY_USE_FASTLY_CACHE_TAGS')) {
+    define('PURGELY_USE_FASTLY_CACHE_TAGS', false);
+}
+
+/**
+ * Set usage of custom cache tags for custom post types.
+ */
+if (!defined('PURGELY_USE_FASTLY_CACHE_TAGS_FOR_CUSTOM_POST_TYPE')) {
+    define('PURGELY_USE_FASTLY_CACHE_TAGS_FOR_CUSTOM_POST_TYPE', false);
+}
+
+/**
  * Set the default surrogate control TTL.
  */
 if (!defined('PURGELY_SURROGATE_CONTROL_TTL')) {

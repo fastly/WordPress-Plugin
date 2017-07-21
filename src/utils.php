@@ -52,6 +52,8 @@ function purgely_get_options()
         'stale_while_revalidate_ttl',
         'enable_stale_if_error',
         'stale_if_error_ttl',
+        'use_fastly_cache_tags',
+        'use_fastly_cache_tags_for_custom_post_type',
         'surrogate_control_ttl',
         'cache_control_ttl',
         'default_purge_type',
