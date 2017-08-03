@@ -290,6 +290,30 @@ class Purgely_Settings_Page
             'purgely-stale_settings'
         );
 
+        // Set up the custom cache settings.
+        add_settings_section(
+            'purgely-fastly_cache_tags',
+            __('Fastly cache tags', 'purgely'),
+            array($this, 'fastly_cache_tags_settings_callback'),
+            'fastly-settings-advanced'
+        );
+
+        add_settings_field(
+            'use_fastly_cache_tags',
+            __('Use Fastly cache tags', 'purgely'),
+            array($this, 'use_fastly_cache_tags_render'),
+            'fastly-settings-advanced',
+            'purgely-fastly_cache_tags'
+        );
+
+        add_settings_field(
+            'use_fastly_cache_tags_for_custom_post_type',
+            __('Use Fastly cache tags for custom post types (advanced)', 'purgely'),
+            array($this, 'use_fastly_cache_tags_for_custom_post_type_render'),
+            'fastly-settings-advanced',
+            'purgely-fastly_cache_tags'
+        );
+
         // Set up the webhooks settings.
         add_settings_section(
             'purgely-webhooks_settings',
@@ -933,6 +957,16 @@ class Purgely_Settings_Page
     }
 
     /**
+     * Print the description for the stale content settings.
+     *
+     * @return void
+     */
+    public function fastly_cache_tags_settings_callback()
+    {
+        _e("This section allows you to configure fastly cache tags for special purging cases. This should be used only if you have Wordpress configuration where Fastly purging is not working for all cases. <b>Note: default Wordpress tags can be used for this purpose, if you're using them for some custom functionality already, only then use this.</b>", 'purgely');
+    }
+
+    /**
      * Print the description for the webhooks settings.
      *
      * @return void
@@ -1033,6 +1067,48 @@ class Purgely_Settings_Page
                value='<?php echo esc_attr($options['stale_if_error_ttl']); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
             <?php esc_html_e('This setting determines the amount of time that stale content will be served while the origin is returning an error state.', 'purgely'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function use_fastly_cache_tags_render()
+    {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='radio'
+               name='fastly-settings-advanced[use_fastly_cache_tags]' <?php checked(isset($options['use_fastly_cache_tags']) && true === $options['use_fastly_cache_tags']); ?>
+               value='true'>Yes&nbsp;
+        <input type='radio'
+               name='fastly-settings-advanced[use_fastly_cache_tags]' <?php checked(isset($options['use_fastly_cache_tags']) && false === $options['use_fastly_cache_tags']); ?>
+               value='false'>No
+        <p class="description">
+            <?php esc_html_e("Activate this for using fastly cache tags.\nUsage: on your posts simply assign same posts to same cache tags, and all posts assigned to same tag will be purged when one is edited.", 'purgely'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function use_fastly_cache_tags_for_custom_post_type_render()
+    {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='radio'
+               name='fastly-settings-advanced[use_fastly_cache_tags_for_custom_post_type]' <?php checked(isset($options['use_fastly_cache_tags_for_custom_post_type']) && true === $options['use_fastly_cache_tags_for_custom_post_type']); ?>
+               value='true'>Yes&nbsp;
+        <input type='radio'
+               name='fastly-settings-advanced[use_fastly_cache_tags_for_custom_post_type]' <?php checked(isset($options['use_fastly_cache_tags_for_custom_post_type']) && false === $options['use_fastly_cache_tags_for_custom_post_type']); ?>
+               value='false'>No
+        <p class="description">
+            <?php _e("Use Fastly Cache Tags on custom post types. <b>Activate only if you have custom post types registered.</b>", 'purgely'); ?>
         </p>
         <?php
     }

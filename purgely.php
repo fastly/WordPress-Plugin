@@ -147,6 +147,11 @@ class Purgely
         $upgrades = new Upgrades($this);
         $upgrades->check_and_run_upgrades();
 
+        // Initialize custom cache taxonomy if activated
+        if(Purgely_Settings::get_setting('use_fastly_cache_tags')) {
+            add_action( 'init', array($this, 'init_fastly_cache_taxonomy'));
+        }
+
         // Initialize the key collector.
         $this::$surrogate_keys_header = new Purgely_Surrogate_Keys_Header();
 
@@ -297,6 +302,58 @@ class Purgely
     public function load_plugin_textdomain()
     {
         load_plugin_textdomain('purgely', false, basename(dirname(__FILE__)) . '/languages/');
+    }
+
+    /**
+     * Initialize Fastly custom cache tags taxonomy
+     */
+    public function init_fastly_cache_taxonomy()
+    {
+        $labels = array(
+            'name'                       => _x( 'Fastly Cache Tags', 'taxonomy general name', 'purgely' ),
+            'singular_name'              => _x( 'Fastly Cache Tag', 'taxonomy singular name', 'purgely' ),
+            'search_items'               => __( 'Search Fastly Tags', 'purgely' ),
+            'popular_items'              => __( 'Popular Fastly Tags', 'purgely' ),
+            'all_items'                  => __( 'All Fastly Tags', 'purgely' ),
+            'parent_item'                => null,
+            'parent_item_colon'          => null,
+            'edit_item'                  => __( 'Edit Fastly Tags', 'purgely' ),
+            'update_item'                => __( 'Update Fastly Tags', 'purgely' ),
+            'add_new_item'               => __( 'Add New Fastly Tags', 'purgely' ),
+            'new_item_name'              => __( 'New Fastly Tags Name', 'purgely' ),
+            'separate_items_with_commas' => __( 'Separate Fastly Tags with commas', 'purgely' ),
+            'add_or_remove_items'        => __( 'Add or remove Fastly Tags', 'purgely' ),
+            'choose_from_most_used'      => __( 'Choose from the most used Fastly Tags', 'purgely' )
+        );
+
+        // create a new taxonomy
+        register_taxonomy(
+            'fastly_cache_tag',
+            array('post', 'page', 'attachment', 'nav_menu_item'),
+            array(
+                'labels' => $labels,
+                'rewrite' => array( 'slug' => 'fastly_cache_tag' ),
+                'capabilities' => array(
+                    'manage_terms' => 'manage_categories',
+                    'edit_terms' => 'manage_categories',
+                    'delete_terms' => 'manage_categories',
+                    'assign_terms' => 'edit_posts',
+                )
+            )
+        );
+
+        // Include custom post types if activated
+        if(Purgely_Settings::get_setting('use_fastly_cache_tags_for_custom_post_type')) {
+            $custom_post_types = get_post_types(array('_builtin' => false));
+            if(is_array($custom_post_types) && !empty($custom_post_types)) {
+                foreach ($custom_post_types  as $post_type) {
+                    $result = register_taxonomy_for_object_type( 'fastly_cache_tag', $post_type );
+                    if(!$result && Purgely_Settings::get_setting('fastly_debug_mode')) {
+                        error_log('Error when registering Fastly cache tags to custom post type: ' . $post_type);
+                    }
+                }
+            }
+        }
     }
 }
 
