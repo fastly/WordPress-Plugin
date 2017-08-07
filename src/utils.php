@@ -113,7 +113,7 @@ function test_fastly_api_connection($hostname, $service_id, $api_key)
         return array('status' => false, 'message' => __('Please enter credentials first'));
     }
 
-    $url = $hostname . '/service/' . $service_id;
+    $url = trailingslashit($hostname) . 'service/' . $service_id;
     $headers = array(
         'Fastly-Key' => $api_key,
         'Accept' => 'application/json'
