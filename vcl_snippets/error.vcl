@@ -7,8 +7,3 @@
         }
 
     }
-
-    # error 200
-    if (obj.status == 200) {
-        return (deliver);
-    }

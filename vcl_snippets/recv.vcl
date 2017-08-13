@@ -20,7 +20,7 @@
     set req.http.X-Pass = "1";
   }
 
-  # Remove wordpress except on non-cacheable paths
+  # Remove wordpress_test_cookie except on non-cacheable paths
   if (!req.http.X-Pass && req.http.Cookie:wordpress_test_cookie) {
     remove req.http.Cookie:wordpress_test_cookie;
   }
@@ -30,6 +30,7 @@
     set req.http.X-Pass = "1";
   }
 
+  # Cleans up cookies by removing everything except vendor_region, PHPSESSID and themetype2
   if (!req.http.X-Pass && req.http.Cookie) {
     set req.http.Cookie = ";" req.http.Cookie;
     set req.http.Cookie = regsuball(req.http.Cookie, "; +", ";");
