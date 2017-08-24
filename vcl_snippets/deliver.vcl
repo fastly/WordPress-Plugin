@@ -9,5 +9,5 @@
     if ( req.http.Fastly-Debug ) {
         set resp.http.Fastly-WordPress-VCL-Uploaded = "1.2.1";
     } else {
-        remove resp.http.astly-WordPress-VCL-Uploaded;
+        remove resp.http.Fastly-WordPress-VCL-Uploaded;
     }
