@@ -82,6 +82,9 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.1 =
+* Minor VCL clean up
+
 = 1.2.0 =
 * Added purge by url
 * Changes regarding logging logic
