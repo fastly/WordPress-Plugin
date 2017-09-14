@@ -4,7 +4,7 @@ Plugin Name: Fastly
 Plugin URI: http://fastly.com/
 Description: Configuration and cache purging for the Fastly CDN.
 Authors: Zack Tollman (github.com/tollmanz), WIRED Tech Team (github.com/CondeNast) & Fastly
-Version: 1.2.1
+Version: 1.2.2
 Author URI: http://fastly.com/
 */
 
@@ -49,7 +49,7 @@ class Purgely
      *
      * @var   string    Plugin version.
      */
-    var $version = '1.2.1';
+    var $version = '1.2.2';
 
     /**
      * Currently installed plugin version.
@@ -231,13 +231,11 @@ class Purgely
 
         $keys_header = $this::$surrogate_keys_header;
         $keys = apply_filters('purgely_surrogate_keys', $keys_header->get_keys());
+        $keys_header->set_keys($keys);
 
-        do_action('purgely_pre_send_keys', $keys);
-
-        $this::$surrogate_keys_header->set_keys($keys);
-        $this::$surrogate_keys_header->send_header();
-
-        do_action('purgely_post_send_keys', $keys);
+        do_action('purgely_pre_send_keys', $keys_header);
+        $keys_header->send_header();
+        do_action('purgely_post_send_keys', $keys_header);
     }
 
     /**
