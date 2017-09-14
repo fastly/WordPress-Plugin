@@ -231,13 +231,11 @@ class Purgely
 
         $keys_header = $this::$surrogate_keys_header;
         $keys = apply_filters('purgely_surrogate_keys', $keys_header->get_keys());
+        $keys_header->set_keys($keys);
 
-        do_action('purgely_pre_send_keys', $keys);
-
-        $this::$surrogate_keys_header->set_keys($keys);
-        $this::$surrogate_keys_header->send_header();
-
-        do_action('purgely_post_send_keys', $keys);
+        do_action('purgely_pre_send_keys', $keys_header);
+        $keys_header->send_header();
+        do_action('purgely_post_send_keys', $keys_header);
     }
 
     /**
