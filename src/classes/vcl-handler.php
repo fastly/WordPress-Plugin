@@ -215,7 +215,7 @@ class Vcl_Handler
             if (!empty($single_vcl_data['type'])) {
                 $single_vcl_data['name'] = 'wordpressplugin_' . $single_vcl_data['type'];
                 $single_vcl_data['dynamic'] = 0;
-                $single_vcl_data['priority'] = 50;
+                $single_vcl_data['priority'] = 60;
                 if (file_exists($single_vcl_data['vcl_dir'] . '/' . $single_vcl_data['type'] . '.vcl')) {
                     $single_vcl_data['content'] = file_get_contents($single_vcl_data['vcl_dir'] . '/' . $single_vcl_data['type'] . '.vcl');
                     unset($single_vcl_data['vcl_dir']);
