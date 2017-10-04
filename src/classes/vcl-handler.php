@@ -60,6 +60,7 @@ class Vcl_Handler
         $this->_vcl_data = !empty($data['vcl']) ? $data['vcl'] : false;
         $this->_condition_data = !empty($data['condition']) ? $data['condition'] : false;
         $this->_setting_data = !empty($data['setting']) ? $data['setting'] : false;
+        $this->_response_object_data = !empty($data['response']) ? $data['response'] : false;
 
         $this->_hostname = purgely_get_option('fastly_api_hostname');
         $this->_service_id = purgely_get_option('fastly_service_id');
@@ -112,7 +113,7 @@ class Vcl_Handler
         }
 
         // Check if any of the data is set
-        if (empty($this->_vcl_data) && empty($this->_condition_data) && empty($this->_setting_data)) {
+        if (empty($this->_vcl_data) && empty($this->_condition_data) && empty($this->_setting_data) && empty($this->_response_object_data)) {
             $this->add_error(__('No update data set, please specify, vcl, condition or setting data'));
             return false;
         }
@@ -140,6 +141,10 @@ class Vcl_Handler
 
             if (!empty($this->_setting_data)) {
                 $requests = array_merge($requests, $this->prepare_setting());
+            }
+
+            if (!empty($this->_response_object_data)) {
+                $requests = array_merge($requests, $this->prepare_response_object());
             }
 
             if (!$this->validate_version()) {
@@ -213,11 +218,21 @@ class Vcl_Handler
         $requests = array();
         foreach ($this->_vcl_data as $key => $single_vcl_data) {
             if (!empty($single_vcl_data['type'])) {
-                $single_vcl_data['name'] = 'wordpressplugin_' . $single_vcl_data['type'];
+
+                // Append subdirectory to name if it exists
+                if(!empty($single_vcl_data['subdirectory'])) {
+                    $single_vcl_data['name'] = 'wordpressplugin_' . $single_vcl_data['subdirectory']. '_' . $single_vcl_data['type'];
+                    $single_vcl_data['vcl_dir'] = $single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['subdirectory'];
+                    unset($single_vcl_data['subdirectory']);
+                } else {
+                    $single_vcl_data['name'] = 'wordpressplugin_' . $single_vcl_data['type'];
+                }
+
                 $single_vcl_data['dynamic'] = 0;
                 $single_vcl_data['priority'] = 60;
-                if (file_exists($single_vcl_data['vcl_dir'] . '/' . $single_vcl_data['type'] . '.vcl')) {
-                    $single_vcl_data['content'] = file_get_contents($single_vcl_data['vcl_dir'] . '/' . $single_vcl_data['type'] . '.vcl');
+
+                if (file_exists($single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['type'] . '.vcl')) {
+                    $single_vcl_data['content'] = file_get_contents($single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['type'] . '.vcl');
                     unset($single_vcl_data['vcl_dir']);
                 } else {
                     $this->add_error(__('VCL file does not exist.'));
@@ -479,6 +494,80 @@ class Vcl_Handler
     public function prepare_insert_setting($data)
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings';
+
+        $request = array(
+            'url' => $url,
+            'data' => $data,
+            'type' => Requests::POST
+        );
+
+        return $request;
+    }
+
+    /**
+     * Prepares request object for insertion
+     * @return array|bool
+     */
+    public function prepare_response_object()
+    {
+        // Prepare setting content
+        $requests = array();
+        foreach ($this->_response_object_data as $single_response_object_data) {
+            if (empty($single_response_object_data['name']) ||
+                empty($single_response_object_data['request_condition']) ||
+                empty($single_response_object_data['content'])
+            ) {
+                $this->add_error(__('Setting data not properly set.'));
+                return false;
+            } else {
+                if ($this->get_response_object($single_response_object_data['name'])) {
+                    $requests[] = $this->prepare_update_response_object($single_response_object_data);
+                } else {
+                    $requests[] = $this->prepare_insert_response_object($single_response_object_data);
+                }
+            }
+        }
+        return $requests;
+    }
+
+    /**
+     * Fetches response object by name
+     * @name string
+     * @return bool
+     */
+    public function get_response_object($name)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/response_object/' . $name;
+        $response = Requests::get($url, $this->_headers_get);
+        return $response->success;
+    }
+
+    /**
+     * Prepares update response object data
+     * @data array
+     * @return array
+     */
+    public function prepare_update_response_object($data)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/response_object/' . $data['name'];
+
+        $request = array(
+            'url' => $url,
+            'data' => $data,
+            'type' => Requests::PUT
+        );
+
+        return $request;
+    }
+
+    /**
+     * Prepares insert response object data
+     * @data array
+     * @return array
+     */
+    public function prepare_insert_response_object($data)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/response_object';
 
         $request = array(
             'url' => $url,
