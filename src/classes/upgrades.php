@@ -8,6 +8,8 @@
 class Upgrades
 {
 
+    const WORDPRESS_MODULE_NAME = 'wordpressplugin';
+
     protected $_main_instance;
 
     /**
@@ -99,7 +101,7 @@ class Upgrades
             ),
             'condition' => array(
                 array(
-                    'name' => 'wordpressplugin_request1',
+                    'name' => self::WORDPRESS_MODULE_NAME . '_request1',
                     'statement' => 'req.http.x-pass',
                     'type' => 'REQUEST',
                     'priority' => 90
@@ -107,9 +109,67 @@ class Upgrades
             ),
             'setting' => array(
                 array(
-                    'name' => 'wordpressplugin_setting1',
+                    'name' => self::WORDPRESS_MODULE_NAME . '_setting1',
                     'action' => 'pass',
                     'request_condition' => 'wordpressplugin_request1'
+                )
+            )
+        );
+
+        $errors = array();
+
+        $vcl = new Vcl_Handler($data);
+        if (!$vcl->execute($activate)) {
+            //Log if enabled
+            if (Purgely_Settings::get_setting('fastly_debug_mode')) {
+                foreach ($vcl->get_errors() as $error) {
+                    error_log($error);
+                }
+            }
+
+            $errors = array_merge($errors, $vcl->get_errors());
+        }
+
+        if (!empty($errors)) {
+            return $errors;
+        }
+
+        return true;
+    }
+
+    /**
+     * Update of maintenance/error page HTML
+     * @param string
+     * @param bool
+     * @return bool|array
+     */
+    public function maintenance_html_update($html, $activate)
+    {
+        // Update HTML VCL snippets
+        $vcl_dir = $this->_main_instance->vcl_dir;
+        $data = array(
+            'vcl' => array(
+                array(
+                    'vcl_dir' => $vcl_dir,
+                    'subdirectory' => 'error_page',
+                    'type' => 'deliver',
+                ),
+            ),
+            'condition' => array(
+                array(
+                    'name' => self::WORDPRESS_MODULE_NAME . '_error_page_condition',
+                    'statement' => 'req.http.ResponseObject == "970"',
+                    'type' => 'REQUEST',
+                    'priority' => 90,
+                )
+            ),
+            'response' => array(
+                array(
+                    'name' => self::WORDPRESS_MODULE_NAME . '_error_page_response_object',
+                    'request_condition' => self::WORDPRESS_MODULE_NAME . '_error_page_condition',
+                    'content' => $html,
+                    'status' => '503',
+                    'response' => 'Service Temporarily Unavailable'
                 )
             )
         );
