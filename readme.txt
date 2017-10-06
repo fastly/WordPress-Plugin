@@ -87,6 +87,11 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.3 =
+* wp_cli added configuration listing and updating functionality
+* Enabled setting of HTML for Maintenance/Error page (503)
+* Minor fixes
+
 = 1.2.2 =
 * Action Hooks fix
 

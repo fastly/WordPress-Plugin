@@ -495,11 +495,13 @@ class Purgely_Settings_Page
         $message = __('Make sure you have proper credentials.');
         $service_id = false;
         $vcl = new Vcl_Handler(array());
+        $purgely_instance = Purgely::instance();
+        $service_name = $purgely_instance->service_name;
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
             $service_id = purgely_get_option('fastly_service_id');
             $message = __("You are about to clone active version
-                        {$vcl->_last_active_version_num} for service <b>{$service_id}</b>.
+                        {$vcl->_last_active_version_num} for service <b>{$service_name}</b>.
                         We'll upload VCL snippets to version {$vcl->_next_cloned_version_num}");
         } else {
             $errors = $vcl->get_errors();
@@ -532,7 +534,7 @@ class Purgely_Settings_Page
                         <input type="button" id="vcl-update-btn-ok" class="button button-primary"
                                style="margin-right: 1em;" onclick="vcl_step2()"
                                value="<?php echo __('Save Changes'); ?>"/>
-                        <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
+                        <input type="button" id="vcl-update-btn-cancel" class="button button-secondary" onclick="vcl_step_cancel()"
                                value="<?php echo __('Cancel'); ?>"/>
                     </div>
                     <span class="spinner" id="vcl-popup-spinner"
@@ -582,6 +584,7 @@ class Purgely_Settings_Page
                                 button_ok_elem.hide();
                             }
 
+                            jQuery('#vcl-update-btn-cancel').val('Close');
                             vcl_response_msg.innerHTML = response.message;
                         }
                         document.getElementById('vcl-update-response').innerHTML = response.message;
@@ -1281,15 +1284,18 @@ class Purgely_Settings_Page
      */
     public function maintenance_update_html_render()
     {
+        $html = get_maintenance_html();
         add_thickbox();
         $message = __('Make sure you have proper credentials.');
         $service_id = false;
         $vcl = new Vcl_Handler(array());
+        $purgely_instance = Purgely::instance();
+        $service_name = $purgely_instance->service_name;
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
             $service_id = purgely_get_option('fastly_service_id');
             $message = __("You are about to clone active version
-                        {$vcl->_last_active_version_num} for service <b>{$service_id}</b>.
+                        {$vcl->_last_active_version_num} for service <b>{$service_name}</b>.
                         We'll make changes to version {$vcl->_next_cloned_version_num}");
         } else {
             $errors = $vcl->get_errors();
@@ -1320,9 +1326,7 @@ class Purgely_Settings_Page
                                 <label for="maintenance-html-update">
                                     <strong><?php echo __('Maintenance/Error page HTML'); ?></strong>
                                 </label>
-                                <textarea name="maintenance-html-update" id="maintenance-html-update"
-                                          rows="<?php echo self::INPUT_TEXTAREA_ROWS ?>"
-                                          cols="<?php echo self::INPUT_TEXTAREA_COLS ?>"></textarea>
+                                <textarea name="maintenance-html-update" id="maintenance-html-update" rows="<?php echo self::INPUT_TEXTAREA_ROWS ?>" cols="<?php echo self::INPUT_TEXTAREA_COLS ?>"><?php echo $html ?></textarea>
                             </td>
                         </tr>
                         </tbody>
@@ -1332,11 +1336,10 @@ class Purgely_Settings_Page
                         <input type="button" id="html-update-btn-ok" class="button button-primary"
                                style="margin-right: 1em;" onclick="vcl_step2()"
                                value="<?php echo __('Save Changes'); ?>"/>
-                        <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
+                        <input type="button" id="html-update-btn-cancel" class="button button-secondary" onclick="vcl_step_cancel()"
                                value="<?php echo __('Cancel'); ?>"/>
                     </div>
-                    <span class="spinner" id="vcl-popup-spinner"
-                          style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
+                    <span class="spinner" id="html-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
                 <?php else: ?>
                     <p>
                         <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
@@ -1359,7 +1362,7 @@ class Purgely_Settings_Page
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             var activate = 0;
             var vcl_response_msg = document.getElementById('html-response-msg');
-            var spinner = jQuery('#vcl-popup-spinner');
+            var spinner = jQuery('#html-popup-spinner');
             /** Proceed to step 2 vcl update **/
             function vcl_step2() {
                 activate = jQuery('#html_activate_new').is(":checked") ? 1 : 0;
@@ -1375,6 +1378,7 @@ class Purgely_Settings_Page
                     },
                     success: function (response) {
                         spinner.toggleClass('is-active');
+                        jQuery('#html-update-btn-cancel').val('Close');
                         vcl_response_msg.innerHTML = "<strong>" + response.message + "</strong>";
                     },
                     dataType: 'json'

@@ -543,6 +543,22 @@ class Vcl_Handler
     }
 
     /**
+     * Fetches response object data by name
+     * @name string
+     * @return bool
+     */
+    public function get_response_object_data($name)
+    {
+        $version_num = !empty($this->_last_version_data->number) ? $this->_last_version_data->number : false;
+        if(!$version_num || !$name) {
+            return false;
+        }
+        $url = $this->_version_base_url . '/' . $version_num . '/response_object/' . $name;
+        $response = Requests::get($url, $this->_headers_get);
+        return $response;
+    }
+
+    /**
      * Prepares update response object data
      * @data array
      * @return array
