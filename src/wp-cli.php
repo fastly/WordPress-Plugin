@@ -97,14 +97,14 @@ if (!class_exists('Purgely_Command')) :
             $config_value = isset($args[2]) ? $args[2] : false;
 
             if($config_section === false || $config_option === false || $config_value === false) {
-                $message = $this->color('red', 'Missing section, option or value');
-                $msg = $this->color('green', 'wp fastly configset {section} {option} {value}');
+                $message = $this->_color('red', 'Missing section, option or value');
+                $msg = $this->_color('green', 'wp fastly configset {section} {option} {value}');
                 $message .= "\nUsage: {$msg}";
-                $msg = $this->color('gold', 'general, advanced, webhooks');
+                $msg = $this->_color('gold', 'general, advanced, webhooks');
                 $message .= "\nSections: $msg";
-                $msg = $this->color('green', 'wp fastly configlist {section}');
+                $msg = $this->_color('green', 'wp fastly configlist {section}');
                 $message .= "\nTo list options from certain section run: $msg";
-                $msg = $this->color('green', '{true|false}');
+                $msg = $this->_color('green', '{true|false}');
                 $message .= "\nFor yes/no configuration options use : $msg";
                 WP_CLI::error(sprintf(__($message, 'purgely')));
                 return;
@@ -151,8 +151,8 @@ if (!class_exists('Purgely_Command')) :
             }
 
             if(update_option($section, $settings_list)) {
-                $config_option = $this->color('gold', $config_option);
-                $config_value = $this->color('red', $config_value);
+                $config_option = $this->_color('gold', $config_option);
+                $config_value = $this->_color('red', $config_value);
                 WP_CLI::success(sprintf(__(
                 "Successfully saved $config_option option in configuration with value $config_value", 'purgely'))
                 );
@@ -170,7 +170,7 @@ if (!class_exists('Purgely_Command')) :
             $conf_list = !empty($args[0]) ? $args[0] : false;
 
             if(!$conf_list) {
-                $msg = $this->color('gold', 'wp fastly configlist {general|advanced|webhooks}');
+                $msg = $this->_color('gold', 'wp fastly configlist {general|advanced|webhooks}');
 
                 WP_CLI::error(sprintf(__("Usage: {$msg}", 'purgely')));
                 return;
@@ -189,13 +189,13 @@ if (!class_exists('Purgely_Command')) :
                         $value = 'false';
                     }
 
-                    $key = $this->color('gold', $key);
-                    $value = $this->color('red', $value);
+                    $key = $this->_color('gold', $key);
+                    $value = $this->_color('red', $value);
                     echo "\n $key = $value\n";
                 }
                 return;
             }
-            $msg = $this->color('gold', 'wp fastly configlist {general|advanced|webhooks}');
+            $msg = $this->_color('gold', 'wp fastly configlist {general|advanced|webhooks}');
             WP_CLI::error(sprintf(__("Invalid config list selected. Usage: {$msg}", 'purgely')));
             return;
         }
@@ -206,7 +206,7 @@ if (!class_exists('Purgely_Command')) :
          * @param $string
          * @return string
          */
-        public function color($color, $string)
+        protected function _color($color, $string)
         {
             if(!$color || $string === false) {
                 return $string;
