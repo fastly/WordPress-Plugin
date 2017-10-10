@@ -158,7 +158,7 @@ class Upgrades
             'condition' => array(
                 array(
                     'name' => self::WORDPRESS_MODULE_NAME . '_error_page_condition',
-                    'statement' => 'req.http.ResponseObject == "970"',
+                    'statement' => 'req.http.ResponseObject == "WORDPRESS_ERROR_PAGE"',
                     'type' => 'REQUEST',
                     'priority' => 90,
                 )
