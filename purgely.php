@@ -4,7 +4,7 @@ Plugin Name: Fastly
 Plugin URI: http://fastly.com/
 Description: Configuration and cache purging for the Fastly CDN.
 Authors: Zack Tollman (github.com/tollmanz), WIRED Tech Team (github.com/CondeNast) & Fastly
-Version: 1.2.2
+Version: 1.2.3
 Author URI: http://fastly.com/
 */
 
@@ -49,7 +49,7 @@ class Purgely
      *
      * @var   string    Plugin version.
      */
-    var $version = '1.2.2';
+    var $version = '1.2.3';
 
     /**
      * Currently installed plugin version.
@@ -92,6 +92,18 @@ class Purgely
      * @var   string    The URI base for the plugin.
      */
     var $url_base = '';
+
+    /**
+     * Status of connection
+     * @var bool
+     */
+    var $connection_status = array();
+
+    /**
+     * Name of currentyl used service
+     * @var string
+     */
+    var $service_name = '';
 
     /**
      * Instantiate or return the one Purgely instance.

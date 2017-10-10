@@ -118,22 +118,27 @@ function test_fastly_api_connection($hostname, $service_id, $api_key)
         'Fastly-Key' => $api_key,
         'Accept' => 'application/json'
     );
-    try {
-        $response = Requests::get($url, $headers);
 
-        if ($response->success) {
-            $response_body = json_decode($response->body);
-            $service_name = $response_body->name;
-            $message = __('Connection Successful on service *' . $service_name . "*");
-        } else {
-            handle_logging($response);
-            $message = json_decode($response->body);
-            $message = $message->msg;
+    $purgely_instance = Purgely::instance();
+    if(empty($purgely_instance->connection_status)) {
+        try {
+            $response = Requests::get($url, $headers);
+            if ($response->success) {
+                $response_body = json_decode($response->body);
+                $service_name = $response_body->name;
+                $purgely_instance->service_name = $service_name;
+                $message = __('Connection Successful on service *' . $service_name . "*");
+            } else {
+                handle_logging($response);
+                $message = json_decode($response->body);
+                $message = $message->msg;
+            }
+            $purgely_instance->connection_status = array('status' => $response->success, 'message' => $message);
+        } catch (Exception $e) {
+            $purgely_instance->connection_status = array('status' => false, 'message' => $e->getMessage());
         }
-        return array('status' => $response->success, 'message' => $message);
-    } catch (Exception $e) {
-        return array('status' => false, 'message' => $e->getMessage());
     }
+    return $purgely_instance->connection_status;
 }
 
 /**
@@ -296,4 +301,22 @@ function get_message_by_status_code($code)
 function is_url($thing)
 {
     return 0 === strpos($thing, 'http') && esc_url_raw($thing) === $thing;
+}
+
+
+function get_maintenance_html()
+{
+    $handler = new Vcl_Handler(array());
+    $name = Upgrades::WORDPRESS_MODULE_NAME . '_error_page_response_object';
+    $response_object = $handler->get_response_object_data($name);
+
+    if($response_object && !empty($response_object->body)) {
+        $data = json_decode($response_object->body);
+        $html = !empty($data->content) ? $data->content : false;
+        if($html) {
+            return htmlentities($html);
+        }
+    }
+
+    return false;
 }

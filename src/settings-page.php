@@ -12,6 +12,16 @@ class Purgely_Settings_Page
     const INPUT_SIZE = 35;
 
     /**
+     * Size of textarea rows
+     */
+    const INPUT_TEXTAREA_ROWS = 10;
+
+    /**
+     * Size of textarea cols
+     */
+    const INPUT_TEXTAREA_COLS = 70;
+
+    /**
      * The one instance of Purgely_Settings_Page.
      *
      * @var Purgely_Settings_Page
@@ -41,6 +51,7 @@ class Purgely_Settings_Page
         add_action('admin_init', array($this, 'settings_init'));
         add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
         add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
+        add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
         add_action('wp_ajax_purge_by_url', array($this, 'fastly_purge_by_url_callback'));
         add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
         add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
@@ -362,6 +373,22 @@ class Purgely_Settings_Page
             'fastly-settings-webhooks',
             'purgely-webhooks_settings'
         );
+
+        // Set up the maintenance/error page settings.
+        add_settings_section(
+            'purgely-maintenance_settings',
+            __('Maintenance/Error settings', 'purgely'),
+            array($this, 'maintenance_settings_callback'),
+            'fastly-settings-advanced'
+        );
+
+        add_settings_field(
+            'error_html',
+            __('Maintenance/Error Page HTML', 'purgely'),
+            array($this, 'maintenance_update_html_render'),
+            'fastly-settings-advanced',
+            'purgely-maintenance_settings'
+        );
     }
 
     /**
@@ -468,11 +495,13 @@ class Purgely_Settings_Page
         $message = __('Make sure you have proper credentials.');
         $service_id = false;
         $vcl = new Vcl_Handler(array());
+        $purgely_instance = Purgely::instance();
+        $service_name = $purgely_instance->service_name;
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
             $service_id = purgely_get_option('fastly_service_id');
             $message = __("You are about to clone active version
-                        {$vcl->_last_active_version_num} for service <b>{$service_id}</b>.
+                        {$vcl->_last_active_version_num} for service <b>{$service_name}</b>.
                         We'll upload VCL snippets to version {$vcl->_next_cloned_version_num}");
         } else {
             $errors = $vcl->get_errors();
@@ -496,7 +525,6 @@ class Purgely_Settings_Page
                             </th>
                             <td>
                                 <input type="checkbox" id="vcl_activate_new" name="vcl_activate_new" value="1" checked>
-
                             </td>
                         </tr>
                         </tbody>
@@ -506,7 +534,7 @@ class Purgely_Settings_Page
                         <input type="button" id="vcl-update-btn-ok" class="button button-primary"
                                style="margin-right: 1em;" onclick="vcl_step2()"
                                value="<?php echo __('Save Changes'); ?>"/>
-                        <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
+                        <input type="button" id="vcl-update-btn-cancel" class="button button-secondary" onclick="vcl_step_cancel()"
                                value="<?php echo __('Cancel'); ?>"/>
                     </div>
                     <span class="spinner" id="vcl-popup-spinner"
@@ -556,6 +584,7 @@ class Purgely_Settings_Page
                                 button_ok_elem.hide();
                             }
 
+                            jQuery('#vcl-update-btn-cancel').val('Close');
                             vcl_response_msg.innerHTML = response.message;
                         }
                         document.getElementById('vcl-update-response').innerHTML = response.message;
@@ -745,6 +774,48 @@ class Purgely_Settings_Page
                 $result = array('status' => true, 'message' => $message);
             }
         }
+        echo json_encode($result);
+        die();
+    }
+
+    /**
+     * Vcl update callback
+     */
+    function fastly_html_update_ok_callback()
+    {
+        $purgely_instance = get_purgely_instance();
+        $upgrades = new Upgrades($purgely_instance);
+        $activate = false;
+        $result = array();
+
+        $html = $_GET['html'];
+
+        if (isset($_GET['activate']) && $_GET['activate'] === '1') {
+            $activate = true;
+        }
+
+        if(empty($html)) {
+            $result = array('status' => false, 'message' => __('Please enter HTML in textarea.'));
+            echo json_encode($result);
+            die();
+        }
+
+        // check sequence of response object trigger,?
+        $result = $upgrades->maintenance_html_update($html, $activate);
+
+        if ($result === true && $activate) {
+            $message = __('HTML Successfully updated!');
+
+        } elseif ($result === true && !$activate) {
+            $message = __('HTML updated, new version NOT activated!');
+        }
+
+        if (is_array($result)) {
+            $result = array('status' => false, 'message' => __($result[0]));
+        } else {
+            $result = array('status' => true, 'message' => $message);
+        }
+
         echo json_encode($result);
         die();
     }
@@ -977,6 +1048,16 @@ class Purgely_Settings_Page
     }
 
     /**
+     * Print the description for the maintenance/error page settings.
+     *
+     * @return void
+     */
+    public function maintenance_settings_callback()
+    {
+        esc_html_e('This section allows you to configure maintenance/error page for Fastly.', 'purgely');
+    }
+
+    /**
      * Render the setting input.
      *
      * @return void
@@ -1193,6 +1274,122 @@ class Purgely_Settings_Page
         <p class="description">
             <?php esc_html_e('Slack username.', 'purgely'); ?>
         </p>
+        <?php
+    }
+
+    /**
+     * Render the vcl update button.
+     *
+     * @return void
+     */
+    public function maintenance_update_html_render()
+    {
+        $html = get_maintenance_html();
+        add_thickbox();
+        $message = __('Make sure you have proper credentials.');
+        $service_id = false;
+        $vcl = new Vcl_Handler(array());
+        $purgely_instance = Purgely::instance();
+        $service_name = $purgely_instance->service_name;
+
+        if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
+            $service_id = purgely_get_option('fastly_service_id');
+            $message = __("You are about to clone active version
+                        {$vcl->_last_active_version_num} for service <b>{$service_name}</b>.
+                        We'll make changes to version {$vcl->_next_cloned_version_num}");
+        } else {
+            $errors = $vcl->get_errors();
+            if (!empty($errors)) {
+                $errors = $vcl->get_errors();
+                $message = $errors[0];
+            }
+        }
+        ?>
+        <div id="maintenance-html-popup-wrapper" style="display:none;">
+            <div id="html-main-ui" style="relative;">
+                <p style="margin-bottom:0;padding-bottom:0;"><?php echo $message; ?></p>
+                <?php if ($service_id) : ?>
+                    <table class="form-table">
+                        <tbody>
+                        <tr>
+                            <th>
+                                <label for="html_activate_new">
+                                    <?php echo __('Activate new version'); ?>
+                                </label>
+                            </th>
+                            <td>
+                                <input type="checkbox" id="html_activate_new" name="html_activate_new" value="1" checked>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <label for="maintenance-html-update">
+                                    <strong><?php echo __('Maintenance/Error page HTML'); ?></strong>
+                                </label>
+                                <textarea name="maintenance-html-update" id="maintenance-html-update" rows="<?php echo self::INPUT_TEXTAREA_ROWS ?>" cols="<?php echo self::INPUT_TEXTAREA_COLS ?>"><?php echo $html ?></textarea>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-bottom:.5em;" id="html-response-msg"></div>
+                    <div>
+                        <input type="button" id="html-update-btn-ok" class="button button-primary"
+                               style="margin-right: 1em;" onclick="vcl_step2()"
+                               value="<?php echo __('Save Changes'); ?>"/>
+                        <input type="button" id="html-update-btn-cancel" class="button button-secondary" onclick="vcl_step_cancel()"
+                               value="<?php echo __('Cancel'); ?>"/>
+                    </div>
+                    <span class="spinner" id="html-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
+                <?php else: ?>
+                    <p>
+                        <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
+                               value="<?php echo __('Close'); ?>"/>
+                    </p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div id="html-wrapper">
+            <a href="#TB_inline?&inlineId=maintenance-html-popup-wrapper&<?php if ($service_id) : ?>width=700&height=400<?php else : ?>width=320&height=120<?php endif; ?>"
+               name="Confirm HTML Update" class='button button-secondary thickbox' id="html-update-btn">SET HTML</a>
+            <em class="description" id="html-update-response">
+                <strong style="padding-top: 5px; display: inline-block">
+                    <?php echo __('Make sure to have valid credentials before proceeding.'); ?>
+                </strong>
+            </em>
+        </div>
+
+        <script type='text/javascript'>
+            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
+            var activate = 0;
+            var vcl_response_msg = document.getElementById('html-response-msg');
+            var spinner = jQuery('#html-popup-spinner');
+            /** Proceed to step 2 vcl update **/
+            function vcl_step2() {
+                activate = jQuery('#html_activate_new').is(":checked") ? 1 : 0;
+                var html = jQuery('#maintenance-html-update');
+                spinner.toggleClass('is-active');
+                jQuery.ajax({
+                    method: 'GET',
+                    url: url,
+                    data: {
+                        action: 'fastly_html_update_ok',
+                        activate: activate,
+                        html: html.val()
+                    },
+                    success: function (response) {
+                        spinner.toggleClass('is-active');
+                        jQuery('#html-update-btn-cancel').val('Close');
+                        vcl_response_msg.innerHTML = "<strong>" + response.message + "</strong>";
+                    },
+                    dataType: 'json'
+                });
+            }
+
+            /** Hide vcl update popup **/
+            function vcl_step_cancel() {
+                jQuery('#TB_closeWindowButton').click();
+            }
+        </script>
         <?php
     }
 

@@ -62,6 +62,11 @@ function custom_headers_edit($header_object)
   $header_object->edit_headers(array(\'custom-header\' => \'555\', \'max-age\' => \'99\'));
 }
 
+add_action(\'purgely_pre_send_keys\', \'custom_surrogate_keys\');
+function custom_surrogate_keys($keys_object) {
+    $keys_object->add_key(\'custom-key\');
+}
+
 == Installation ==
 You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
 
@@ -81,6 +86,11 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 3. Fastly Webhooks Tab
 
 == Changelog ==
+
+= 1.2.3 =
+* wp_cli added configuration listing and updating functionality
+* Enabled setting of HTML for Maintenance/Error page (503)
+* Minor fixes
 
 = 1.2.2 =
 * Action Hooks fix

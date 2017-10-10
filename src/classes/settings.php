@@ -5,6 +5,17 @@
  */
 class Purgely_Settings
 {
+
+    const FASTLY_CONFIGURATION_LIST_GENERAL = 'general';
+    const FASTLY_CONFIGURATION_LIST_ADVANCED = 'advanced';
+    const FASTLY_CONFIGURATION_LIST_WEBHOOKS = 'webhooks';
+
+    static $lists = array(
+        self::FASTLY_CONFIGURATION_LIST_GENERAL =>  'fastly-settings-general',
+        self::FASTLY_CONFIGURATION_LIST_ADVANCED => 'fastly-settings-advanced',
+        self::FASTLY_CONFIGURATION_LIST_WEBHOOKS => 'fastly-settings-webhooks'
+    );
+
     /**
      * The settings values for the plugin.
      *
@@ -142,6 +153,17 @@ class Purgely_Settings
         }
 
         return $negotiated_settings;
+    }
+
+    /**
+     * Get an array of settings section strictly from database.
+     *
+     * @param $section
+     * @return array
+     */
+    public static function get_database_section_settings($section)
+    {
+        return get_option($section, array());
     }
 
     /**
