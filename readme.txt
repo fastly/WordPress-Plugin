@@ -87,6 +87,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.4 =
+* Added fix for not yet existing pages not being purged (404 pages key issue)
+* Added admin entry for always purged keys
+
 = 1.2.3 =
 * wp_cli added configuration listing and updating functionality
 * Enabled setting of HTML for Maintenance/Error page (503)
