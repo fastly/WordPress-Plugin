@@ -70,6 +70,13 @@ if (!defined('PURGELY_USE_FASTLY_CACHE_TAGS_FOR_CUSTOM_POST_TYPE')) {
 }
 
 /**
+ * Set the always purged keys
+ */
+if (!defined('PURGELY_ALWAYS_PURGED_KEYS')) {
+    define('PURGELY_ALWAYS_PURGED_KEYS', '');
+}
+
+/**
  * Set the default surrogate control TTL.
  */
 if (!defined('PURGELY_SURROGATE_CONTROL_TTL')) {

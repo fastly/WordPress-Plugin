@@ -301,6 +301,14 @@ class Purgely_Settings_Page
             'purgely-stale_settings'
         );
 
+        add_settings_field(
+            'always_purged_keys',
+            __('Always purged keys', 'purgely'),
+            array($this, 'always_purged_keys_render'),
+            'fastly-settings-advanced',
+            'purgely-stale_settings'
+        );
+
         // Set up the custom cache settings.
         add_settings_section(
             'purgely-fastly_cache_tags',
@@ -1190,6 +1198,25 @@ class Purgely_Settings_Page
                value='false'>No
         <p class="description">
             <?php _e("Use Fastly Cache Tags on custom post types. <b>Activate only if you have custom post types registered.</b>", 'purgely'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function always_purged_keys_render()
+    {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='text' name='fastly-settings-advanced[always_purged_keys]'
+               value='<?php echo esc_attr($options['always_purged_keys']); ?>'
+               size="<?php echo self::INPUT_SIZE ?>">
+        <p class="description">
+            <?php esc_html_e('Separate keys that will always be purged by comma (Emergency usage only).', 'purgely'); ?>
+            <?php esc_html_e('Example: t-24,t-67 will purge posts with IDs 24 and 67', 'purgely'); ?>
         </p>
         <?php
     }

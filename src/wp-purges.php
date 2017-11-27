@@ -45,7 +45,7 @@ class Purgely_Purges
     public function purge($post_id)
     {
 
-        if (!in_array(get_post_status($post_id), array('publish', 'trash'))) {
+        if (!in_array(get_post_status($post_id), array('publish', 'trash', 'future'))) {
             return;
         }
 
