@@ -83,6 +83,10 @@ class Purgely_Settings
                 'sanitize_callback' => 'purgely_sanitize_checkbox',
                 'default' => PURGELY_USE_FASTLY_CACHE_TAGS_FOR_CUSTOM_POST_TYPE,
             ),
+            'always_purged_keys' => array(
+                'sanitize_callback' => 'purgely_sanitize_keys',
+                'default' => PURGELY_ALWAYS_PURGED_KEYS,
+            ),
             'surrogate_control_ttl' => array(
                 'sanitize_callback' => 'absint',
                 'default' => PURGELY_SURROGATE_CONTROL_TTL,

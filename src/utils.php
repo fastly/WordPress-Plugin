@@ -50,6 +50,7 @@ function purgely_get_options()
         'fastly_api_hostname',
         'enable_stale_while_revalidate',
         'stale_while_revalidate_ttl',
+        'always_purged_keys',
         'enable_stale_if_error',
         'stale_if_error_ttl',
         'use_fastly_cache_tags',
@@ -86,6 +87,18 @@ function purgely_get_options()
 function purgely_sanitize_key($key)
 {
     return preg_replace('/[^a-zA-Z0-9]/', '', $key);
+}
+
+/**
+ * Sanitize multiple keys
+ * Restricts a value to only a-z, A-Z, 0-9 and ,
+ *
+ * @param  string $key Unsantizied key.
+ * @return string      Sanitized key.
+ */
+function purgely_sanitize_keys($key)
+{
+    return preg_replace('/[^a-zA-Z0-9,-]/', '', $key);
 }
 
 /**

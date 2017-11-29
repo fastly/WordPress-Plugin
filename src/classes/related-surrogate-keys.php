@@ -73,14 +73,21 @@ class Purgely_Related_Surrogate_Keys
      * TODO admin checkbox support for custom managing
      * @return array Keys that always get purged.
      */
-    static public function get_always_purged_types()
+    public function get_always_purged_types()
     {
-        return array(
+        $always_purged_keys = Purgely_Settings::get_setting('always_purged_keys');
+        $always_purged_keys = explode(',', $always_purged_keys);
+
+        $always_purged_templates = array(
             'tm-post',
             'tm-home',
             'tm-feed',
-            'holos'
+            'holos',
+            'tm-404'
         );
+
+        $always_purged = array_merge($always_purged_templates, $always_purged_keys);
+        return $always_purged;
     }
 
     /**
