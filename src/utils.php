@@ -98,7 +98,7 @@ function purgely_sanitize_key($key)
  */
 function purgely_sanitize_keys($key)
 {
-    return preg_replace('/[^a-zA-Z0-9,]/', '', $key);
+    return preg_replace('/[^a-zA-Z0-9,-]/', '', $key);
 }
 
 /**
