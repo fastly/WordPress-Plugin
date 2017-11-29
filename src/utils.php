@@ -205,7 +205,7 @@ function test_web_hook()
     $headers = array('Content-type: application/json');
     $data = json_encode(
         array(
-            'text' => 'Connection successful!',
+            'text' => 'Webhook connection successful!',
             'username' => $username,
             'channel' => '#' . $channel,
             'icon_emoji' => ':airplane:'

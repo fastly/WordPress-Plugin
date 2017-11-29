@@ -198,9 +198,9 @@ class Purgely_Purge
         if ($this->get_type() === self::URL) {
             $msg = "Purging URL - " . $this->get_thing();
         } elseif ($this->get_type() === self::KEY_COLLECTION) {
-            $msg = "Purging Keys " . implode(' ', $this->get_thing());
+            $msg = "Purging Keys *" . implode(' ', $this->get_thing()) . "*";
         } else {
-            $msg = 'Purge All';
+            $msg = 'Initiated Purge All';
         }
         return $msg;
     }
