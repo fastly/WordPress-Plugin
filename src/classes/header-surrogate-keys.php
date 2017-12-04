@@ -71,6 +71,10 @@ class Purgely_Surrogate_Keys_Header extends Purgely_Header
         $header_size_bytes = mb_strlen($header_string, '8bit');
         if ($header_size_bytes >= 16384) {
             // Set to be always purged
+            if(is_multisite()) {
+                $siteId = get_current_blog_id();
+                return $siteId . '-' . 'holos';
+            }
             return 'holos';
         }
         return $keys_string;
@@ -79,12 +83,19 @@ class Purgely_Surrogate_Keys_Header extends Purgely_Header
     /**
      * Prepare the keys into a header value string.
      *
-     * @param  array $keys The keys for the header.
      * @return string Space delimited list of sanitized keys.
      */
     public function prepare_keys()
     {
         $keys = $this->get_keys();
+
+        if(is_multisite()) {
+            $siteId = get_current_blog_id();
+            foreach($keys as $index => $key) {
+                $keys[$index] = $siteId . '-' . $key;
+            }
+        }
+
         $keys = array_map(array($this, 'sanitize_key'), $keys);
         return rtrim(implode(' ', $keys), ' ');
     }
