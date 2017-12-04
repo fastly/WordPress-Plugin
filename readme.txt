@@ -2,7 +2,7 @@
 Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
 Requires at least: 4.6.2
-Tested up to: 4.9
+Tested up to: 4.9.1
 Stable tag: trunk
 License: GPLv2
 
@@ -90,6 +90,7 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 = 1.2.4 =
 * Added fix for not yet existing pages not being purged (404 pages key issue)
 * Added admin entry for always purged keys
+* Make surrogate keys comply with multi-site configurations
 
 = 1.2.3 =
 * wp_cli added configuration listing and updating functionality
