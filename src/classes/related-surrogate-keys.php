@@ -44,9 +44,9 @@ class Purgely_Related_Surrogate_Keys
     }
 
     /**
-     * Locate all of the URLs.
+     * Determine all surrogate keys
      *
-     * @return array The related URLs.
+     * @return array Related surrogate keys
      */
     public function locate_all()
     {
@@ -54,6 +54,10 @@ class Purgely_Related_Surrogate_Keys
         $this->locate_surrogate_taxonomies($this->get_post_id());
         $this->locate_author_surrogate_key($this->get_post_id());
         $this->include_always_purged_types();
+
+        if(is_multisite()) {
+            $this->appendMultiSiteIdToCollection();
+        }
 
         return $this->_collection;
     }
@@ -138,6 +142,21 @@ class Purgely_Related_Surrogate_Keys
             $key = 'a-' . absint($post->post_author);
             $this->_collection[] = $key;
         }
+    }
+
+    /**
+     * Append Multisite ID to surrogate keys
+     * @return array
+     */
+    public function appendMultiSiteIdToCollection()
+    {
+        $siteId = get_current_blog_id();
+
+        foreach($this->_collection as $index => $key) {
+            $this->_collection[$index] = $siteId . '-' .$key;
+        }
+
+        return $this->_collection;
     }
 
     /**
