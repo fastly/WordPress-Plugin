@@ -74,7 +74,6 @@ class Purgely_Related_Surrogate_Keys
     /**
      * Fetches types that get purged always (for custom themes)
      *
-     * TODO admin checkbox support for custom managing
      * @return array Keys that always get purged.
      */
     public function get_always_purged_types()
@@ -153,6 +152,9 @@ class Purgely_Related_Surrogate_Keys
         $siteId = get_current_blog_id();
 
         foreach($this->_collection as $index => $key) {
+            if(empty($key)) {
+                continue;
+            }
             $this->_collection[$index] = $siteId . '-' .$key;
         }
 
