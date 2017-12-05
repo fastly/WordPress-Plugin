@@ -15,6 +15,4 @@
         restart;
         }
 
-        /* else go to vcl_error to deliver a synthetic */
-        error 503;
     }

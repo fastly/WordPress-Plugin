@@ -1,9 +1,7 @@
   ## always cache these images & static assets
   if (req.request == "GET" && req.url.ext ~ "(?i)(css|js|gif|jpg|jpeg|bmp|png|ico|img|tga|wmf)") {
     remove req.http.cookie;
-  }
-
-  if (req.request == "GET" && req.url.path ~ "(xmlrpc\.php|wlmanifest\.xml)") {
+  } else if (req.request == "GET" && req.url.path ~ "(xmlrpc\.php|wlmanifest\.xml)") {
     remove req.http.cookie;
   }
 
