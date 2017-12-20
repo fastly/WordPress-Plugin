@@ -52,6 +52,10 @@ class Purgely_Surrogate_Key_Collection
             $term_keys
         );
 
+        if (in_array('tm-404', $template_key)) {
+            $keys = $template_key;
+        }
+
         $keys = array_unique($keys);
         $keys = array_filter($keys);
 
