@@ -87,6 +87,9 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.5 =
+* Added fix for including only always purged keys if existing
+
 = 1.2.4 =
 * Added fix for not yet existing pages not being purged (404 pages key issue)
 * Added admin entry for always purged keys

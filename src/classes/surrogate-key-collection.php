@@ -55,6 +55,15 @@ class Purgely_Surrogate_Key_Collection
         $keys = array_unique($keys);
         $keys = array_filter($keys);
 
+        // If there is always purge key existing, remove all others
+        $always_purged = Purgely_Related_Surrogate_Keys::get_always_purged_types();
+        foreach($always_purged as $k) {
+            if (in_array($k, $template_key)) {
+                $keys = $template_key;
+                break;
+            }
+        }
+
         $this->set_keys($keys);
     }
 
