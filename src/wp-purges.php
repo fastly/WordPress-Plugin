@@ -59,10 +59,13 @@ class Purgely_Purges
         }
 
         $related_collection_object = new Purgely_Related_Surrogate_Keys($post_id);
-        $collection = $related_collection_object->locate_all();
+        $collections = $related_collection_object->locate_all();
 
         $purgely = new Purgely_Purge();
-        $purgely->purge('key-collection', $collection, array());
+        foreach($collections as $collection)
+        {
+            $purgely->purge('key-collection', $collection, array());
+        }
     }
 
     /**

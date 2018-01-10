@@ -97,7 +97,6 @@ class Purgely_Purge
         }
 
         // Add Surrogate-Key header
-        // TODO - if header size exceeded, split in multiple request
         $thing = $this->get_thing();
         if (!empty($thing) && $this->get_type() === Purgely_Purge::KEY_COLLECTION) {
             $keys = implode(' ', $this->get_thing());

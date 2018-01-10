@@ -69,7 +69,7 @@ class Purgely_Surrogate_Keys_Header extends Purgely_Header
         $keys_string = $this->prepare_keys();
         $header_string = $this->_header_name . ': ' . $keys_string;
         $header_size_bytes = mb_strlen($header_string, '8bit');
-        if ($header_size_bytes >= 16384) {
+        if ($header_size_bytes >= FASTLY_MAX_HEADER_SIZE) {
             // Set to be always purged
             if(is_multisite()) {
                 $siteId = get_current_blog_id();

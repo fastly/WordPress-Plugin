@@ -59,6 +59,21 @@ class Purgely_Related_Surrogate_Keys
             $this->appendMultiSiteIdToCollection();
         }
 
+        $length = implode(' ', $this->_collection);
+        $header_size_bytes = mb_strlen($length, '8bit');
+
+        // Split keys for multiple requests if needed
+        if ($header_size_bytes >= FASTLY_MAX_HEADER_SIZE) {
+            $parts = $header_size_bytes / FASTLY_MAX_HEADER_SIZE;
+            $additional = ($parts > (int)$parts) ? 1 : 0;
+            $parts = (int)$parts + (int)$additional;
+            $len = count($this->_collection);
+            $chunks = ceil($len/$parts);
+            $this->_collection = array_chunk($this->_collection, $chunks);
+        } else {
+            $this->_collection = array($this->_collection);
+        }
+
         return $this->_collection;
     }
 
@@ -76,7 +91,7 @@ class Purgely_Related_Surrogate_Keys
      *
      * @return array Keys that always get purged.
      */
-    public function get_always_purged_types()
+    public static function get_always_purged_types()
     {
         $always_purged_keys = Purgely_Settings::get_setting('always_purged_keys');
         $always_purged_keys = explode(',', $always_purged_keys);
