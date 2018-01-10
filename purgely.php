@@ -4,7 +4,7 @@ Plugin Name: Fastly
 Plugin URI: http://fastly.com/
 Description: Configuration and cache purging for the Fastly CDN.
 Authors: Zack Tollman (github.com/tollmanz), WIRED Tech Team (github.com/CondeNast) & Fastly
-Version: 1.2.4
+Version: 1.2.5
 Author URI: http://fastly.com/
 */
 
@@ -19,6 +19,13 @@ class Purgely
      * @var Purgely
      */
     private static $instance;
+
+    /**
+     * The Purgely_Surrogate_Key_Collection object to manage Surrogate Key Collection.
+     *
+     * @var Purgely_Surrogate_Key_Collection    The Purgely_Surrogate_Key_Collection object to manage Surrogate Key Collection.
+     */
+    private static $surrogate_keys_collection;
 
     /**
      * The Purgely_Surrogate_Key object to manage Surrogate Keys.
@@ -49,7 +56,7 @@ class Purgely
      *
      * @var   string    Plugin version.
      */
-    var $version = '1.2.4';
+    var $version = '1.2.5';
 
     /**
      * Currently installed plugin version.
@@ -218,8 +225,10 @@ class Purgely
 
         global $wp_query;
         $key_collection = new Purgely_Surrogate_Key_Collection($wp_query);
-        $keys = $key_collection->get_keys();
 
+        $this::$surrogate_keys_collection = $key_collection;
+
+        $keys = $key_collection->get_keys();
         $this::$surrogate_keys_header->add_keys($keys);
     }
 
@@ -275,6 +284,11 @@ class Purgely
         }
 
         $surrogate_control = $this::$surrogate_control_header;
+
+        $custom_ttl = $this::$surrogate_keys_collection->get_custom_ttl();
+        if($custom_ttl) {
+            $surrogate_control->edit_headers(array('max-age' => $custom_ttl));
+        }
 
         do_action('purgely_pre_send_surrogate_control', $surrogate_control);
         $surrogate_control->send_header();
