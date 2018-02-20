@@ -149,3 +149,10 @@ if (!defined('PURGELY_WEBHOOKS_CHANNEL')) {
 if (!defined('PURGELY_WEBHOOKS_ACTIVATE')) {
     define('PURGELY_WEBHOOKS_ACTIVATE', false);
 }
+
+/**
+ * Max header size for Fastly API
+ */
+if (!defined('FASTLY_MAX_HEADER_KEY_SIZE')) {
+    define('FASTLY_MAX_HEADER_KEY_SIZE', 256);
+}

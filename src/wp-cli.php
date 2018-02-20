@@ -56,18 +56,22 @@ if (!class_exists('Purgely_Command')) :
                 }
             }
 
+            // Set wp original certificate instead of wp-cli certificate
+            Requests::set_certificate_path(ABSPATH . WPINC . '/certificates/ca-bundle.crt');
+
+            $purgely = new Purgely_Purge();
+
             // Find related IDs for inputed ID
             if ($type === Purgely_Purge::KEY_COLLECTION) {
                 $related_collection_object = new Purgely_Related_Surrogate_Keys($thing);
                 $thing = $related_collection_object->locate_all();
+                // Issue purge request
+                foreach ($thing as $tg) {
+                    $result = $purgely->purge($type, $tg);
+                }
+            } else {
+                $result = $purgely->purge($type, $thing);
             }
-
-            // Set wp original certificate instead of wp-cli certificate
-            Requests::set_certificate_path(ABSPATH . WPINC . '/certificates/ca-bundle.crt');
-
-            // Issue purge request
-            $purgely = new Purgely_Purge();
-            $result = $purgely->purge($type, $thing);
 
             if ($type === Purgely_Purge::ALL) {
                 $message = 'all';

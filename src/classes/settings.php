@@ -99,6 +99,10 @@ class Purgely_Settings
                 'sanitize_callback' => 'sanitize_key',
                 'default' => PURGELY_DEFAULT_PURGE_TYPE,
             ),
+            'custom_ttl_templates' => array(
+                'sanitize_callback' => 'purgely_sanitize_ttl_templates',
+                'default' => array(),
+            ),
             'webhooks_url_endpoint' => array(
                 'sanitize_callback' => 'esc_url',
                 'default' => PURGELY_WEBHOOKS_URL_ENDPOINT,
