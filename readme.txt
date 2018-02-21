@@ -89,6 +89,7 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 = 1.2.5 =
 * Added fix for including only always purged keys if existing
+* Added fix for header surrogate key number larger than limit
 
 = 1.2.4 =
 * Added fix for not yet existing pages not being purged (404 pages key issue)
