@@ -6,12 +6,50 @@
 class Purgely_Surrogate_Key_Collection
 {
 
+    const FASTLY_TEMPLATE_KEY_PREFIX = 'tm-';
+
     /**
      * The surrogate key values.
      *
      * @var array The surrogate keys that will be set.
      */
     private $_keys = array();
+
+    /**
+     * Template types
+     * @var array
+     */
+    static public $types = array(
+        'single',
+        'preview',
+        'page',
+        'archive',
+        'date',
+        'year',
+        'month',
+        'day',
+        'time',
+        'author',
+        'category',
+        'tag',
+        'tax',
+        'search',
+        'feed',
+        'comment_feed',
+        'trackback',
+        'home',
+        '404',
+        'comments_popup',
+        'paged',
+        'admin',
+        'attachment',
+        'singular',
+        'robots',
+        'posts_page',
+        'post_type_archive',
+    );
+
+    public $custom_ttl = false;
 
     /**
      * Construct the object.
@@ -102,35 +140,7 @@ class Purgely_Surrogate_Key_Collection
          */
         if (is_a($wp_query, 'WP_Query')) {
             // List of all "is" calls.
-            $types = array(
-                'single',
-                'preview',
-                'page',
-                'archive',
-                'date',
-                'year',
-                'month',
-                'day',
-                'time',
-                'author',
-                'category',
-                'tag',
-                'tax',
-                'search',
-                'feed',
-                'comment_feed',
-                'trackback',
-                'home',
-                '404',
-                'comments_popup',
-                'paged',
-                'admin',
-                'attachment',
-                'singular',
-                'robots',
-                'posts_page',
-                'post_type_archive',
-            );
+            $types = $this::$types;
 
             /**
              * Foreach "is" call, if it is a callable function, call and see if it returns true. If it does, we know what type
@@ -149,10 +159,24 @@ class Purgely_Surrogate_Key_Collection
 
         // Only set the key if it exists.
         if (!empty($template_type)) {
-            $key = 'tm-' . $template_type;
+            $key = self::FASTLY_TEMPLATE_KEY_PREFIX . $template_type;
         }
 
+        $this->set_custom_ttl($template_type);
+
         return (array)$key;
+    }
+
+    public function set_custom_ttl($template_type)
+    {
+        $custom_ttls = Purgely_Settings::get_setting('custom_ttl_templates');
+        $ttl = isset($custom_ttls[$template_type]) ? $custom_ttls[$template_type] : false;
+        $this->custom_ttl = (int)$ttl;
+    }
+
+    public function get_custom_ttl()
+    {
+        return $this->custom_ttl;
     }
 
     /**

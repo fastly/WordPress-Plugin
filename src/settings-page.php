@@ -397,6 +397,22 @@ class Purgely_Settings_Page
             'fastly-settings-advanced',
             'purgely-maintenance_settings'
         );
+
+        // Set up the custom TTL settings
+        add_settings_section(
+            'purgely-fastly_custom_ttl',
+            __('Fastly custom TTL', 'purgely'),
+            array($this, 'fastly_cache_tags_settings_callback'),
+            'fastly-settings-advanced'
+        );
+
+        add_settings_field(
+            'custom_ttl_templates',
+            __('Custom TTL for templates', 'purgely'),
+            array($this, 'custom_ttl_templates_render'),
+            'fastly-settings-advanced',
+            'purgely-fastly_custom_ttl'
+        );
     }
 
     /**
@@ -1417,6 +1433,30 @@ class Purgely_Settings_Page
                 jQuery('#TB_closeWindowButton').click();
             }
         </script>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function custom_ttl_templates_render()
+    {
+        $template_types = Purgely_Surrogate_Key_Collection::$types;
+        $options = Purgely_Settings::get_settings();
+        $data = isset($options['custom_ttl_templates']) ? $options['custom_ttl_templates'] : array();
+        ?>
+        <?php foreach($template_types as $type): ?>
+        <?php $value = isset($data[$type]) ? $data[$type] : ''; ?>
+        <div>
+            <input type='text' value='<?php echo $type; ?>' disabled>
+            <input type='text' name='fastly-settings-advanced[custom_ttl_templates][<?php echo $type; ?>]' value='<?php echo $value; ?>'>
+        </div>
+        <?php endforeach; ?>
+        <p class="description">
+            <?php esc_html_e("If set, this will override standard TTL time for this template.", 'purgely'); ?>
+        </p>
         <?php
     }
 

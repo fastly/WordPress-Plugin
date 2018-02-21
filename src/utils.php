@@ -102,6 +102,29 @@ function purgely_sanitize_keys($key)
 }
 
 /**
+ * Sanitize custom ttl templates
+ * Restricts a value to integer
+ *
+ * @param  string $key Unsantizied key.
+ * @return string      Sanitized key.
+ */
+function purgely_sanitize_ttl_templates($key)
+{
+    if(!is_array($key)) {
+        return array();
+    } else {
+        foreach($key as $k => $v) {
+            if(!is_string($v)) {
+                $key[$k] = '';
+            } else {
+                $key[$k] = preg_replace('/[^0-9]/', '', $v);
+            }
+        }
+    }
+    return $key;
+}
+
+/**
  * Callback function for sanitizing a checkbox setting.
  *
  * @param  mixed $value Unsanitized setting.

@@ -59,16 +59,13 @@ class Purgely_Related_Surrogate_Keys
             $this->appendMultiSiteIdToCollection();
         }
 
-        $length = implode(' ', $this->_collection);
-        $header_size_bytes = mb_strlen($length, '8bit');
-
+        $num = count($this->_collection);
         // Split keys for multiple requests if needed
-        if ($header_size_bytes >= FASTLY_MAX_HEADER_SIZE) {
-            $parts = $header_size_bytes / FASTLY_MAX_HEADER_SIZE;
+        if ($num >= FASTLY_MAX_HEADER_KEY_SIZE) {
+            $parts = $num / FASTLY_MAX_HEADER_KEY_SIZE;
             $additional = ($parts > (int)$parts) ? 1 : 0;
             $parts = (int)$parts + (int)$additional;
-            $len = count($this->_collection);
-            $chunks = ceil($len/$parts);
+            $chunks = ceil($num/$parts);
             $this->_collection = array_chunk($this->_collection, $chunks);
         } else {
             $this->_collection = array($this->_collection);
