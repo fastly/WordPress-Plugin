@@ -111,6 +111,10 @@ class Purgely_Settings
                 'sanitize_callback' => 'purgely_sanitize_checkbox',
                 'default' => PURGELY_WEBHOOKS_ACTIVATE,
             ),
+            'sitecode' => array(
+                'sanitize_callback' => 'sanitize_key',
+                'default' => PURGELY_SITECODE,
+            ),
         );
     }
 

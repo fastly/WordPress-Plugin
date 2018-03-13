@@ -189,6 +189,15 @@ class Purgely_Settings_Page
             'purgely-fastly_settings'
         );
 
+        add_settings_field(
+            'sitecode',
+            __('Optional Sitecode for Keys', 'purgely'),
+            array($this, 'sitecode_render'),
+            'fastly-settings-general',
+            'purgely-fastly_settings'
+        );
+
+
         // Register all of the ADVANCED settings.
         add_settings_section(
             'purgely-advanced_settings',
@@ -1430,6 +1439,24 @@ class Purgely_Settings_Page
         </p>
         <?php
     }
+
+    /**
+     * Render the sitecode.
+     *
+     * @return void
+     */
+    public function sitecode_render()
+    {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='text' name='fastly-settings-general[sitecode]'
+                value='<?php echo esc_attr($options['sitecode']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+        <p class="description">
+            <?php esc_html_e('add a sitecode to surrogate keys', 'purgely'); ?>
+        </p>
+        <?php
+    }
+
 
     /**
      * Print the general settings page.

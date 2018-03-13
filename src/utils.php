@@ -57,6 +57,7 @@ function purgely_get_options()
         'surrogate_control_ttl',
         'cache_control_ttl',
         'default_purge_type',
+        'sitecode',
     );
 
     $options = array();

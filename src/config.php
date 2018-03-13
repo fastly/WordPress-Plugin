@@ -142,3 +142,10 @@ if (!defined('PURGELY_WEBHOOKS_CHANNEL')) {
 if (!defined('PURGELY_WEBHOOKS_ACTIVATE')) {
     define('PURGELY_WEBHOOKS_ACTIVATE', false);
 }
+
+/**
+ * unique site code
+ */
+if (!defined('PURGELY_SITECODE')) {
+    define('PURGELY_SITECODE', '');
+}
