@@ -8,6 +8,8 @@
 class Purgely_Related_Surrogate_Keys
 {
 
+    private $_sitecode = "";
+
     /**
      * The post ID from which relationships are determined.
      *
@@ -36,11 +38,13 @@ class Purgely_Related_Surrogate_Keys
      */
     public function __construct($identifier)
     {
+        // get the sitecode
+        $this->_sitecode = Purgely_Settings::get_setting('sitecode');
         // Pull the post object from the $identifiers array and setup a standard post object.
         $this->set_post_id($identifier);
         $this->set_post(get_post($identifier));
         // Insert identifier
-        $this->_collection[] = 'p-' . $identifier;
+        $this->_collection[] = 'p-' . $identifier . $this->_sitecode;
     }
 
     /**
@@ -75,11 +79,12 @@ class Purgely_Related_Surrogate_Keys
      */
     static public function get_always_purged_types()
     {
+        $sc = Purgely_Settings::get_setting('sitecode');
         return array(
-            'tm-post',
-            'tm-home',
-            'tm-feed',
-            'holos'
+            'tm-post' . $sc,
+            'tm-home' . $sc,
+            'tm-feed' . $sc,
+            'holos' . $sc
         );
     }
 
@@ -111,7 +116,7 @@ class Purgely_Related_Surrogate_Keys
         if (is_array($terms)) {
             foreach ($terms as $term) {
                 if ($term) {
-                    $key = 't-' . $term;
+                    $key = 't-' . $term . $this->_sitecode;
                     $this->_collection[] = $key;
                 }
             }
@@ -128,7 +133,7 @@ class Purgely_Related_Surrogate_Keys
 
         if ($post = $this->get_post($post_id)) {
             $post->post_author;
-            $key = 'a-' . absint($post->post_author);
+            $key = 'a-' . absint($post->post_author) . $this->_sitecode;
             $this->_collection[] = $key;
         }
     }

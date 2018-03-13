@@ -12,6 +12,7 @@ class Purgely_Surrogate_Key_Collection
      * @var array The surrogate keys that will be set.
      */
     private $_keys = array();
+    private $_sitecode = "";
 
     /**
      * Construct the object.
@@ -20,6 +21,8 @@ class Purgely_Surrogate_Key_Collection
      */
     public function __construct($wp_query)
     {
+        // get the sitecode
+        $this->_sitecode = Purgely_Settings::get_setting('sitecode');
         // Register the keys that need to be set for the current request, starting with post IDs.
         $keys = $this->_add_key_post_ids($wp_query);
 
@@ -69,7 +72,7 @@ class Purgely_Surrogate_Key_Collection
         $keys = array();
 
         foreach ($wp_query->posts as $post) {
-            $keys[] = 'p-' . absint($post->ID);
+            $keys[] = 'p-' . absint($post->ID) . $this->_sitecode;
         }
 
         return $keys;
@@ -140,7 +143,7 @@ class Purgely_Surrogate_Key_Collection
 
         // Only set the key if it exists.
         if (!empty($template_type)) {
-            $key = 'tm-' . $template_type;
+            $key = 'tm-' . $template_type . $this->_sitecode;
         }
 
         return (array)$key;
@@ -162,7 +165,7 @@ class Purgely_Surrogate_Key_Collection
         if ($terms) {
             foreach ($terms as $term) {
                 if (isset($term->term_id)) {
-                    $keys[] = 't-' . $term->term_id;
+                    $keys[] = 't-' . $term->term_id . $this->_sitecode;
                 }
             }
         }
@@ -183,7 +186,7 @@ class Purgely_Surrogate_Key_Collection
         // archive page? author page? single post?
 
         if (!empty($queried_object->term_id) && !empty($queried_object->taxonomy)) {
-            $keys[] = 't-' . absint($queried_object->term_id);
+            $keys[] = 't-' . absint($queried_object->term_id) . $this->_sitecode;
         }
 
         return $keys;
@@ -202,7 +205,7 @@ class Purgely_Surrogate_Key_Collection
         $key = array();
 
         if ($author > 0) {
-            $key[] = 'a-' . absint($author);
+            $key[] = 'a-' . absint($author) . $this->_sitecode;
         }
 
         return $key;
