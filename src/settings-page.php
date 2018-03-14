@@ -245,6 +245,15 @@ class Purgely_Settings_Page
             'purgely-advanced_settings'
         );
 
+        add_settings_field(
+            'sitecode',
+            __('Optional Sitecode for Keys -- not MultiSite', 'purgely'),
+            array($this, 'sitecode_render'),
+            'fastly-settings-advanced',
+            'purgely-advanced_settings'
+        );
+
+
         // Set up the stale content settings.
         add_settings_section(
             'purgely-stale_settings',
@@ -940,6 +949,23 @@ class Purgely_Settings_Page
                value='<?php echo esc_attr($options['cache_control_ttl']); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
             <?php esc_html_e('This setting controls the "cache-control" header\'s "max-age" value. It specifies how long end users/browsers should cache pages', 'purgely'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function sitecode_render()
+    {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='text' name='fastly-settings-advanced[sitecode]'
+               value='<?php echo esc_attr($options['sitecode']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+        <p class="description">
+        <?php esc_html_e('add a sitecode to surrogate keys', 'purgely'); ?>
         </p>
         <?php
     }
