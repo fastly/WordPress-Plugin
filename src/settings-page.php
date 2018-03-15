@@ -247,7 +247,7 @@ class Purgely_Settings_Page
 
         add_settings_field(
             'sitecode',
-            __('Optional Sitecode for Keys -- not MultiSite', 'purgely'),
+            __('Optional Sitecode for Surrogate Keys', 'purgely'),
             array($this, 'sitecode_render'),
             'fastly-settings-advanced',
             'purgely-advanced_settings'
@@ -962,10 +962,15 @@ class Purgely_Settings_Page
     {
         $options = Purgely_Settings::get_settings();
         ?>
+        <?php if(is_multisite()) { ?>
+        <input type='text' name='notmuch'
+               value='' size="<?php echo self::INPUT_SIZE ?>" readonly >
+        <?php } else { ?>
         <input type='text' name='fastly-settings-advanced[sitecode]'
                value='<?php echo esc_attr($options['sitecode']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+        <?php } ?>
         <p class="description">
-        <?php esc_html_e('add a sitecode to surrogate keys', 'purgely'); ?>
+        <?php esc_html_e('add a sitecode to surrogate keys.  multisite does this automatically', 'purgely'); ?>
         </p>
         <?php
     }
