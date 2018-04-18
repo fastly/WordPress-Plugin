@@ -133,6 +133,8 @@ class Purgely
      */
     public function __construct()
     {
+        self::$instance = $this;
+
         // Set the main paths for the plugin.
         $this->root_dir = dirname(__FILE__);
         $this->src_dir = $this->root_dir . '/src';
@@ -141,26 +143,33 @@ class Purgely
         $this->url_base = untrailingslashit(plugins_url('/', __FILE__));
         $this->current_version = get_option("fastly-schema-version", false);
 
+        $include_files = array(
+            $this->src_dir . '/config.php',
+            $this->src_dir . '/utils.php',
+            $this->src_dir . '/classes/settings.php',
+            $this->src_dir . '/classes/upgrades.php',
+            $this->src_dir . '/classes/vcl-handler.php',
+            $this->src_dir . '/classes/related-surrogate-keys.php',
+            $this->src_dir . '/classes/purge-request.php',
+            $this->src_dir . '/classes/surrogate-key-collection.php',
+            $this->src_dir . '/classes/header.php',
+            $this->src_dir . '/classes/header-surrogate-control.php',
+            $this->src_dir . '/classes/header-cache-control.php',
+            $this->src_dir . '/classes/header-surrogate-keys.php',
+            $this->src_dir . '/wp-purges.php'
+        );
+
         // Include dependent files.
-        include $this->src_dir . '/config.php';
-        include $this->src_dir . '/utils.php';
-        include $this->src_dir . '/classes/settings.php';
-        include $this->src_dir . '/classes/upgrades.php';
-        include $this->src_dir . '/classes/vcl-handler.php';
-        include $this->src_dir . '/classes/related-surrogate-keys.php';
-        include $this->src_dir . '/classes/purge-request.php';
-        include $this->src_dir . '/classes/surrogate-key-collection.php';
-        include $this->src_dir . '/classes/header.php';
-        include $this->src_dir . '/classes/header-surrogate-control.php';
-        include $this->src_dir . '/classes/header-cache-control.php';
-        include $this->src_dir . '/classes/header-surrogate-keys.php';
+        $currently_included = get_included_files();
+        foreach($include_files as $file) {
+            if(!in_array($file, $currently_included)) {
+                include $file;
+            }
+        }
 
         if (is_admin()) {
             include $this->src_dir . '/settings-page.php';
         }
-
-        // Handle all automatic purges.
-        include $this->src_dir . '/wp-purges.php';
 
         // First install DB schema changes
         $upgrades = new Upgrades($this);
@@ -191,6 +200,13 @@ class Purgely
 
         // Set and send the surrogate control header.
         add_action('wp', array($this, 'send_cache_control'), 101);
+
+        //Image optimization
+        if (!is_admin() && Purgely_Settings::get_setting('io_enable_wp')) {
+            if(Purgely_Settings::get_setting('io_adaptive_pixel_ratios')) {
+                add_action('wp', array($this, 'image_optimization_device_pixel_ratios'), 101);
+            }
+        }
 
         // Load in WP CLI.
         if (defined('WP_CLI') && WP_CLI) {
@@ -378,6 +394,141 @@ class Purgely
                 }
             }
         }
+    }
+
+    public function image_optimization_device_pixel_ratios() {
+        add_filter( 'wp_get_attachment_image_attributes', array($this, 'fastly_io_pixel_ratios_attachment'), 100 , 3 );
+        add_filter('wp_calculate_image_sizes', array($this, 'fastly_io_pixel_ratios_sizes'), 100);
+
+        if(Purgely_Settings::get_setting('io_adaptive_pixel_ratios_content')) {
+            add_filter( 'wp_calculate_image_srcset', array($this, 'fastly_io_pixel_ratios_content'), 100 , 4 );
+            add_filter( 'the_content', array($this, 'fastly_io_pixel_ratios_the_content_filter'));
+        }
+
+    }
+
+    /**
+     * Set attachment srcset and unset sizes for Fastly IO pixels
+     * @param $attr
+     * @return mixed
+     */
+    function fastly_io_pixel_ratios_attachment($attr, $attachment, $size) {
+
+        $image_data = wp_get_attachment_image_src($attachment->ID, $size);
+        $width = $image_data[1];
+        $src = $attr['src'];
+        $query = '?width=' . $width;
+        $attr['src'] = $src . $query;
+        $sizes = Purgely_Settings::get_setting('io_adaptive_pixel_ratio_sizes');
+
+        $dprCount = count($sizes);
+        $attr['srcset'] = '';
+        foreach($sizes as $key => $size) {
+            $size_int = trim($size, 'x');
+            $attr['srcset'] .= $src . $query . "&dpr=$size_int {$size}";
+            if(($key+1) < $dprCount) {
+                $attr['srcset'] .= ', ';
+            }
+        }
+
+        unset($attr['sizes']);
+        $attr['alt'] = 'test';
+
+        return $attr;
+    }
+
+    /**
+     * Set pixel ratios srcset on content images
+     * @param $size_array
+     * @param $image_src
+     * @param $src
+     * @param $attachment_id
+     * @return array
+     */
+    function fastly_io_pixel_ratios_content( $size_array, $image_src, $src, $attachment_id ) {
+
+        $width = isset($image_src[0]) ? $image_src[0] : $attachment_id['width'];
+        $query = "?width={$width}";
+        $sizes = Purgely_Settings::get_setting('io_adaptive_pixel_ratio_sizes');
+        $srcset = array();
+        $main = array();
+        foreach($sizes as $size) {
+            $size_int = trim($size, 'x');
+            $srcset['url'] = $src . $query . "&dpr=$size_int";
+            $srcset['value'] = $size;
+            $main[] = $srcset;
+        }
+
+        return $main;
+    }
+
+    /**
+     * Fake sizes to unset it
+     * @return bool
+     */
+    function fastly_io_pixel_ratios_sizes() {
+        return true;
+    }
+
+    /**
+     * Adjust content images to IO format
+     * @param $content
+     * @return mixed
+     */
+    function fastly_io_pixel_ratios_the_content_filter($content) {
+        if ( ! preg_match_all( '/<img [^>]+>/', $content, $matches ) ) {
+            return $content;
+        }
+
+        $selected_images = $attachment_ids = array();
+
+        foreach( $matches[0] as $image ) {
+            if ( true == strpos( $image, ' src=' ) && preg_match( '/wp-image-([0-9]+)/i', $image, $class_id ) &&
+                ( $attachment_id = absint( $class_id[1] ) ) ) {
+
+                /*
+                 * If exactly the same image tag is used more than once, overwrite it.
+                 * All identical tags will be replaced later with 'str_replace()'.
+                 */
+                $selected_images[ $image ] = $attachment_id;
+                // Overwrite the ID when the same image is included more than once.
+                $attachment_ids[ $attachment_id ] = true;
+            }
+        }
+
+        if ( count( $attachment_ids ) > 1 ) {
+            /*
+             * Warm the object cache with post and meta information for all found
+             * images to avoid making individual database calls.
+             */
+            _prime_post_caches( array_keys( $attachment_ids ), false, true );
+        }
+
+        foreach ( $selected_images as $image => $attachment_id ) {
+
+            $image_meta = wp_get_attachment_metadata( $attachment_id );
+            $replacement = wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id );
+
+            $image_src = preg_match( '/src="([^"]+)"/', $replacement, $match_src ) ? $match_src[1] : '';
+            list( $image_src ) = explode( '?', $image_src );
+
+            // Return early if we couldn't get the image source.
+            if ( ! $image_src ) {
+                continue;
+            }
+
+            // Extract width
+            $width  = preg_match( '/ width="([0-9]+)"/',  $image, $match_width  ) ? (int) $match_width[1]  : 0;
+
+            $image_src_param = 'src="' . $image_src . '?width=' . $width . '"';
+            $image_src = 'src="' . $image_src . '"';
+
+            // Replace edited image src with src containing parameter
+            $replacement = str_replace( $image_src, $image_src_param, $replacement );
+            // Replace edited IO image in content
+            $content = str_replace( $image, $replacement, $content );
+        }
+        return $content;
     }
 }
 

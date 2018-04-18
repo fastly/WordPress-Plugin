@@ -52,6 +52,7 @@ class Purgely_Settings_Page
         add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
         add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
         add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
+        add_action('wp_ajax_fastly_io_update_ok', array($this, 'fastly_io_update_ok_callback'));
         add_action('wp_ajax_purge_by_url', array($this, 'fastly_purge_by_url_callback'));
         add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
         add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
@@ -413,6 +414,64 @@ class Purgely_Settings_Page
             'fastly-settings-advanced',
             'purgely-fastly_custom_ttl'
         );
+
+        // Set up the Image Optimization settings
+        $vcl = new Vcl_Handler(array());
+        if($vcl->check_io_possible()) {
+            add_settings_section(
+                'purgely-fastly_io',
+                __('Image Optimization', 'purgely'),
+                array($this, 'fastly_io_settings_callback'),
+                'fastly-settings-advanced'
+            );
+
+            add_settings_field(
+                'io_enable',
+                __('Enable Image Optimization in Fastly configuration', 'purgely'),
+                array($this, 'image_optimization_update_renderer'),
+                'fastly-settings-advanced',
+                'purgely-fastly_io'
+            );
+
+            add_settings_field(
+                'io_enable_wp',
+                __('Enable Image Optimization in Wordpress', 'purgely'),
+                array($this, 'image_optimization_enable_wp_renderer'),
+                'fastly-settings-advanced',
+                'purgely-fastly_io'
+            );
+
+            add_settings_field(
+                'io_adaptive_pixel_ratios',
+                __('Enable adaptive pixel ratios', 'purgely'),
+                array($this, 'use_fastly_io_adaptive_pixels'),
+                'fastly-settings-advanced',
+                'purgely-fastly_io'
+            );
+
+            add_settings_field(
+                'io_adaptive_pixel_ratios_content',
+                __('Enable image optimization for content images', 'purgely'),
+                array($this, 'fastly_io_adaptive_pixel_content'),
+                'fastly-settings-advanced',
+                'purgely-fastly_io'
+            );
+
+            add_settings_field(
+                'io_adaptive_pixel_ratio_sizes',
+                __('Adaptive pixel ratio sizes', 'purgely'),
+                array($this, 'fastly_io_adaptive_pixel_sizes'),
+                'fastly-settings-advanced',
+                'purgely-fastly_io'
+            );
+        } else {
+            add_settings_section(
+                'purgely-fastly_io',
+                __('Image Optimization', 'purgely'),
+                array($this, 'fastly_io_settings_disabled_callback'),
+                'fastly-settings-advanced'
+            );
+        }
     }
 
     /**
@@ -845,6 +904,39 @@ class Purgely_Settings_Page
     }
 
     /**
+     * Vcl update IO callback
+     */
+    function fastly_io_update_ok_callback()
+    {
+        $purgely_instance = get_purgely_instance();
+        $upgrades = new Upgrades($purgely_instance);
+        $activate = false;
+
+
+        if (isset($_GET['activate']) && $_GET['activate'] === '1') {
+            $activate = true;
+        }
+
+        $result = $upgrades->image_optimization_toggle($activate);
+
+        if ($result === true && $activate) {
+            $message = __('IO Successfully enabled, new version activated');
+
+        } elseif ($result === true && !$activate) {
+            $message = __('IO successfully enabled, new version NOT activated!');
+        }
+
+        if (is_array($result)) {
+            $result = array('status' => false, 'message' => __($result[0]));
+        } else {
+            $result = array('status' => true, 'message' => $message);
+        }
+
+        echo json_encode($result);
+        die();
+    }
+
+    /**
      * Purge by URL callback
      */
     function fastly_purge_by_url_callback()
@@ -1059,6 +1151,26 @@ class Purgely_Settings_Page
     public function fastly_cache_tags_settings_callback()
     {
         _e("This section allows you to configure fastly cache tags for special purging cases. This should be used only if you have Wordpress configuration where Fastly purging is not working for all cases. <b>Note: default Wordpress tags can be used for this purpose, if you're using them for some custom functionality already, only then use this.</b>", 'purgely');
+    }
+
+    /**
+     * Print the description for the IO settings.
+     *
+     * @return void
+     */
+    public function fastly_io_settings_callback()
+    {
+        _e("This section allows you to configure fastly image optimizations options.", 'purgely');
+    }
+
+    /**
+     * Print the description for the IO disabled settings.
+     *
+     * @return void
+     */
+    public function fastly_io_settings_disabled_callback()
+    {
+        _e("Please contact your sales rep or send an email to support@fastly.com to request image optimization activation for your Fastly service.", 'purgely');
     }
 
     /**
@@ -1404,13 +1516,13 @@ class Purgely_Settings_Page
         <script type='text/javascript'>
             var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             var activate = 0;
-            var vcl_response_msg = document.getElementById('html-response-msg');
-            var spinner = jQuery('#html-popup-spinner');
+            var vcl_response_msg_html = document.getElementById('html-response-msg');
+            var spinner_html = jQuery('#html-popup-spinner');
             /** Proceed to step 2 vcl update **/
             function vcl_step2() {
                 activate = jQuery('#html_activate_new').is(":checked") ? 1 : 0;
                 var html = jQuery('#maintenance-html-update');
-                spinner.toggleClass('is-active');
+                spinner_html.toggleClass('is-active');
                 jQuery.ajax({
                     method: 'GET',
                     url: url,
@@ -1420,9 +1532,9 @@ class Purgely_Settings_Page
                         html: html.val()
                     },
                     success: function (response) {
-                        spinner.toggleClass('is-active');
+                        spinner_html.toggleClass('is-active');
                         jQuery('#html-update-btn-cancel').val('Close');
-                        vcl_response_msg.innerHTML = "<strong>" + response.message + "</strong>";
+                        vcl_response_msg_html.innerHTML = "<strong>" + response.message + "</strong>";
                     },
                     dataType: 'json'
                 });
@@ -1431,6 +1543,125 @@ class Purgely_Settings_Page
             /** Hide vcl update popup **/
             function vcl_step_cancel() {
                 jQuery('#TB_closeWindowButton').click();
+            }
+        </script>
+        <?php
+    }
+
+    /**
+     * Render the vcl update button (Image optimization).
+     *
+     * @return void
+     */
+    public function image_optimization_update_renderer()
+    {
+        add_thickbox();
+        $message = __('Make sure you have proper credentials.');
+        $service_id = false;
+        $vcl = new Vcl_Handler(array());
+        $io_enabled = $vcl->check_io_active_on_fastly();
+        $io_enabled_label = $io_enabled ? 'Enabled' : 'Disabled';
+        $io_enabled_label_after = !$io_enabled ? 'Enabled' : 'Disabled';
+
+        $purgely_instance = Purgely::instance();
+        $service_name = $purgely_instance->service_name;
+
+        if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
+            $service_id = purgely_get_option('fastly_service_id');
+            $message = __("You are about to clone active version
+                        {$vcl->_last_active_version_num} for service <b>{$service_name}</b>.
+                        We'll make changes to version {$vcl->_next_cloned_version_num}");
+        } else {
+            $errors = $vcl->get_errors();
+            if (!empty($errors)) {
+                $errors = $vcl->get_errors();
+                $message = $errors[0];
+            }
+        }
+        ?>
+        <div id="io-popup-wrapper" style="display:none;">
+            <div id="io-main-ui" style="relative;">
+                <p style="margin-bottom:0;padding-bottom:0;"><?php echo $message; ?></p>
+                <?php if ($service_id) : ?>
+                    <table class="form-table">
+                        <tbody>
+                        <tr>
+                            <th>
+                                <label for="io_activate_new">
+                                    <?php echo __('Activate new version'); ?>
+                                </label>
+                            </th>
+                            <td>
+                                <input type="checkbox" id="io_activate_new" name="io_activate_new" value="1" checked>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-bottom:.5em;" id="io-response-msg"></div>
+                    <div>
+                        <input type="button" id="io-update-btn-ok" class="button button-primary"
+                               style="margin-right: 1em;" onclick="vcl_step3()"
+                               value="<?php echo __('Save Changes'); ?>"/>
+                        <input type="button" id="io-update-btn-cancel" class="button button-secondary" onclick="vcl_step_cancel()"
+                               value="<?php echo __('Cancel'); ?>"/>
+                    </div>
+                    <span class="spinner" id="io-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
+                <?php else: ?>
+                    <p>
+                        <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
+                               value="<?php echo __('Close'); ?>"/>
+                    </p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div id="io-wrapper">
+            <a href="#TB_inline?&inlineId=io-popup-wrapper&<?php if ($service_id) : ?>width=700&height=400<?php else : ?>width=320&height=120<?php endif; ?>"
+               name="Confirm Image Optimization Update" class='button button-secondary thickbox' id="io-update-btn"><?php echo $io_enabled_label; ?></a>
+            <em class="description" id="io-update-response">
+                <strong style="padding-top: 5px; display: inline-block">
+                    <?php echo __('Click to change.'); ?>
+                </strong>
+            </em>
+        </div>
+
+        <p class="description">
+            <?php esc_html_e("Enabling will upload required Image Optimization VCL snippets to Fastly, it will not enable it on wordpress automatically.", 'purgely'); ?>
+        </p>
+
+        <script type='text/javascript'>
+            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
+            var activate = 0;
+            var vcl_response_msg_io = document.getElementById('io-response-msg');
+            var spinner_io = jQuery('#io-popup-spinner');
+            /** Proceed to step 2 vcl update **/
+            function vcl_step3() {
+                activate = jQuery('#io_activate_new').is(":checked") ? 1 : 0;
+                spinner_io.toggleClass('is-active');
+                jQuery.ajax({
+                    method: 'GET',
+                    url: url,
+                    data: {
+                        action: 'fastly_io_update_ok',
+                        activate: activate,
+                    },
+                    success: function (response) {
+                        spinner_io.toggleClass('is-active');
+                        jQuery('#io-update-btn-cancel').val('Close');
+                        jQuery('#io-update-btn-ok').hide();
+                        if(response.status) {
+                            var vcl_btn_label = document.getElementById('io-update-btn');
+                            vcl_btn_label.innerHTML = "<?php echo $io_enabled_label_after; ?>";
+                        }
+                        vcl_response_msg_io.innerHTML = "<strong>" + response.message + "</strong>";
+                    },
+                    dataType: 'json'
+                });
+            }
+
+            /** Hide vcl update popup **/
+            function vcl_step_cancel() {
+                jQuery('#TB_closeWindowButton').click();
+                jQuery('#io-update-btn-ok').show();
             }
         </script>
         <?php
@@ -1459,6 +1690,96 @@ class Purgely_Settings_Page
         </p>
         <?php
     }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function use_fastly_io_adaptive_pixels()
+    {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='radio'
+               name='fastly-settings-advanced[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && true === $options['io_adaptive_pixel_ratios']); ?>
+               value='true'>Yes&nbsp;
+        <input type='radio'
+               name='fastly-settings-advanced[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && false === $options['io_adaptive_pixel_ratios']); ?>
+               value='false'>No
+        <p class="description">
+            <?php esc_html_e("Activate to enable adaptive pixel ratios support.", 'purgely'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function image_optimization_enable_wp_renderer()
+    {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='radio'
+               name='fastly-settings-advanced[io_enable_wp]' <?php checked(isset($options['io_enable_wp']) && true === $options['io_enable_wp']); ?>
+               value='true'>Yes&nbsp;
+        <input type='radio'
+               name='fastly-settings-advanced[io_enable_wp]' <?php checked(isset($options['io_enable_wp']) && false === $options['io_enable_wp']); ?>
+               value='false'>No
+        <p class="description">
+            <?php esc_html_e("Activate to enable Image Optimization on your site.", 'purgely'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function fastly_io_adaptive_pixel_content()
+    {
+        $options = Purgely_Settings::get_settings();
+        ?>
+        <input type='radio'
+               name='fastly-settings-advanced[io_adaptive_pixel_ratios_content]' <?php checked(isset($options['io_adaptive_pixel_ratios_content']) && true === $options['io_adaptive_pixel_ratios_content']); ?>
+               value='true'>Yes&nbsp;
+        <input type='radio'
+               name='fastly-settings-advanced[io_adaptive_pixel_ratios_content]' <?php checked(isset($options['io_adaptive_pixel_ratios_content']) && false === $options['io_adaptive_pixel_ratios_content']); ?>
+               value='false'>No
+        <p class="description">
+            <?php esc_html_e("Active to enable adaptive pixel ratios for images inserted inside content. Only attachments used by default.", 'purgely'); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the setting input.
+     *
+     * @return void
+     */
+    public function fastly_io_adaptive_pixel_sizes()
+    {
+        $options = Purgely_Settings::get_settings();
+        $sizes = $options['io_adaptive_pixel_ratio_sizes'];
+        ?>
+        <select name="fastly-settings-advanced[io_adaptive_pixel_ratio_sizes][]" multiple>
+            <?php foreach(Purgely_Settings::POSSIBLE_PIXEL_RATIOS as $ratio): ?>
+                <?php if(in_array($ratio, $sizes)) : ?>
+                    <option selected value="<?php echo $ratio; ?>"><?php echo $ratio; ?></option>
+                <?php else : ?>
+                    <option value="<?php echo $ratio; ?>"><?php echo $ratio; ?></option>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </select>
+
+        <p class="description">
+            <?php esc_html_e("Usable device pixel ratio sizes.", 'purgely'); ?>
+        </p>
+        <?php
+    }
+
 
     /**
      * Render the setting input.

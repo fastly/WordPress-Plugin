@@ -71,7 +71,7 @@ function custom_surrogate_keys($keys_object) {
 You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
 
 0. Register on `https://www.fastly.com/signup`
-1. Register new Service with your domain and obtain API token and Service ID [https://manage.fastly.com/account/personal/tokens]
+1. Register new Service with your domain and obtain API token and Service ID [https://manage.fastly.com/account/personal/tokens]. These directions will help with creating the API token [https://docs.fastly.com/guides/account-management-and-security/using-api-tokens]
 2. Deploy the new Version of the Service.
 3. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
 4. Verify connection by pressing `TEST CONNECTION` button.
@@ -89,6 +89,7 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 = 1.2.5 =
 * Added fix for including only always purged keys if existing
+* Added fix for header surrogate key number larger than limit
 
 = 1.2.4 =
 * Added fix for not yet existing pages not being purged (404 pages key issue)

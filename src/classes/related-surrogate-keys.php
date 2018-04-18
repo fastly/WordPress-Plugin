@@ -60,7 +60,6 @@ class Purgely_Related_Surrogate_Keys
         }
 
         $num = count($this->_collection);
-
         // Split keys for multiple requests if needed
         if ($num >= FASTLY_MAX_HEADER_KEY_SIZE) {
             $parts = $num / FASTLY_MAX_HEADER_KEY_SIZE;
