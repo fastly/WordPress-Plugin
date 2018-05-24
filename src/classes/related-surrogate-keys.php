@@ -55,7 +55,9 @@ class Purgely_Related_Surrogate_Keys
         $this->locate_author_surrogate_key($this->get_post_id());
         $this->include_always_purged_types();
 
-        if(is_multisite()) {
+        $sitecode = Purgely_Settings::get_setting('sitecode');
+
+        if(is_multisite() or $sitecode) {
             $this->appendMultiSiteIdToCollection();
         }
 
@@ -161,7 +163,12 @@ class Purgely_Related_Surrogate_Keys
      */
     public function appendMultiSiteIdToCollection()
     {
-        $siteId = get_current_blog_id();
+        $siteId = "0"; // a default
+        if (is_multisite()) {
+            $siteId = get_current_blog_id();
+        } else {
+            $siteId = Purgely_Settings::get_setting('sitecode');
+        }
 
         foreach($this->_collection as $index => $key) {
             if(empty($key)) {

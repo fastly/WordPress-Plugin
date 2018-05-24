@@ -104,6 +104,10 @@ class Purgely_Settings
                 'sanitize_callback' => 'sanitize_key',
                 'default' => PURGELY_DEFAULT_PURGE_TYPE,
             ),
+            'sitecode' => array(
+                'sanitize_callback' => 'sanitize_key',
+                'default' => FASTLY_SITECODE,
+            ),
             'custom_ttl_templates' => array(
                 'sanitize_callback' => 'purgely_sanitize_ttl_templates',
                 'default' => array(),

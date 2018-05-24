@@ -190,3 +190,7 @@ if (!defined('FASTLY_MAX_HEADER_KEY_SIZE')) {
 if (!defined('FASTLY_MAX_HEADER_SIZE')) {
     define('FASTLY_MAX_HEADER_SIZE', 16384);
 }
+
+if (!defined('FASTLY_SITECODE')) {
+    define('FASTLY_SITECODE', false);
+}
