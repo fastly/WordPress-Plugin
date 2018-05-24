@@ -15,6 +15,8 @@ class Vcl_Handler
     /** Setting data to be processed */
     protected $_setting_data;
 
+    /** Fastly Header data to be processed */
+    protected $_header_data;
 
     /** Fastly API endpoint */
     protected $_hostname;
@@ -33,7 +35,6 @@ class Vcl_Handler
 
     /** Headers used for POST, PUT requests */
     protected $_headers_post;
-
 
     /** Last active version data */
     protected $_last_version_data;
@@ -60,6 +61,7 @@ class Vcl_Handler
         $this->_vcl_data = !empty($data['vcl']) ? $data['vcl'] : false;
         $this->_condition_data = !empty($data['condition']) ? $data['condition'] : false;
         $this->_setting_data = !empty($data['setting']) ? $data['setting'] : false;
+        $this->_header_data = !empty($data['header']) ? $data['header'] : false;
         $this->_response_object_data = !empty($data['response']) ? $data['response'] : false;
 
         $this->_hostname = purgely_get_option('fastly_api_hostname');
@@ -90,6 +92,10 @@ class Vcl_Handler
             $this->_last_active_version_num = $this->_last_version_data->number;
         }
 
+        if(!$this->_last_cloned_version) {
+            $this->_last_cloned_version = $this->_last_active_version_num;
+        }
+
         return;
     }
 
@@ -113,7 +119,12 @@ class Vcl_Handler
         }
 
         // Check if any of the data is set
-        if (empty($this->_vcl_data) && empty($this->_condition_data) && empty($this->_setting_data) && empty($this->_response_object_data)) {
+        if (empty($this->_vcl_data) &&
+            empty($this->_condition_data) &&
+            empty($this->_setting_data) &&
+            empty($this->_response_object_data) &&
+            empty($this->_header_data)
+        ) {
             $this->add_error(__('No update data set, please specify, vcl, condition or setting data'));
             return false;
         }
@@ -137,6 +148,10 @@ class Vcl_Handler
                     return false;
                 }
                 $requests = array_merge($requests, $conditions);
+            }
+
+            if (!empty($this->_header_data)) {
+                $requests = array_merge($requests, $this->prepare_header());
             }
 
             if (!empty($this->_setting_data)) {
@@ -221,15 +236,20 @@ class Vcl_Handler
 
                 // Append subdirectory to name if it exists
                 if(!empty($single_vcl_data['subdirectory'])) {
-                    $single_vcl_data['name'] = 'wordpressplugin_' . $single_vcl_data['subdirectory']. '_' . $single_vcl_data['type'];
+                    $single_vcl_data['name'] = Upgrades::WORDPRESS_MODULE_NAME . '_' . $single_vcl_data['subdirectory']. '_' . $single_vcl_data['type'];
                     $single_vcl_data['vcl_dir'] = $single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['subdirectory'];
                     unset($single_vcl_data['subdirectory']);
                 } else {
-                    $single_vcl_data['name'] = 'wordpressplugin_' . $single_vcl_data['type'];
+                    $single_vcl_data['name'] = Upgrades::WORDPRESS_MODULE_NAME . '_' . $single_vcl_data['type'];
                 }
 
-                $single_vcl_data['dynamic'] = 0;
-                $single_vcl_data['priority'] = 60;
+                if(!isset($single_vcl_data['dynamic'])) {
+                    $single_vcl_data['dynamic'] = 0;
+                }
+
+                if(!isset($single_vcl_data['priority'])) {
+                    $single_vcl_data['priority'] = 60;
+                }
 
                 if (file_exists($single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['type'] . '.vcl')) {
                     $single_vcl_data['content'] = file_get_contents($single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['type'] . '.vcl');
@@ -239,10 +259,15 @@ class Vcl_Handler
                     return false;
                 }
 
-                if ($this->check_if_vcl_exists($single_vcl_data['name'])) {
-                    $requests[] = $this->prepare_update_vcl($single_vcl_data);
+                if(!isset($single_vcl_data['delete'])) {
+                    if ($this->check_if_vcl_exists($single_vcl_data['name'])) {
+                        $requests[] = $this->prepare_update_vcl($single_vcl_data);
+                    } else {
+                        $requests[] = $this->prepare_insert_vcl($single_vcl_data);
+                    }
                 } else {
-                    $requests[] = $this->prepare_insert_vcl($single_vcl_data);
+                    // Delete VCL snippet
+                    $requests[] = $this->prepare_delete_vcl($single_vcl_data['name']);
                 }
             } else {
                 $this->add_error(__('VCL type not set.'));
@@ -307,6 +332,23 @@ class Vcl_Handler
     }
 
     /**
+     * Prepare request for delete VCL
+     * @param $name
+     * @return array
+     */
+    public function prepare_delete_vcl($name)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet/' . $name;
+
+        $request = array(
+            'url' => $url,
+            'type' => Requests::DELETE
+        );
+
+        return $request;
+    }
+
+    /**
      * Fetch last service version
      * @return bool|int
      */
@@ -365,12 +407,18 @@ class Vcl_Handler
                 $this->add_error(__('Condition data not properly set.'));
                 return false;
             } else {
-                if ($this->get_condition($single_condition_data['name'])) {
-                    $requests[] = $this->prepare_update_condition($single_condition_data);
+                if(!isset($single_condition_data['delete'])) {
+                    if ($this->get_condition($single_condition_data['name'])) {
+                        $requests[] = $this->prepare_update_condition($single_condition_data);
+                    } else {
+                        // Do insert here because condition is needed before setting (requests are not sent in order)
+                        return $this->insert_condition($single_condition_data);
+                    }
                 } else {
-                    // Do insert here because condition is needed before setting (requests are not sent in order)
-                    return $this->insert_condition($single_condition_data);
+                    // Delete Condition
+                    return $this->delete_condition($single_condition_data['name']);
                 }
+
             }
         }
         return $requests;
@@ -431,6 +479,138 @@ class Vcl_Handler
     }
 
     /**
+     * Prepare condition for deletion
+     * @param $name
+     * @return array|bool
+     * @throws Requests_Exception
+     */
+    public function delete_condition($name)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $name;
+
+        $request = array(
+            'url' => $url,
+            'type' => Requests::DELETE
+        );
+
+        $response = Requests::request($request['url'], $this->_headers_post, array(), $request['type']);
+
+        // If condition does not exist, thats ok too
+        return array();
+    }
+
+    /**
+     * Prepares header for insertion
+     * @return array|bool
+     */
+    public function prepare_header()
+    {
+        // Prepare condition content
+        $requests = array();
+        foreach ($this->_header_data as $single_header_data) {
+            if (empty($single_header_data['name']) ||
+                empty($single_header_data['type']) ||
+                empty($single_header_data['action']) ||
+                empty($single_header_data['dst']) ||
+                empty($single_header_data['src']) ||
+                !isset($single_header_data['ignore_if_set']) ||
+                empty($single_header_data['priority'])
+            ) {
+                $this->add_error(__('Header data not properly set.'));
+                return false;
+            } else {
+                if(!isset($single_header_data['delete'])) {
+                    if ($this->get_header($single_header_data['name'])) {
+                        $requests[] = $this->prepare_update_header($single_header_data);
+                    } else {
+                        // Do insert here because condition is needed before setting (requests are not sent in order)
+                        return $this->insert_header($single_header_data);
+                    }
+                } else {
+                    // Delete Condition
+                    return $this->delete_header($single_header_data['name']);
+                }
+            }
+        }
+        return $requests;
+    }
+
+    /**
+     * Fetches header by name
+     * @name string
+     * @return bool
+     */
+    public function get_header($name)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/header/' . $name;
+        $response = Requests::get($url, $this->_headers_get);
+        return $response->success;
+    }
+
+    /**
+     * Prepare header for update
+     * @data array
+     * @return array
+     */
+    public function prepare_update_header($data)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/header/' . $data['name'];
+
+        $request = array(
+            'url' => $url,
+            'data' => $data,
+            'type' => Requests::PUT
+        );
+
+        return $request;
+    }
+
+    /**
+     * Prepare header for insert
+     * @data
+     * @return array
+     */
+    public function insert_header($data)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/header';
+
+        $request = array(
+            'url' => $url,
+            'data' => $data,
+            'type' => Requests::POST
+        );
+
+        $response = Requests::request($request['url'], $this->_headers_post, $request['data'], $request['type']);
+
+        if ($response->success) {
+            return array();
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Prepare header for deletion
+     * @param $name
+     * @return array|bool
+     * @throws Requests_Exception
+     */
+    public function delete_header($name)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/header/' . $name;
+
+        $request = array(
+            'url' => $url,
+            'type' => Requests::DELETE
+        );
+
+        $response = Requests::request($request['url'], $this->_headers_post, array(), $request['type']);
+
+        // If condition does not exist, thats ok too
+        return array();
+    }
+
+    /**
      * Prepares setting for insertion
      * @return array|bool
      */
@@ -440,16 +620,29 @@ class Vcl_Handler
         $requests = array();
         foreach ($this->_setting_data as $single_setting_data) {
             if (empty($single_setting_data['name']) ||
-                empty($single_setting_data['action']) ||
                 empty($single_setting_data['request_condition'])
             ) {
                 $this->add_error(__('Setting data not properly set.'));
                 return false;
             } else {
-                if ($this->get_setting($single_setting_data['name'])) {
-                    $requests[] = $this->prepare_update_setting($single_setting_data);
+
+                if(isset($single_setting_data['service_id'])) {
+                    $single_setting_data['service_id'] = $this->_service_id;
+                }
+
+                if(isset($single_setting_data['version'])) {
+                    $single_setting_data['version'] = $this->_last_active_version_num;
+                }
+
+                if(!isset($single_setting_data['delete'])) {
+                    if ($this->get_setting($single_setting_data['name'])) {
+                        $requests[] = $this->prepare_update_setting($single_setting_data);
+                    } else {
+                        $requests[] = $this->prepare_insert_setting($single_setting_data);
+                    }
                 } else {
-                    $requests[] = $this->prepare_insert_setting($single_setting_data);
+                    // Remove setting
+                    $requests[] = $this->prepare_delete_setting($single_setting_data['name']);
                 }
             }
         }
@@ -499,6 +692,23 @@ class Vcl_Handler
             'url' => $url,
             'data' => $data,
             'type' => Requests::POST
+        );
+
+        return $request;
+    }
+
+    /**
+     * Prepares Insert setting data
+     * @data array
+     * @return array
+     */
+    public function prepare_delete_setting($name)
+    {
+        $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings/' . $name;
+
+        $request = array(
+            'url' => $url,
+            'type' => Requests::DELETE
         );
 
         return $request;
@@ -620,6 +830,29 @@ class Vcl_Handler
         );
 
         return $request;
+    }
+
+    /**
+     * Checks if Image optimization possible (enabled on Fastly sales side)
+     * @data array
+     * @return array
+     */
+    public function check_io_possible()
+    {
+        $url = trailingslashit($this->_hostname) . 'service/' . $this->_service_id . '/dynamic_io_settings';
+        $response = Requests::get($url, $this->_headers_get);
+        return $response->success;
+    }
+
+    /**
+     * Check if Image optimization active on Fastly management (header and condition)
+     * @return bool
+     */
+    public function check_io_active_on_fastly()
+    {
+        $header = $this->get_header(Upgrades::WORDPRESS_MODULE_NAME . '_image_optimization');
+        $condition = $this->get_condition(Upgrades::WORDPRESS_MODULE_NAME . '_image_optimization');
+        return $header && $condition;
     }
 
     /**

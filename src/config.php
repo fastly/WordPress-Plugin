@@ -63,6 +63,34 @@ if (!defined('PURGELY_USE_FASTLY_CACHE_TAGS')) {
 }
 
 /**
+ * Set usage of IO adaptive pixels.
+ */
+if (!defined('PURGELY_USE_FASTLY_IO_ADAPTIVE_PIXELS')) {
+    define('PURGELY_USE_FASTLY_IO_ADAPTIVE_PIXELS', false);
+}
+
+/**
+ * Set usage of IO on wordpress.
+ */
+if (!defined('PURGELY_USE_FASTLY_IO_WORDPRESS')) {
+    define('PURGELY_USE_FASTLY_IO_WORDPRESS', false);
+}
+
+/**
+ * Set usage of IO adaptive pixels.
+ */
+if (!defined('PURGELY_USE_FASTLY_IO_ADAPTIVE_PIXELS_CONTENT')) {
+    define('PURGELY_USE_FASTLY_IO_ADAPTIVE_PIXELS_CONTENT', false);
+}
+
+/**
+ * Set default array of Fastly IO adaptive pixel sizes.
+ */
+if (!defined('PURGELY_FASTLY_IO_ADAPTIVE_PIXEL_SIZES')) {
+    define('PURGELY_FASTLY_IO_ADAPTIVE_PIXEL_SIZES', array('2x', '3x'));
+}
+
+/**
  * Set usage of custom cache tags for custom post types.
  */
 if (!defined('PURGELY_USE_FASTLY_CACHE_TAGS_FOR_CUSTOM_POST_TYPE')) {

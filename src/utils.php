@@ -137,6 +137,18 @@ function purgely_sanitize_checkbox($value)
 }
 
 /**
+ * Callback function for sanitizing a array setting.
+ *
+ * @param  mixed $value Unsanitized setting.
+ * @return array         Whether or not value is valid.
+ */
+function purgely_sanitize_pixel_ratios($value)
+{
+    $result = array_intersect($value, Purgely_Settings::POSSIBLE_PIXEL_RATIOS);
+    return $result;
+}
+
+/**
  * Function for testing Fastly API connection
  * @param $hostname
  * @param $service_id

@@ -194,4 +194,88 @@ class Upgrades
 
         return true;
     }
+
+
+    /**
+     * Enable image optimization
+     * @param string
+     * @param bool
+     * @return bool|array
+     */
+    public function image_optimization_toggle($activate)
+    {
+        // Update HTML VCL snippets
+        $data = array(
+            'condition' => array(
+                array(
+                    'name' => self::WORDPRESS_MODULE_NAME . '_image_optimization',
+                    'statement' => 'req.url.ext ~ "(?i)^(gif|png|jpe?g|webp)$"',
+                    'type' => 'REQUEST',
+                    'priority' => 10,
+                )
+            ),
+            'header' => array(
+                array(
+                    'name' => self::WORDPRESS_MODULE_NAME . '_image_optimization',
+                    'type' => 'request',
+                    'action' => 'set',
+                    'dst' => 'http.x-fastly-imageopto-api',
+                    'src' => '"fastly"',
+                    'ignore_if_set' => 0,
+                    'priority' => "1",
+                    'request_condition' => self::WORDPRESS_MODULE_NAME . '_image_optimization'
+                )
+            )
+        );
+
+        $errors = array();
+        $vcl = new Vcl_Handler(array());
+        $io_enabled = $vcl->check_io_active_on_fastly();
+        if($io_enabled) {
+            // Set for deletion
+            $data = array(
+                'condition' => array(
+                    array(
+                        'name' => self::WORDPRESS_MODULE_NAME . '_image_optimization',
+                        'statement' => 'req.url.ext ~ "(?i)^(gif|png|jpe?g|webp)$"',
+                        'type' => 'REQUEST',
+                        'priority' => 10,
+                        'delete' => true
+                    )
+                ),
+                'header' => array(
+                    array(
+                        'name' => self::WORDPRESS_MODULE_NAME . '_image_optimization',
+                        'type' => 'request',
+                        'action' => 'set',
+                        'dst' => 'http.x-fastly-imageopto-api',
+                        'src' => '"fastly"',
+                        'ignore_if_set' => 0,
+                        'priority' => "1",
+                        'request_condition' => self::WORDPRESS_MODULE_NAME . '_image_optimization',
+                        'delete' => true
+                    )
+                )
+            );
+        }
+
+        $vcl = new Vcl_Handler($data);
+
+        if (!$vcl->execute($activate)) {
+            //Log if enabled
+            if (Purgely_Settings::get_setting('fastly_debug_mode')) {
+                foreach ($vcl->get_errors() as $error) {
+                    error_log($error);
+                }
+            }
+
+            $errors = array_merge($errors, $vcl->get_errors());
+        }
+
+        if (!empty($errors)) {
+            return $errors;
+        }
+
+        return true;
+    }
 }
