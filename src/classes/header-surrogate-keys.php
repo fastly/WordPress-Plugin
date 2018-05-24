@@ -71,8 +71,13 @@ class Purgely_Surrogate_Keys_Header extends Purgely_Header
         $header_size_bytes = mb_strlen($header_string, '8bit');
         if ($header_size_bytes >= FASTLY_MAX_HEADER_SIZE) {
             // Set to be always purged
+            $siteId = false;
             if(is_multisite()) {
                 $siteId = get_current_blog_id();
+            } elseif($sitecode = Purgely_Settings::get_setting('sitecode')) {
+                $siteId = $sitecode;
+            }
+            if($siteId) {
                 return $siteId . '-' . 'holos';
             }
             return 'holos';
@@ -89,8 +94,13 @@ class Purgely_Surrogate_Keys_Header extends Purgely_Header
     {
         $keys = $this->get_keys();
 
+        $siteId = false;
         if(is_multisite()) {
             $siteId = get_current_blog_id();
+        } elseif($sitecode = Purgely_Settings::get_setting('sitecode')) {
+            $siteId = $sitecode;
+        }
+        if($siteId) {
             foreach($keys as $index => $key) {
                 $keys[$index] = $siteId . '-' . $key;
             }
