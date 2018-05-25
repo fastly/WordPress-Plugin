@@ -834,14 +834,21 @@ class Vcl_Handler
 
     /**
      * Checks if Image optimization possible (enabled on Fastly sales side)
-     * @data array
-     * @return array
+     * @return bool
      */
     public function check_io_possible()
     {
-        $url = trailingslashit($this->_hostname) . 'service/' . $this->_service_id . '/dynamic_io_settings';
-        $response = Requests::get($url, $this->_headers_get);
-        return $response->success;
+        if(!$this->_hostname || !$this->_service_id) {
+            return false;
+        }
+        try {
+            $url = trailingslashit($this->_hostname) . 'service/' . $this->_service_id . '/dynamic_io_settings';
+            $response = Requests::get($url, $this->_headers_get);
+            return $response->success;
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+        }
+        return false;
     }
 
     /**
