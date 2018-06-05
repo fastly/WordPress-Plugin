@@ -30,7 +30,7 @@
       # Cleans up cookies by removing everything except vendor_region, PHPSESSID and themetype2
       set req.http.Cookie = ";" req.http.Cookie;
       set req.http.Cookie = regsuball(req.http.Cookie, "; +", ";");
-      set req.http.Cookie = regsuball(req.http.Cookie, ";(vendor_region|PHPSESSID|themetype2)=", "; \1=");
+      set req.http.Cookie = regsuball(req.http.Cookie, ";(vendor_region|PHPSESSID|themetype2|.*woocommerce.*)=", "; \1=");
       set req.http.Cookie = regsuball(req.http.Cookie, ";[^ ][^;]*", "");
       set req.http.Cookie = regsuball(req.http.Cookie, "^[; ]+|[; ]+$", "");
 
