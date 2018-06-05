@@ -102,7 +102,7 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
-= 1.2.5 =
+= 1.2.6 =
 * Added fix for including only always purged keys if existing
 * Added fix for header surrogate key number larger than limit
 
