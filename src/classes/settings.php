@@ -19,7 +19,7 @@ class Purgely_Settings
     /**
      * Possible pixel ratio sizes
      */
-    const POSSIBLE_PIXEL_RATIOS = array('1.5x', '2x', '3x', '4x');
+    const POSSIBLE_PIXEL_RATIOS = array('1x', '1.5x', '2x', '3x', '3.5x', '4x');
 
     /**
      * The settings values for the plugin.

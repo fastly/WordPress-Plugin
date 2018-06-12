@@ -305,7 +305,7 @@ class Purgely_Settings_Page
 
         add_settings_field(
             'purge_all',
-            __('', 'purgely'),
+            __('Purge all content', 'purgely'),
             array($this, 'purge_all_render'),
             'fastly-settings-advanced',
             'purgely-stale_settings'
@@ -395,7 +395,7 @@ class Purgely_Settings_Page
         // Set up the maintenance/error page settings.
         add_settings_section(
             'purgely-maintenance_settings',
-            __('Maintenance/Error settings', 'purgely'),
+            __('Custom Synthetic Pages', 'purgely'),
             array($this, 'maintenance_settings_callback'),
             'fastly-settings-advanced'
         );
@@ -647,6 +647,9 @@ class Purgely_Settings_Page
                     <?php echo __('Make sure to save before proceeding'); ?>
                 </strong>
             </em>
+            <p class="description">
+               <?php esc_html_e('Uploads stock Wordpress VCL. Wordpress VCL is recommended in order to take advantage of Fastly full page caching.', 'purgely'); ?>
+            </p>
         </div>
 
         <script type='text/javascript'>
@@ -780,7 +783,7 @@ class Purgely_Settings_Page
     }
 
     /**
-     * Render the test connection button.
+     * Render the purge all button.
      *
      * @return void
      */
@@ -1023,7 +1026,7 @@ class Purgely_Settings_Page
         <input type='text' name='fastly-settings-advanced[surrogate_control_ttl]'
                value='<?php echo esc_attr($options['surrogate_control_ttl']); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
-            <?php esc_html_e('This setting controls the "surrogate-control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely'); ?>
+            <?php esc_html_e('Sets the "Surrogate-Control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely'); ?>
         </p>
         <?php
     }
@@ -1040,7 +1043,7 @@ class Purgely_Settings_Page
         <input type='text' name='fastly-settings-advanced[cache_control_ttl]'
                value='<?php echo esc_attr($options['cache_control_ttl']); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
-            <?php esc_html_e('This setting controls the "cache-control" header\'s "max-age" value. It specifies how long end users/browsers should cache pages', 'purgely'); ?>
+            <?php esc_html_e('Sets the "Cache-Control" header\'s "max-age" value. It specifies how long end users/browsers should cache pages. Typically we don\'t want end users caching pages as that may delay users seeing new/changed content.', 'purgely'); ?>
         </p>
         <?php
     }
@@ -1062,7 +1065,7 @@ class Purgely_Settings_Page
                value='<?php echo esc_attr($options['sitecode']); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <?php } ?>
         <p class="description">
-        <?php esc_html_e('add a sitecode to surrogate keys.  multisite does this automatically', 'purgely'); ?>
+        <?php esc_html_e('Prepends sitecode to surrogate keys. Multisite does this automatically. Useful in situations where you have microsite(s) inside a single Fastly service.', 'purgely'); ?>
         </p>
         <?php
     }
@@ -1191,7 +1194,7 @@ class Purgely_Settings_Page
      */
     public function fastly_io_settings_callback()
     {
-        _e("This section allows you to configure fastly image optimizations options.", 'purgely');
+        _e("This section allows you to configure Fastly IO options.", 'purgely');
     }
 
     /**
@@ -1211,7 +1214,7 @@ class Purgely_Settings_Page
      */
     public function webhooks_settings_callback()
     {
-        esc_html_e('This section allows you to configure webhooks for slack.', 'purgely');
+        esc_html_e('This section allows you to configure webhooks (geared for Slack). Webhooks fire on Wordpress changes such as purges, config changes etc.', 'purgely');
     }
 
     /**
@@ -1221,7 +1224,7 @@ class Purgely_Settings_Page
      */
     public function maintenance_settings_callback()
     {
-        esc_html_e('This section allows you to configure maintenance/error page for Fastly.', 'purgely');
+        esc_html_e('This section allows you to configure maintenance/error page for Fastly. This page will be presented to the end user any time when we are about to serve an error page (HTTP 500/503).', 'purgely');
     }
 
     /**
@@ -1656,7 +1659,7 @@ class Purgely_Settings_Page
         </div>
 
         <p class="description">
-            <?php esc_html_e("Enabling will upload required Image Optimization VCL snippets to Fastly, it will not enable it on wordpress automatically.", 'purgely'); ?>
+            <?php esc_html_e("Enabling turns on Fastly VCL that directs all image requests to the Fastly optimizer. It is a prerequisite for any other IO features. No other changes are made.", 'purgely'); ?>
         </p>
 
         <script type='text/javascript'>
@@ -1738,7 +1741,7 @@ class Purgely_Settings_Page
                name='fastly-settings-advanced[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && false === $options['io_adaptive_pixel_ratios']); ?>
                value='false'>No
         <p class="description">
-            <?php esc_html_e("Activate to enable adaptive pixel ratios support.", 'purgely'); ?>
+            <?php esc_html_e("Image sources will be rewritten to use srcsets supporting adaptive device pixel ratios. Useful for Progressive Web Apps.", 'purgely'); ?>
         </p>
         <?php
     }
