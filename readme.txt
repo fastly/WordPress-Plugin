@@ -38,6 +38,21 @@ Using this plugin means you won't have to purge content in Fastly when you make 
 
 Customization:
 
+Image optimization:
+ To activate, contact support@fastly.com to request image optimization activation for your Fastly service.
+ Once activated on service level, you will be able to enable it in your blog under Fastly->Advanced.
+
+ Breakdown of IO options:
+    Enable Image Optimization in Fastly configuration - Activating this uploads VCL with needed headers to specific service and activates new version
+
+    Enable Image Optimization in Wordpress - Main switch to activate IO which is needed for all other options to work.
+
+    Enable adaptive pixel ratios - Switch for adaptive pixel ratios implementation. This replaces adaptive pixels srcset to format which Fastly IO can parse and replace. Initially works only on inserted attachments like featured images, but can be applied on content images if enabled.
+
+    Adaptive pixel ratio sizes - Select pixel ratios that will be generated when creating image srcset html.
+
+    Enable image optimization for content images - Safe switch for Image optimization of content images (due to difference from featured images, those are processed differently). To fully utilize, insert full size images in content.
+
 Available wordpress hooks (add_action) on:
 
 Editing purging keys output

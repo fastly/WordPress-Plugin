@@ -459,17 +459,17 @@ class Purgely_Settings_Page
             );
 
             add_settings_field(
-                'io_adaptive_pixel_ratios_content',
-                __('Enable image optimization for content images', 'purgely'),
-                array($this, 'fastly_io_adaptive_pixel_content'),
+                'io_adaptive_pixel_ratio_sizes',
+                __('Adaptive pixel ratio sizes', 'purgely'),
+                array($this, 'fastly_io_adaptive_pixel_sizes'),
                 'fastly-settings-advanced',
                 'purgely-fastly_io'
             );
 
             add_settings_field(
-                'io_adaptive_pixel_ratio_sizes',
-                __('Adaptive pixel ratio sizes', 'purgely'),
-                array($this, 'fastly_io_adaptive_pixel_sizes'),
+                'io_adaptive_pixel_ratios_content',
+                __('Enable image optimization for content images', 'purgely'),
+                array($this, 'fastly_io_adaptive_pixel_content'),
                 'fastly-settings-advanced',
                 'purgely-fastly_io'
             );
