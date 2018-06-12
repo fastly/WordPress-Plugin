@@ -401,10 +401,9 @@ class Purgely
         add_filter('wp_calculate_image_sizes', array($this, 'fastly_io_pixel_ratios_sizes'), 100);
 
         if(Purgely_Settings::get_setting('io_adaptive_pixel_ratios_content')) {
-            add_filter( 'wp_calculate_image_srcset', array($this, 'fastly_io_pixel_ratios_content'), 100 , 4 );
+            add_filter( 'wp_calculate_image_srcset', array($this, 'fastly_io_pixel_ratios_content'), 100 , 5 );
             add_filter( 'the_content', array($this, 'fastly_io_pixel_ratios_the_content_filter'));
         }
-
     }
 
     /**
@@ -416,7 +415,7 @@ class Purgely
 
         $image_data = wp_get_attachment_image_src($attachment->ID, $size);
         $width = $image_data[1];
-        $src = $attr['src'];
+        $src = $attachment->guid;
         $query = '?width=' . $width;
         $attr['src'] = $src . $query;
         $sizes = Purgely_Settings::get_setting('io_adaptive_pixel_ratio_sizes');
@@ -445,8 +444,9 @@ class Purgely
      * @param $attachment_id
      * @return array
      */
-    function fastly_io_pixel_ratios_content( $size_array, $image_src, $src, $attachment_id ) {
+    function fastly_io_pixel_ratios_content( $size_array, $image_src, $src, $attachment_id, $id ) {
 
+        $attachment_original = wp_get_attachment_url($id);
         $width = isset($image_src[0]) ? $image_src[0] : $attachment_id['width'];
         $query = "?width={$width}";
         $sizes = Purgely_Settings::get_setting('io_adaptive_pixel_ratio_sizes');
@@ -454,7 +454,7 @@ class Purgely
         $main = array();
         foreach($sizes as $size) {
             $size_int = trim($size, 'x');
-            $srcset['url'] = $src . $query . "&dpr=$size_int";
+            $srcset['url'] = $attachment_original . $query . "&dpr=$size_int";
             $srcset['value'] = $size;
             $main[] = $srcset;
         }
