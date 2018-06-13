@@ -431,7 +431,7 @@ class Purgely
         }
 
         unset($attr['sizes']);
-        $attr['alt'] = 'test';
+        $attr['alt'] = isset($attachment->post_name) ? $attachment->post_name : 'image';
 
         return $attr;
     }

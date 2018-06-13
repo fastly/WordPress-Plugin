@@ -93,6 +93,15 @@ class Purgely_Settings_Page
 
         add_submenu_page(
             'fastly',
+            __('Fastly Image Optimization', 'purgely'),
+            __('Image Optimization', 'purgely'),
+            'manage_options',
+            'fastly-io',
+            array($this, 'options_page_io')
+        );
+
+        add_submenu_page(
+            'fastly',
             __('Fastly Webhooks', 'purgely'),
             __('Webhooks', 'purgely'),
             'manage_options',
@@ -120,6 +129,13 @@ class Purgely_Settings_Page
         register_setting(
             'fastly-settings-advanced',
             'fastly-settings-advanced',
+            array($this, 'sanitize_settings')
+        );
+
+        // Set up the option name, "fastly-settings-io". All Image optimization values will be in this array.
+        register_setting(
+            'fastly-settings-io',
+            'fastly-settings-io',
             array($this, 'sanitize_settings')
         );
 
@@ -431,14 +447,14 @@ class Purgely_Settings_Page
                 'purgely-fastly_io',
                 __('Image Optimization', 'purgely'),
                 array($this, 'fastly_io_settings_callback'),
-                'fastly-settings-advanced'
+                'fastly-settings-io'
             );
 
             add_settings_field(
                 'io_enable',
                 __('Enable Image Optimization in Fastly configuration', 'purgely'),
                 array($this, 'image_optimization_update_renderer'),
-                'fastly-settings-advanced',
+                'fastly-settings-io',
                 'purgely-fastly_io'
             );
 
@@ -446,7 +462,7 @@ class Purgely_Settings_Page
                 'io_enable_wp',
                 __('Enable Image Optimization in Wordpress', 'purgely'),
                 array($this, 'image_optimization_enable_wp_renderer'),
-                'fastly-settings-advanced',
+                'fastly-settings-io',
                 'purgely-fastly_io'
             );
 
@@ -454,7 +470,7 @@ class Purgely_Settings_Page
                 'io_adaptive_pixel_ratios',
                 __('Enable adaptive pixel ratios', 'purgely'),
                 array($this, 'use_fastly_io_adaptive_pixels'),
-                'fastly-settings-advanced',
+                'fastly-settings-io',
                 'purgely-fastly_io'
             );
 
@@ -462,7 +478,7 @@ class Purgely_Settings_Page
                 'io_adaptive_pixel_ratio_sizes',
                 __('Adaptive pixel ratio sizes', 'purgely'),
                 array($this, 'fastly_io_adaptive_pixel_sizes'),
-                'fastly-settings-advanced',
+                'fastly-settings-io',
                 'purgely-fastly_io'
             );
 
@@ -470,7 +486,7 @@ class Purgely_Settings_Page
                 'io_adaptive_pixel_ratios_content',
                 __('Enable image optimization for content images', 'purgely'),
                 array($this, 'fastly_io_adaptive_pixel_content'),
-                'fastly-settings-advanced',
+                'fastly-settings-io',
                 'purgely-fastly_io'
             );
         } else {
@@ -478,7 +494,7 @@ class Purgely_Settings_Page
                 'purgely-fastly_io',
                 __('Image Optimization', 'purgely'),
                 array($this, 'fastly_io_settings_disabled_callback'),
-                'fastly-settings-advanced'
+                'fastly-settings-io'
             );
         }
     }
@@ -932,10 +948,10 @@ class Purgely_Settings_Page
         $result = $upgrades->image_optimization_toggle($activate);
 
         if ($result === true && $activate) {
-            $message = __('IO Successfully enabled, new version activated');
+            $message = __('IO status successfully changed, new version activated');
 
         } elseif ($result === true && !$activate) {
-            $message = __('IO successfully enabled, new version NOT activated!');
+            $message = __('IO status successfully changed, new version NOT activated!');
         }
 
         if (is_array($result)) {
@@ -1735,10 +1751,10 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='radio'
-               name='fastly-settings-advanced[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && true === $options['io_adaptive_pixel_ratios']); ?>
+               name='fastly-settings-io[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && true === $options['io_adaptive_pixel_ratios']); ?>
                value='true'>Yes&nbsp;
         <input type='radio'
-               name='fastly-settings-advanced[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && false === $options['io_adaptive_pixel_ratios']); ?>
+               name='fastly-settings-io[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && false === $options['io_adaptive_pixel_ratios']); ?>
                value='false'>No
         <p class="description">
             <?php esc_html_e("Image sources will be rewritten to use srcsets supporting adaptive device pixel ratios. Useful for Progressive Web Apps.", 'purgely'); ?>
@@ -1756,10 +1772,10 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='radio'
-               name='fastly-settings-advanced[io_enable_wp]' <?php checked(isset($options['io_enable_wp']) && true === $options['io_enable_wp']); ?>
+               name='fastly-settings-io[io_enable_wp]' <?php checked(isset($options['io_enable_wp']) && true === $options['io_enable_wp']); ?>
                value='true'>Yes&nbsp;
         <input type='radio'
-               name='fastly-settings-advanced[io_enable_wp]' <?php checked(isset($options['io_enable_wp']) && false === $options['io_enable_wp']); ?>
+               name='fastly-settings-io[io_enable_wp]' <?php checked(isset($options['io_enable_wp']) && false === $options['io_enable_wp']); ?>
                value='false'>No
         <p class="description">
             <?php esc_html_e("Activate to enable Image Optimization on your site.", 'purgely'); ?>
@@ -1777,10 +1793,10 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='radio'
-               name='fastly-settings-advanced[io_adaptive_pixel_ratios_content]' <?php checked(isset($options['io_adaptive_pixel_ratios_content']) && true === $options['io_adaptive_pixel_ratios_content']); ?>
+               name='fastly-settings-io[io_adaptive_pixel_ratios_content]' <?php checked(isset($options['io_adaptive_pixel_ratios_content']) && true === $options['io_adaptive_pixel_ratios_content']); ?>
                value='true'>Yes&nbsp;
         <input type='radio'
-               name='fastly-settings-advanced[io_adaptive_pixel_ratios_content]' <?php checked(isset($options['io_adaptive_pixel_ratios_content']) && false === $options['io_adaptive_pixel_ratios_content']); ?>
+               name='fastly-settings-io[io_adaptive_pixel_ratios_content]' <?php checked(isset($options['io_adaptive_pixel_ratios_content']) && false === $options['io_adaptive_pixel_ratios_content']); ?>
                value='false'>No
         <p class="description">
             <?php esc_html_e("Active to enable adaptive pixel ratios for images inserted inside content. Only attachments used by default.", 'purgely'); ?>
@@ -1798,7 +1814,7 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         $sizes = $options['io_adaptive_pixel_ratio_sizes'];
         ?>
-        <select name="fastly-settings-advanced[io_adaptive_pixel_ratio_sizes][]" multiple>
+        <select name="fastly-settings-io[io_adaptive_pixel_ratio_sizes][]" multiple>
             <?php foreach(Purgely_Settings::POSSIBLE_PIXEL_RATIOS as $ratio): ?>
                 <?php if(in_array($ratio, $sizes)) : ?>
                     <option selected value="<?php echo $ratio; ?>"><?php echo $ratio; ?></option>
@@ -1918,6 +1934,30 @@ class Purgely_Settings_Page
                 <?php
                 settings_fields('fastly-settings-webhooks');
                 do_settings_sections('fastly-settings-webhooks');
+                submit_button();
+                ?>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     * Print the webhooks settings page.
+     *
+     * @return void
+     */
+    public function options_page_io()
+    {
+        ?>
+        <div class="wrap">
+            <form action='options.php' method='post'>
+                <div id="fastly-admin" class="wrap">
+                    <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL . 'static/logo_white.gif'; ?>"><br><span
+                                style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
+                </div>
+                <?php
+                settings_fields('fastly-settings-io');
+                do_settings_sections('fastly-settings-io');
                 submit_button();
                 ?>
             </form>
