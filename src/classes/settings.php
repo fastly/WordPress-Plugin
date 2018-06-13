@@ -13,6 +13,7 @@ class Purgely_Settings
     static $lists = array(
         self::FASTLY_CONFIGURATION_LIST_GENERAL =>  'fastly-settings-general',
         self::FASTLY_CONFIGURATION_LIST_ADVANCED => 'fastly-settings-advanced',
+        self::FASTLY_CONFIGURATION_LIST_ADVANCED => 'fastly-settings-io',
         self::FASTLY_CONFIGURATION_LIST_WEBHOOKS => 'fastly-settings-webhooks'
     );
 
@@ -163,6 +164,7 @@ class Purgely_Settings
             $registered_settings = self::get_registered_settings();
             $saved_settings = get_option('fastly-settings-general', array());
             $saved_settings = array_merge($saved_settings, get_option('fastly-settings-advanced', array()));
+            $saved_settings = array_merge($saved_settings, get_option('fastly-settings-io', array()));
             $saved_settings = array_merge($saved_settings, get_option('fastly-settings-webhooks', array()));
             $negotiated_settings = array();
 
