@@ -2,7 +2,7 @@
 Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
 Requires at least: 4.6.2
-Tested up to: 4.9.1
+Tested up to: 4.9.6
 Stable tag: trunk
 License: GPLv2
 
@@ -15,14 +15,22 @@ The official code repository for this plugin is available here:
 https://github.com/fastly/WordPress-Plugin/
 
 == Description ==
-Usage:
-1. To proceed with configuration you will need to sign up for Fastly (at fastly.com/signup) and create and activate a new service. Details of how to create and activate a new service can be found at Fastly's documentation. You will also need to find your Service ID and make a note of the string.
-2. From Fastly's configuration interface, create an API token with the default scope and access level. Make a note of the credential. 
+
+Installation:
+
+You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
+
+1. To proceed with configuration you will need to [sign up for Fastly](https://www.fastly.com/signup) and create and activate a new service (unless you already have one). Details of how to create and activate a new service can be found [here](https://docs.fastly.com/guides/basic-setup/sign-up-and-create-your-first-service). You will also need to find your Service ID and make a note of the string.
+2. You will need to create an API token with the default scope and access level. [Click here for token management screen](https://manage.fastly.com/account/personal/tokens).
 3. Set up the Fastly plugin inside your WordPress admin panel
-4. Once the plugin is installed into your WordPress instance, you will need to enter your API token and Service ID into the plugin's configuration page. 
-5. That's it! Everything should just work. In order to route production traffic through Fastly, you will likely need to change some records with your domain registrar. Refer to Fastly's documentation for more instructions about which CNAME records to use. 
-6. In order to get the most value out of Fastly, you should create a number of VCL Snippets that let you define some custom logic for how the Fastly CDN should handle requests to your WordPress instance. You can add Snippets to your service from the side menu when editing the configuration of your Service version. These are the Snippets that you should create:
-https://github.com/fastly/WordPress-Plugin/tree/master/vcl_snippets
+4. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
+5. Verify connection by pressing `TEST CONNECTION` button.
+6. In order to get the most value out of Fastly we recommend you upload VCL snippets from https://github.com/fastly/WordPress-Plugin/tree/master/vcl_snippets. These snippets will add code for following
+- Force certain paths to be passed (not cached) e.g. wp-admin, wp-login.php
+- Makes sure that logged in user sessions are never cached
+- Handling for serving [stale on error](https://docs.fastly.com/guides/performance-tuning/serving-stale-content.html) 
+
+You can upload them by hand or press `Update VCL` button in the UI.
 
 For more information, or if you have any problems, please email us.
 
@@ -82,17 +90,6 @@ function custom_surrogate_keys($keys_object) {
     $keys_object->add_key(\'custom-key\');
 }
 
-== Installation ==
-You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
-
-0. Register on `https://www.fastly.com/signup`
-1. Register new Service with your domain and obtain API token and Service ID [https://manage.fastly.com/account/personal/tokens]. These directions will help with creating the API token [https://docs.fastly.com/guides/account-management-and-security/using-api-tokens]
-2. Deploy the new Version of the Service.
-3. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
-4. Verify connection by pressing `TEST CONNECTION` button.
-5. If connection is ok, press `Update VCL` button
-6. That's it! Everything should just work. :metal: If you have any problems, email us.
-
 Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour.
 
 == Screenshots ==
@@ -103,6 +100,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 == Changelog ==
 
 = 1.2.6 =
+
+* Add Image Optimization configuration
+
+= 1.2.5 =
 * Added fix for including only always purged keys if existing
 * Added fix for header surrogate key number larger than limit
 
