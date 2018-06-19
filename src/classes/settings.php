@@ -164,7 +164,10 @@ class Purgely_Settings
             $registered_settings = self::get_registered_settings();
             $saved_settings = get_option('fastly-settings-general', array());
             $saved_settings = array_merge($saved_settings, get_option('fastly-settings-advanced', array()));
-            $saved_settings = array_merge($saved_settings, get_option('fastly-settings-io', array()));
+            $saved_settings_io = get_option('fastly-settings-io', array());
+            if($saved_settings_io && is_array($saved_settings_io)) {
+                $saved_settings = array_merge($saved_settings, $saved_settings_io);
+            }
             $saved_settings = array_merge($saved_settings, get_option('fastly-settings-webhooks', array()));
             $negotiated_settings = array();
 
