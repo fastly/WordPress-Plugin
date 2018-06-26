@@ -506,10 +506,7 @@ class Purgely
 
         foreach ( $selected_images as $image => $attachment_id ) {
 
-            $image_meta = wp_get_attachment_metadata( $attachment_id );
-            $replacement = wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id );
-
-            $image_src = preg_match( '/src="([^"]+)"/', $replacement, $match_src ) ? $match_src[1] : '';
+            $image_src = preg_match( '/src="([^"]+)"/', $image, $match_src ) ? $match_src[1] : '';
             list( $image_src ) = explode( '?', $image_src );
 
             // Return early if we couldn't get the image source.
@@ -524,7 +521,7 @@ class Purgely
             $image_src = 'src="' . $image_src . '"';
 
             // Replace edited image src with src containing parameter
-            $replacement = str_replace( $image_src, $image_src_param, $replacement );
+            $replacement = str_replace( $image_src, $image_src_param, $image );
             // Replace edited IO image in content
             $content = str_replace( $image, $replacement, $content );
         }
