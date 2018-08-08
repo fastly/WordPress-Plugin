@@ -467,10 +467,10 @@ class Vcl_Handler
         $response = wp_remote_post($url, ['headers' => $this->_headers_post, 'body' => $data]);
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-            return array();
+            return false;
         }
 
-        return false;
+        return array();
     }
 
     /**
