@@ -144,7 +144,7 @@ function purgely_sanitize_checkbox($value)
  */
 function purgely_sanitize_pixel_ratios($value)
 {
-    $result = array_intersect($value, Purgely_Settings::POSSIBLE_PIXEL_RATIOS);
+    $result = array_intersect($value, Purgely_Settings::$POSSIBLE_PIXEL_RATIOS);
     return $result;
 }
 
