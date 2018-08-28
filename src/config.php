@@ -87,7 +87,7 @@ if (!defined('PURGELY_USE_FASTLY_IO_ADAPTIVE_PIXELS_CONTENT')) {
  * Set default array of Fastly IO adaptive pixel sizes.
  */
 if (!defined('PURGELY_FASTLY_IO_ADAPTIVE_PIXEL_SIZES')) {
-    define('PURGELY_FASTLY_IO_ADAPTIVE_PIXEL_SIZES', array('2x', '3x'));
+    define('PURGELY_FASTLY_IO_ADAPTIVE_PIXEL_SIZES', false); // Todo: arrays aren't supported here in < PHP 7
 }
 
 /**
