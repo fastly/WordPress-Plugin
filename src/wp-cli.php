@@ -56,9 +56,6 @@ if (!class_exists('Purgely_Command')) :
                 }
             }
 
-            // Set wp original certificate instead of wp-cli certificate
-            Requests::set_certificate_path(ABSPATH . WPINC . '/certificates/ca-bundle.crt');
-
             $purgely = new Purgely_Purge();
 
             // Find related IDs for inputed ID

@@ -20,7 +20,7 @@ class Purgely_Settings
     /**
      * Possible pixel ratio sizes
      */
-    const POSSIBLE_PIXEL_RATIOS = array('1x', '1.5x', '2x', '3x', '3.5x', '4x');
+    static $POSSIBLE_PIXEL_RATIOS = array('1x', '1.5x', '2x', '3x', '3.5x', '4x');
 
     /**
      * The settings values for the plugin.
@@ -127,7 +127,7 @@ class Purgely_Settings
             ),
             'io_adaptive_pixel_ratio_sizes' => array(
                 'sanitize_callback' => 'purgely_sanitize_pixel_ratios',
-                'default' => PURGELY_FASTLY_IO_ADAPTIVE_PIXEL_SIZES,
+                'default' => array( '2x', '3x' ),
             ),
             'webhooks_url_endpoint' => array(
                 'sanitize_callback' => 'esc_url',

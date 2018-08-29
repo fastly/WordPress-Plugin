@@ -1815,7 +1815,7 @@ class Purgely_Settings_Page
         $sizes = $options['io_adaptive_pixel_ratio_sizes'];
         ?>
         <select name="fastly-settings-io[io_adaptive_pixel_ratio_sizes][]" multiple>
-            <?php foreach(Purgely_Settings::POSSIBLE_PIXEL_RATIOS as $ratio): ?>
+            <?php foreach(Purgely_Settings::$POSSIBLE_PIXEL_RATIOS as $ratio): ?>
                 <?php if(in_array($ratio, $sizes)) : ?>
                     <option selected value="<?php echo $ratio; ?>"><?php echo $ratio; ?></option>
                 <?php else : ?>

@@ -22,6 +22,7 @@ class Purgely_Surrogate_Key_Collection
     static public $types = array(
         'single',
         'preview',
+        'front_page',
         'page',
         'archive',
         'date',
