@@ -98,6 +98,7 @@ class Purgely_Related_Surrogate_Keys
         $always_purged_templates = array(
             'tm-post',
             'tm-home',
+            'tm-front_page',
             'tm-feed',
             'holos',
             'tm-404'
