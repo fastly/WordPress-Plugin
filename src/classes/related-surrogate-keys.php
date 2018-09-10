@@ -135,7 +135,7 @@ class Purgely_Related_Surrogate_Keys
         if (is_array($terms)) {
             foreach ($terms as $term) {
                 if ($term) {
-                    $key = 'ta-' . $term; // ta-a* for term archives
+                    $key = 'ta-' . $term; // ta-* for term archives
                     $this->_collection[] = $key;
                 }
             }
