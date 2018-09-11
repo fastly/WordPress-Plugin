@@ -249,7 +249,7 @@ class Purgely_Surrogate_Key_Collection
      *
      * @return array The current author key.
      */
-    private function _add_key_author($post)
+    private function _add_key_author()
     {
         return array('aa-' . absint(get_queried_object_id()));
     }
