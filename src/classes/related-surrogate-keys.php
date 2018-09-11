@@ -101,7 +101,6 @@ class Purgely_Related_Surrogate_Keys
             'tm-front_page',
             'tm-feed',
             'holos',
-            'tm-404'
         );
 
         $always_purged = array_merge($always_purged_templates, $always_purged_keys);
@@ -136,7 +135,7 @@ class Purgely_Related_Surrogate_Keys
         if (is_array($terms)) {
             foreach ($terms as $term) {
                 if ($term) {
-                    $key = 't-' . $term;
+                    $key = 'ta-' . $term; // ta-* for term archives
                     $this->_collection[] = $key;
                 }
             }
@@ -153,7 +152,7 @@ class Purgely_Related_Surrogate_Keys
 
         if ($post = $this->get_post($post_id)) {
             $post->post_author;
-            $key = 'a-' . absint($post->post_author);
+            $key = 'aa-' . absint($post->post_author); // aa-* for author archives
             $this->_collection[] = $key;
         }
     }
