@@ -171,6 +171,7 @@ function test_fastly_api_connection($hostname, $service_id, $api_key)
     $purgely_instance = Purgely::instance();
     if(empty($purgely_instance->connection_status)) {
         try {
+            Requests::set_certificate_path( ABSPATH . WPINC . '/certificates/ca-bundle.crt' );
             $response = Requests::get($url, $headers);
             if ($response->success) {
                 $response_body = json_decode($response->body);
