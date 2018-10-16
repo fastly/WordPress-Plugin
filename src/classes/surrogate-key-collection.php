@@ -66,7 +66,8 @@ class Purgely_Surrogate_Key_Collection
         $template_key = $this->_add_key_query_type($wp_query);
 
         // Get all taxonomy terms and author info if on a single post.
-        $term_keys = array();
+        $term_keys = [];
+        $date_keys = [];
 
         if ($wp_query->is_single()) {
             $taxonomies = apply_filters('purgely_taxonomy_keys', (array)get_taxonomies());
@@ -74,6 +75,8 @@ class Purgely_Surrogate_Key_Collection
             foreach ($taxonomies as $taxonomy) {
                 $term_keys = array_merge($term_keys, $this->_add_key_terms_single($wp_query->post->ID, $taxonomy));
             }
+
+            $date_keys = $this->_add_key_dates_single( $wp_query->post->post_modified );
 
             // Get author information.
             $term_keys = array_merge($term_keys, $this->_add_key_author_single($wp_query->post));
@@ -91,7 +94,8 @@ class Purgely_Surrogate_Key_Collection
         $keys = array_merge(
             $keys,
             $template_key,
-            $term_keys
+            $term_keys,
+            $date_keys
         );
 
         $keys = array_unique($keys);
@@ -205,6 +209,16 @@ class Purgely_Surrogate_Key_Collection
         }
 
         return $keys;
+    }
+
+    private function _add_key_dates_single( $date ) {
+		$keys = [];
+
+		$keys[] = 'md-' . mysql2date( 'Y', $date );
+		$keys[] = 'md-' . mysql2date( 'Y-m', $date );
+		$keys[] = 'md-' . mysql2date( 'Y-m-d', $date );
+
+		return $keys;
     }
 
     /**
