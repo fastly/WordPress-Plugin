@@ -62,9 +62,8 @@ class Purgely_Purges
         $collections = $related_collection_object->locate_all();
 
         $purgely = new Purgely_Purge();
-        foreach($collections as $collection)
-        {
-            $purgely->purge('key-collection', $collection, array());
+        foreach ($collections as $collection) {
+            $purgely->purge('key-collection', $collection);
         }
     }
 

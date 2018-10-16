@@ -53,6 +53,7 @@ class Purgely_Related_Surrogate_Keys
         // Collect and store keys
         $this->locate_surrogate_taxonomies($this->get_post_id());
         $this->locate_author_surrogate_key($this->get_post_id());
+        $this->locate_siblings();
         $this->include_always_purged_types();
 
         $sitecode = Purgely_Settings::get_setting('sitecode');
@@ -98,9 +99,9 @@ class Purgely_Related_Surrogate_Keys
         $always_purged_templates = array(
             'tm-post',
             'tm-home',
+            'tm-front_page',
             'tm-feed',
             'holos',
-            'tm-404'
         );
 
         $always_purged = array_merge($always_purged_templates, $always_purged_keys);
@@ -135,7 +136,7 @@ class Purgely_Related_Surrogate_Keys
         if (is_array($terms)) {
             foreach ($terms as $term) {
                 if ($term) {
-                    $key = 't-' . $term;
+                    $key = 'ta-' . $term; // ta-* for term archives
                     $this->_collection[] = $key;
                 }
             }
@@ -152,10 +153,31 @@ class Purgely_Related_Surrogate_Keys
 
         if ($post = $this->get_post($post_id)) {
             $post->post_author;
-            $key = 'a-' . absint($post->post_author);
+            $key = 'aa-' . absint($post->post_author); // aa-* for author archives
             $this->_collection[] = $key;
         }
     }
+
+	public function locate_siblings() {
+		$parent = $this->_post->post_parent > 0 ? $this->_post->post_parent : $this->_post->ID;
+
+		$siblings = get_children( [
+			'post_parent' 	=> $parent,
+			'post_type'   	=> $this->_post->post_type,
+			'post_status' 	=> 'publish',
+		] );
+
+		if ( empty( $siblings ) || is_wp_error( $siblings ) ) {
+			return;
+		}
+
+		$ids = wp_list_pluck( $siblings, 'ID' );
+		$ids[] = $parent;
+
+		foreach( $ids as $id ) {
+			$this->_collection[] = 'p-' . $id;
+		}
+	}
 
     /**
      * Append Multisite ID to surrogate keys

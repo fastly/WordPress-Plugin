@@ -144,7 +144,7 @@ function purgely_sanitize_checkbox($value)
  */
 function purgely_sanitize_pixel_ratios($value)
 {
-    $result = array_intersect($value, Purgely_Settings::POSSIBLE_PIXEL_RATIOS);
+    $result = array_intersect($value, Purgely_Settings::$POSSIBLE_PIXEL_RATIOS);
     return $result;
 }
 
@@ -157,7 +157,6 @@ function purgely_sanitize_pixel_ratios($value)
  */
 function test_fastly_api_connection($hostname, $service_id, $api_key)
 {
-
     if (empty($hostname) || empty($service_id) || empty($api_key)) {
         return array('status' => false, 'message' => __('Please enter credentials first'));
     }
@@ -171,18 +170,19 @@ function test_fastly_api_connection($hostname, $service_id, $api_key)
     $purgely_instance = Purgely::instance();
     if(empty($purgely_instance->connection_status)) {
         try {
-            $response = Requests::get($url, $headers);
-            if ($response->success) {
-                $response_body = json_decode($response->body);
+            $response = wp_remote_get($url, ['headers' => $headers]);
+            $response_code = wp_remote_retrieve_response_code($response);
+            $response_body = json_decode(wp_remote_retrieve_body($response));
+            if ($response_code === 200) {
                 $service_name = $response_body->name;
                 $purgely_instance->service_name = $service_name;
                 $message = __('Connection Successful on service *' . $service_name . "*");
             } else {
                 handle_logging($response);
-                $message = json_decode($response->body);
+                $message = $response_body;
                 $message = $message->msg;
             }
-            $purgely_instance->connection_status = array('status' => $response->success, 'message' => $message);
+            $purgely_instance->connection_status = array('status' => ($response_code === 200), 'message' => $message);
         } catch (Exception $e) {
             $purgely_instance->connection_status = array('status' => false, 'message' => $e->getMessage());
         }
@@ -206,24 +206,22 @@ function send_web_hook($message)
     $channel = Purgely_Settings::get_setting('webhooks_channel');
 
     $headers = array('Content-type: application/json');
-    $data = json_encode(
-        array(
-            'text' => $message,
-            'username' => $username,
-            'channel' => '#' . $channel,
-            'icon_emoji' => ':airplane:'
-        )
+    $data = array(
+        'text' => $message,
+        'username' => $username,
+        'channel' => '#' . $channel,
+        'icon_emoji' => ':airplane:'
     );
 
-    try {
-        $response = Requests::request($webhook_url, $headers, $data, Requests::POST);
-        if (!$response->success) {
-            if (Purgely_Settings::get_setting('fastly_debug_mode')) {
-                error_log("Webhooks request failed, error: " . json_decode($response->body));
-            }
+    $response = wp_remote_post( $webhook_url, [ 'headers' => $headers, 'body' => $data ] );
+    if (wp_remote_retrieve_response_code($response) !== 200) {
+        if (Purgely_Settings::get_setting('fastly_debug_mode')) {
+            error_log("Webhooks request failed, error: " . json_decode(wp_remote_retrieve_body($response)));
         }
-    } catch (Exception $e) {
-        error_log($e->getMessage());
+    }
+
+    if (is_wp_error($response)) {
+        error_log($response->get_error_message());
     }
 }
 
@@ -239,30 +237,30 @@ function test_web_hook()
     $channel = Purgely_Settings::get_setting('webhooks_channel');
 
     $headers = array('Content-type: application/json');
-    $data = json_encode(
-        array(
+    $data = array(
             'text' => 'Webhook connection successful!',
             'username' => $username,
             'channel' => '#' . $channel,
             'icon_emoji' => ':airplane:'
-        )
     );
 
-    try {
-        $response = Requests::request($webhook_url, $headers, $data, Requests::POST);
-        $message = $response->success ? __('Connection Successful!') : __($response->body);
+    $response = wp_remote_post($webhook_url, ['headers' => $headers, 'body' => $data]);
+    $body = wp_remote_retrieve_body($response);
+    $success = (wp_remote_retrieve_response_code() === 200);
+    $message = $success ? __('Connection Successful!') : __($body);
 
-        if (Purgely_Settings::get_setting('fastly_debug_mode')) {
-            error_log('Webhooks - test connection: ' . $response->body);
-        }
-
-        return array('status' => $response->success, 'message' => $message);
-    } catch (Exception $e) {
-        if (Purgely_Settings::get_setting('fastly_debug_mode')) {
-            error_log('Webhooks - test connection: ' . $e->getMessage());
-        }
-        return array('status' => false, 'message' => $e->getMessage());
+    if (Purgely_Settings::get_setting('fastly_debug_mode')) {
+        error_log('Webhooks - test connection: ' . $body);
     }
+
+	if (is_wp_error($response)) {
+		if (Purgely_Settings::get_setting('fastly_debug_mode')) {
+			error_log('Webhooks - test connection: ' . $response->get_error_message());
+		}
+		return array('status' => false, 'message' => $response->get_error_message());
+	}
+
+    return array('status' => $success, 'message' => $message);
 }
 
 /**
@@ -270,14 +268,18 @@ function test_web_hook()
  * @param Requests_Response $response
  * @param $message
  */
-function handle_logging(Requests_Response $response, $message = false)
+function handle_logging($response, $message = false)
 {
     $debug_mode = Purgely_Settings::get_setting('fastly_debug_mode');
     $log_purges = Purgely_Settings::get_setting('fastly_log_purges');
     $log_slack = Purgely_Settings::get_setting('webhooks_activate');
 
     if ($debug_mode || $log_purges || $log_slack) {
-        $msg = get_message_by_status_code($response->status_code);
+    	if (is_wp_error($response)) {
+    		$msg = $response->get_error_message();
+	    } else {
+		    $msg = get_message_by_status_code(wp_remote_retrieve_response_code($response));
+	    }
         if ($message) {
             $msg = $msg . ' - ' . $message;
         }
@@ -289,8 +291,8 @@ function handle_logging(Requests_Response $response, $message = false)
     if ($log_purges || $debug_mode) {
         if ($log_purges) {
             error_log($msg);
-        } elseif ($debug_mode) {
-            if (!$response->success) {
+        } elseif ($debug_mode && ! is_wp_error($response)) {
+            if (wp_remote_retrieve_response_code($response) !== 200) {
                 error_log($msg);
             }
         }

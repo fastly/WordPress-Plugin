@@ -64,17 +64,18 @@ class Purgely_Purge
         $request_method = $this->_build_request_method_type($type);
 
         if (($request_uri && !empty($thing)) || ($request_uri && $type = self::ALL)) {
-            try {
-                $response = Requests::request($request_uri, $headers, array(), $request_method);
+            $response = wp_remote_request($request_uri, ['headers' => $headers, 'method' => $request_method]);
+            $response_code = wp_remote_retrieve_response_code($response);
 
-                // Do logging where needed
-                $message = $this->_get_purge_data_message();
-                handle_logging($response, $message);
+            // Do logging where needed
+            $message = $this->_get_purge_data_message();
+            handle_logging($response, $message);
 
-                return $response->success;
-            } catch (Exception $e) {
-                error_log($e->getMessage());
+            if (is_wp_error($response)) {
+            	error_log($response->get_error_message());
             }
+
+            return $response_code === 200;
         }
         return false;
     }
@@ -142,7 +143,7 @@ class Purgely_Purge
         if ($type === Purgely_Purge::URL) {
             return Purgely_Purge::PURGE;
         } else {
-            return Requests::POST;
+            return 'POST';
         }
     }
 

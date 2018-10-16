@@ -22,6 +22,7 @@ class Purgely_Surrogate_Key_Collection
     static public $types = array(
         'single',
         'preview',
+        'front_page',
         'page',
         'archive',
         'date',
@@ -65,7 +66,8 @@ class Purgely_Surrogate_Key_Collection
         $template_key = $this->_add_key_query_type($wp_query);
 
         // Get all taxonomy terms and author info if on a single post.
-        $term_keys = array();
+        $term_keys = [];
+        $date_keys = [];
 
         if ($wp_query->is_single()) {
             $taxonomies = apply_filters('purgely_taxonomy_keys', (array)get_taxonomies());
@@ -74,12 +76,17 @@ class Purgely_Surrogate_Key_Collection
                 $term_keys = array_merge($term_keys, $this->_add_key_terms_single($wp_query->post->ID, $taxonomy));
             }
 
+            $date_keys = $this->_add_key_dates_single( $wp_query->post->post_modified );
+
             // Get author information.
-            $term_keys = array_merge($term_keys, $this->_add_key_author($wp_query->post));
+            $term_keys = array_merge($term_keys, $this->_add_key_author_single($wp_query->post));
 
         } else {
             if ($wp_query->is_category() || $wp_query->is_tag() || $wp_query->is_tax()) {
                 $term_keys = $this->_add_key_terms_taxonomy();
+            }
+            if ($wp_query->is_author()) {
+                $term_keys = $this->_add_key_author();
             }
         }
 
@@ -87,7 +94,8 @@ class Purgely_Surrogate_Key_Collection
         $keys = array_merge(
             $keys,
             $template_key,
-            $term_keys
+            $term_keys,
+            $date_keys
         );
 
         $keys = array_unique($keys);
@@ -203,6 +211,16 @@ class Purgely_Surrogate_Key_Collection
         return $keys;
     }
 
+    private function _add_key_dates_single( $date ) {
+		$keys = [];
+
+		$keys[] = 'md-' . mysql2date( 'Y', $date );
+		$keys[] = 'md-' . mysql2date( 'Y-m', $date );
+		$keys[] = 'md-' . mysql2date( 'Y-m-d', $date );
+
+		return $keys;
+    }
+
     /**
      * Get the term keys for taxonomies.
      *
@@ -216,12 +234,11 @@ class Purgely_Surrogate_Key_Collection
         // archive page? author page? single post?
 
         if (!empty($queried_object->term_id) && !empty($queried_object->taxonomy)) {
-            $keys[] = 't-' . absint($queried_object->term_id);
+            $keys[] = 'ta-' . absint($queried_object->term_id);
         }
 
         return $keys;
     }
-
 
     /**
      * Get author related to this post.
@@ -229,7 +246,7 @@ class Purgely_Surrogate_Key_Collection
      * @param  WP_Post $post The post object to search for related author information.
      * @return array               The related author key.
      */
-    private function _add_key_author($post)
+    private function _add_key_author_single($post)
     {
         $author = absint($post->post_author);
         $key = array();
@@ -239,6 +256,16 @@ class Purgely_Surrogate_Key_Collection
         }
 
         return $key;
+    }
+    
+    /**
+     * Get author ID for the author archive.
+     *
+     * @return array The current author key.
+     */
+    private function _add_key_author()
+    {
+        return array('aa-' . absint(get_queried_object_id()));
     }
 
     /**

@@ -1,0 +1,21 @@
+{
+  "name": "fastly/fastly-wp",
+  "description": "The Official Fastly WordPress Plugin.",
+  "homepage": "https://github.com/fastly/WordPress-Plugin",
+  "type": "wordpress-plugin",
+  "license"    : "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Fastly",
+      "email": "support@fastly.com"
+    }
+  ],
+  "support"    : {
+    "issues": "https://github.com/fastly/WordPress-Plugin/issues",
+    "source": "https://github.com/fastly/WordPress-Plugin"
+  },
+  "require": {
+    "php": ">=5.2",
+    "composer/installers": "~1.0"
+  }
+}

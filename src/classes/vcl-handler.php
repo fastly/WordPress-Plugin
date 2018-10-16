@@ -129,94 +129,95 @@ class Vcl_Handler
             return false;
         }
 
-        try {
-            if (false === $this->clone_last_active_version()) {
-                $this->add_error(__('Unable to clone last version'));
+        if (false === $this->clone_last_active_version()) {
+            $this->add_error(__('Unable to clone last version'));
+            return false;
+        }
+
+        $requests = array();
+
+        if (!empty($this->_vcl_data)) {
+            $requests = array_merge($requests, $this->prepare_vcl());
+        }
+
+        if (!empty($this->_condition_data)) {
+            $conditions = $this->prepare_condition();
+            if (false === $conditions) {
+                $this->add_error(__('Unable to insert new condition'));
                 return false;
             }
+            $requests = array_merge($requests, $conditions);
+        }
 
-            $requests = array();
+        if (!empty($this->_header_data)) {
+            $requests = array_merge($requests, $this->prepare_header());
+        }
 
-            if (!empty($this->_vcl_data)) {
-                $requests = array_merge($requests, $this->prepare_vcl());
+        if (!empty($this->_setting_data)) {
+            $requests = array_merge($requests, $this->prepare_setting());
+        }
+
+        if (!empty($this->_response_object_data)) {
+            $requests = array_merge($requests, $this->prepare_response_object());
+        }
+
+        if (!$this->validate_version()) {
+            $this->add_error(__('Version not validated'));
+            return false;
+        }
+
+        $responses = [];
+
+        // Set Request Headers
+        foreach ($requests as $key => $request) {
+            $headers = $this->_headers_get;
+            if (in_array($request['type'], array('POST', 'PUT'))) {
+                $headers = $this->_headers_post;
             }
+            $responses[] = wp_remote_request($request['url'], [
+                'headers' => $headers,
+                'body' => $request['data'],
+                'method' => $request['type'],
+            ]);
+        }
 
-            if (!empty($this->_condition_data)) {
-                $conditions = $this->prepare_condition();
-                if (false === $conditions) {
-                    $this->add_error(__('Unable to insert new condition'));
-                    return false;
-                }
-                $requests = array_merge($requests, $conditions);
+        $pass = true;
+        foreach ($responses as $response) {
+            if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+                $pass = false;
+                $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
+
+                $message = sprintf('VCL update failed : %s',
+                    is_wp_error($response) ? $response->get_error_message() : wp_remote_retrieve_body($response)
+                );
+
+                handle_logging($response, $message);
             }
+        }
 
-            if (!empty($this->_header_data)) {
-                $requests = array_merge($requests, $this->prepare_header());
-            }
+        // Activate version if vcl is successfully uploaded
+        if ($pass && $activate) {
+            $request = $this->prepare_activate_version();
+			$response = wp_remote_request($request['url'], [
+				'headers' => $request['headers'],
+				'method' => $request['type'],
+			]);
+            if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+                $pass = false;
+                $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
 
-            if (!empty($this->_setting_data)) {
-                $requests = array_merge($requests, $this->prepare_setting());
-            }
+                $message = sprintf('VCL update failed : %s',
+	                is_wp_error($response) ? $response->get_error_message() : wp_remote_retrieve_body($response)
+                );
 
-            if (!empty($this->_response_object_data)) {
-                $requests = array_merge($requests, $this->prepare_response_object());
-            }
-
-            if (!$this->validate_version()) {
-                $this->add_error(__('Version not validated'));
-                return false;
-            }
-
-            // Set Request Headers
-            foreach ($requests as $key => $request) {
-                if (in_array($request['type'], array(Requests::POST, Requests::PUT))) {
-                    $requests[$key]['headers'] = $this->_headers_post;
-                } else {
-                    $requests[$key]['headers'] = $this->_headers_get;
-                }
-            }
-
-            // Send Requests
-            $responses = Requests::request_multiple($requests);
-
-            $pass = true;
-            foreach ($responses as $response) {
-                if (!$response->success) {
-                    $pass = false;
-                    $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-
-                    $message = 'VCL update failed : ' . $response->body;
-                    handle_logging($response, $message);
-                }
-            }
-
-            // Activate version if vcl is successfully uploaded
-            if ($pass && $activate) {
-                $request = $this->prepare_activate_version();
-
-                $response = Requests::request($request['url'], $request['headers'], array(), $request['type']);
-                if (!$response->success) {
-                    $pass = false;
-                    $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-
-                    $message = 'Activation of new version failed : ' . $response->body;
-                    handle_logging($response, $message);
-                } else {
-                    $message = 'VCL updated, version activated : ' . $this->_last_cloned_version;
-                    send_web_hook($message);
-                }
-            } elseif ($pass && !$activate) {
-                $message = 'VCL updated, but not activated.';
+                handle_logging($response, $message);
+            } else {
+                $message = 'VCL updated, version activated : ' . $this->_last_cloned_version;
                 send_web_hook($message);
             }
-
-        } catch (Exception $e) {
-            $this->add_error(__('Some of the API requests failed, enable debugging and check logs for more information.'));
-            $message = 'VCL update failed : ' . $e->getMessage();
+        } elseif ($pass && !$activate) {
+            $message = 'VCL updated, but not activated.';
             send_web_hook($message);
-            error_log($message);// Force log this, possibly no response object
-
-            return false;
         }
 
         return $pass;
@@ -290,9 +291,9 @@ class Vcl_Handler
         }
 
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/snippet/' . $name;
-        $response = Requests::get($url, $this->_headers_get);
+        $response = wp_remote_get($url, ['headers' => $this->_headers_get]);
 
-        return $response->success;
+        return wp_remote_retrieve_response_code($response) === 200;
     }
 
     /**
@@ -307,7 +308,7 @@ class Vcl_Handler
         $request = array(
             'url' => $url,
             'data' => $data,
-            'type' => Requests::PUT
+            'type' => 'PUT'
         );
 
         return $request;
@@ -325,7 +326,7 @@ class Vcl_Handler
         $request = array(
             'url' => $url,
             'data' => $data,
-            'type' => Requests::POST
+            'type' => 'POST'
         );
 
         return $request;
@@ -342,7 +343,7 @@ class Vcl_Handler
 
         $request = array(
             'url' => $url,
-            'type' => Requests::DELETE
+            'type' => 'DELETE'
         );
 
         return $request;
@@ -355,8 +356,8 @@ class Vcl_Handler
     public function get_last_version()
     {
         $url = $this->_version_base_url;
-        $response = Requests::get($url, $this->_headers_get);
-        $response_data = json_decode($response->body);
+        $response = wp_remote_get($url, ['headers' => $this->_headers_get]);
+        $response_data = json_decode(wp_remote_retrieve_body($response));
 
         $this->_next_cloned_version_num = count($response_data) + 1;
 
@@ -381,9 +382,9 @@ class Vcl_Handler
 
         $version_number = $this->_last_version_data->number;
         $url = $this->_version_base_url . '/' . $version_number . '/clone';
-        $response = Requests::put($url, $this->_headers_post);
+        $response = wp_remote_request($url, ['headers' => $this->_headers_post, 'method' => 'PUT']);
 
-        $response_data = json_decode($response->body);
+        $response_data = json_decode(wp_remote_retrieve_body($response));
         $cloned_version_number = isset($response_data->number) ? $response_data->number : false;
         $this->_last_cloned_version = $cloned_version_number;
 
@@ -432,8 +433,8 @@ class Vcl_Handler
     public function get_condition($name)
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $name;
-        $response = Requests::get($url, $this->_headers_get);
-        return $response->success;
+        $response = wp_remote_get( $url, ['headers' => $this->_headers_get] );
+        return wp_remote_retrieve_response_code($response) === 200;
     }
 
     /**
@@ -448,7 +449,7 @@ class Vcl_Handler
         $request = array(
             'url' => $url,
             'data' => $data,
-            'type' => Requests::PUT
+            'type' => 'PUT'
         );
 
         return $request;
@@ -457,25 +458,19 @@ class Vcl_Handler
     /**
      * Prepare condition for insert
      * @data
-     * @return array
+     * @return array|false
      */
     public function insert_condition($data)
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition';
 
-        $request = array(
-            'url' => $url,
-            'data' => $data,
-            'type' => Requests::POST
-        );
+        $response = wp_remote_post($url, ['headers' => $this->_headers_post, 'body' => $data]);
 
-        $response = Requests::request($request['url'], $this->_headers_post, $request['data'], $request['type']);
-
-        if ($response->success) {
-            return array();
-        } else {
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
             return false;
         }
+
+        return array();
     }
 
     /**
@@ -488,15 +483,7 @@ class Vcl_Handler
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/condition/' . $name;
 
-        $request = array(
-            'url' => $url,
-            'type' => Requests::DELETE
-        );
-
-        $response = Requests::request($request['url'], $this->_headers_post, array(), $request['type']);
-
-        // If condition does not exist, thats ok too
-        return array();
+        return wp_remote_request($url, ['headers' => $this->_headers_post, 'method' => 'DELETE']);
     }
 
     /**
@@ -543,8 +530,8 @@ class Vcl_Handler
     public function get_header($name)
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/header/' . $name;
-        $response = Requests::get($url, $this->_headers_get);
-        return $response->success;
+        $response = wp_remote_get($url, ['headers' => $this->_headers_get]);
+        return wp_remote_retrieve_response_code($response->success) === 200;
     }
 
     /**
@@ -559,7 +546,7 @@ class Vcl_Handler
         $request = array(
             'url' => $url,
             'data' => $data,
-            'type' => Requests::PUT
+            'type' => 'PUT',
         );
 
         return $request;
@@ -568,25 +555,19 @@ class Vcl_Handler
     /**
      * Prepare header for insert
      * @data
-     * @return array
+     * @return array|false
      */
     public function insert_header($data)
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/header';
 
-        $request = array(
-            'url' => $url,
-            'data' => $data,
-            'type' => Requests::POST
-        );
+        $response = wp_remote_post($url, ['headers' => $this->_headers_post, 'body' => $data]);
 
-        $response = Requests::request($request['url'], $this->_headers_post, $request['data'], $request['type']);
-
-        if ($response->success) {
+        if (wp_remote_retrieve_response_code($response) === 200) {
             return array();
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -599,12 +580,7 @@ class Vcl_Handler
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/header/' . $name;
 
-        $request = array(
-            'url' => $url,
-            'type' => Requests::DELETE
-        );
-
-        $response = Requests::request($request['url'], $this->_headers_post, array(), $request['type']);
+        wp_remote_request($url, ['headers' => $this->_headers_post, 'method' => 'DELETE']);
 
         // If condition does not exist, thats ok too
         return array();
@@ -657,8 +633,8 @@ class Vcl_Handler
     public function get_setting($name)
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/request_settings/' . $name;
-        $response = Requests::get($url, $this->_headers_get);
-        return $response->success;
+        $response = wp_remote_get($url, ['headers' => $this->_headers_get]);
+        return wp_remote_retrieve_response_code($response->success) === 200;
     }
 
     /**
@@ -673,7 +649,7 @@ class Vcl_Handler
         $request = array(
             'url' => $url,
             'data' => $data,
-            'type' => Requests::PUT
+            'type' => 'PUT'
         );
 
         return $request;
@@ -691,7 +667,7 @@ class Vcl_Handler
         $request = array(
             'url' => $url,
             'data' => $data,
-            'type' => Requests::POST
+            'type' => 'POST'
         );
 
         return $request;
@@ -708,7 +684,7 @@ class Vcl_Handler
 
         $request = array(
             'url' => $url,
-            'type' => Requests::DELETE
+            'type' => 'DELETE'
         );
 
         return $request;
@@ -748,8 +724,8 @@ class Vcl_Handler
     public function get_response_object($name)
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/response_object/' . $name;
-        $response = Requests::get($url, $this->_headers_get);
-        return $response->success;
+        $response = wp_remote_get($url, ['headers' => $this->_headers_get]);
+        return wp_remote_retrieve_response_code($response) === 200;
     }
 
     /**
@@ -764,8 +740,8 @@ class Vcl_Handler
             return false;
         }
         $url = $this->_version_base_url . '/' . $version_num . '/response_object/' . $name;
-        $response = Requests::get($url, $this->_headers_get);
-        return $response;
+        $response = wp_remote_get($url, ['headers' => $this->_headers_get]);
+        return wp_remote_retrieve_body($response);
     }
 
     /**
@@ -780,7 +756,7 @@ class Vcl_Handler
         $request = array(
             'url' => $url,
             'data' => $data,
-            'type' => Requests::PUT
+            'type' => 'PUT',
         );
 
         return $request;
@@ -798,7 +774,7 @@ class Vcl_Handler
         $request = array(
             'url' => $url,
             'data' => $data,
-            'type' => Requests::POST
+            'type' => 'POST',
         );
 
         return $request;
@@ -811,8 +787,8 @@ class Vcl_Handler
     public function validate_version()
     {
         $url = $this->_version_base_url . '/' . $this->_last_cloned_version . '/validate';
-        $response = Requests::get($url, $this->_headers_get);
-        return $response->success;
+        $response = wp_remote_get($url, ['headers' => $this->_headers_get]);
+        return wp_remote_retrieve_response_code($response) === 200;
     }
 
     /**
@@ -825,7 +801,7 @@ class Vcl_Handler
 
         $request = array(
             'url' => $url,
-            'type' => Requests::PUT,
+            'type' => 'PUT',
             'headers' => $this->_headers_get
         );
 
@@ -841,14 +817,15 @@ class Vcl_Handler
         if(!$this->_hostname || !$this->_service_id) {
             return false;
         }
-        try {
-            $url = trailingslashit($this->_hostname) . 'service/' . $this->_service_id . '/dynamic_io_settings';
-            $response = Requests::get($url, $this->_headers_get);
-            return $response->success;
-        } catch (Exception $e) {
-            error_log($e->getMessage());
+
+        $url = trailingslashit($this->_hostname) . 'service/' . $this->_service_id . '/dynamic_io_settings';
+        $response = wp_remote_get( $url, ['headers' => $this->_headers_get] );
+
+        if (is_wp_error($response)) {
+            error_log($response->get_error_message());
         }
-        return false;
+
+        return wp_remote_retrieve_response_code($response) === 200;
     }
 
     /**
