@@ -445,7 +445,7 @@ class Purgely_Settings_Page
         if($vcl->check_io_possible()) {
             add_settings_section(
                 'purgely-fastly_io',
-                __('Image Optimization', 'purgely'),
+                __('Image Optimization (Experimental - use at own risk)', 'purgely'),
                 array($this, 'fastly_io_settings_callback'),
                 'fastly-settings-io'
             );
