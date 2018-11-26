@@ -80,14 +80,14 @@ function purgely_get_options()
 
 /**
  * Sanitize a Fastly Service ID or API Key.
- * Restricts a value to only a-z, A-Z, and 0-9.
+ * Restricts a value to only a-z, A-Z, 0-9 and -.
  *
  * @param  string $key Unsantizied key.
  * @return string      Sanitized key.
  */
 function purgely_sanitize_key($key)
 {
-    return preg_replace('/[^a-zA-Z0-9]/', '', $key);
+    return preg_replace('/[^a-zA-Z0-9-]/', '', $key);
 }
 
 /**
