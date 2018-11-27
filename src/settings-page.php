@@ -445,7 +445,7 @@ class Purgely_Settings_Page
         if($vcl->check_io_possible()) {
             add_settings_section(
                 'purgely-fastly_io',
-                __('Image Optimization (Experimental - use at own risk)', 'purgely'),
+                __('Image Optimization', 'purgely'),
                 array($this, 'fastly_io_settings_callback'),
                 'fastly-settings-io'
             );
@@ -460,7 +460,7 @@ class Purgely_Settings_Page
 
             add_settings_field(
                 'io_enable_wp',
-                __('Enable Image Optimization in Wordpress', 'purgely'),
+                __('Enable Image Optimization in Wordpress (Experimental - use at own risk)', 'purgely'),
                 array($this, 'image_optimization_enable_wp_renderer'),
                 'fastly-settings-io',
                 'purgely-fastly_io'
