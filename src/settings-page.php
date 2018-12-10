@@ -548,8 +548,8 @@ class Purgely_Settings_Page
                 esc_html__('Please see Fastly\'s documentation for %s.', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
-                    'https://docs.fastly.com/guides/account-management-and-security/finding-and-managing-your-account-info#finding-and-regenerating-your-api-key',
-                    esc_html__('more information on finding your API token', 'purgely')
+                    'https://docs.fastly.com/guides/account-management-and-security/using-api-tokens#creating-api-tokens',
+                    esc_html__('more information on creating your API token', 'purgely')
                 )
             );
             ?>
@@ -1778,7 +1778,7 @@ class Purgely_Settings_Page
                name='fastly-settings-io[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && false === $options['io_adaptive_pixel_ratios']); ?>
                value='false'>No
         <p class="description">
-            <?php esc_html_e("Image sources will be rewritten to use srcsets supporting adaptive device pixel ratios. <a href='https://docs.fastly.com/guides/imageopto-setup-use/serving-responsive-images#adaptive-device-pixel-ratios'>More details here</a>.", 'purgely'); ?>
+            <?php esc_html_e("Image sources will be rewritten to use srcsets supporting adaptive device pixel ratios.", 'purgely'); ?>
         </p>
         <?php
     }
