@@ -463,7 +463,7 @@ class Purgely_Settings_Page
 
             add_settings_section(
                 'purgely-fastly_io',
-                __('Experimental - use at own risk', 'purgely'),
+                __('Experimental - features below are experimental and should be used at own risk', 'purgely'),
                 array($this, 'fastly_io_settings_callback'),
                 'fastly-settings-io'
             );
@@ -494,7 +494,7 @@ class Purgely_Settings_Page
 
             add_settings_field(
                 'io_adaptive_pixel_ratios_content',
-                __('Enable image optimization for content images', 'purgely'),
+                __('Rewrite content images', 'purgely'),
                 array($this, 'fastly_io_adaptive_pixel_content'),
                 'fastly-settings-io',
                 'purgely-fastly_io'
@@ -1231,7 +1231,7 @@ class Purgely_Settings_Page
      */
     public function fastly_io_settings_callback()
     {
-        _e("This section allows you to configure Fastly IO options for Wordpress.", 'purgely');
+        _e("This section allows you to configure Fastly IO options inside Wordpress. Turning them on will rewrite HTML.", 'purgely');
     }
 
     /**
@@ -1241,7 +1241,7 @@ class Purgely_Settings_Page
      */
     public function fastly_io_settings_disabled_callback()
     {
-        _e("Please contact your sales rep or send an email to support@fastly.com to request image optimization activation for your Fastly service.", 'purgely');
+        _e("Image Optimization feature is a separately priced feature. Please contact your sales rep about pricing or send an email to support@fastly.com if you believe it should have already been enabled on your account.", 'purgely');
     }
 
     /**
@@ -1251,7 +1251,7 @@ class Purgely_Settings_Page
      */
     public function webhooks_settings_callback()
     {
-        esc_html_e('This section allows you to configure webhooks (geared for Slack). Webhooks fire on Wordpress changes such as purges, config changes etc.', 'purgely');
+        esc_html_e('Configure webhooks (geared for Slack). Webhooks fire on Wordpress changes such as purges, config changes etc.', 'purgely');
     }
 
     /**
@@ -1261,7 +1261,7 @@ class Purgely_Settings_Page
      */
     public function maintenance_settings_callback()
     {
-        esc_html_e('This section allows you to configure maintenance/error page for Fastly. This page will be presented to the end user any time when we are about to serve an error page (HTTP 500/503).', 'purgely');
+        esc_html_e('Configure maintenance/error page for Fastly. This page will be presented to the end user any time when we are about to serve an error page (HTTP 500/503) instead of the default Fastly error page.', 'purgely');
     }
 
     /**
@@ -1282,7 +1282,7 @@ class Purgely_Settings_Page
         <p class="description">
             <?php
             printf(
-                esc_html__('Turn the "stale while revalidate" behavior on or off. The stale while revalidate behavior allows stale content to be served while content is regenerated in the background. Please see %s', 'purgely'),
+                esc_html__('Toggle "stale while revalidate" behavior. The stale while revalidate behavior allows stale content to be served while content is regenerated in the background. Please see %s', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://www.fastly.com/blog/stale-while-revalidate',
@@ -1307,7 +1307,7 @@ class Purgely_Settings_Page
                value='<?php echo esc_attr($options['stale_while_revalidate_ttl']); ?>'
                size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
-            <?php esc_html_e('This setting determines the amount of time that stale content will be served while new content is generated.', 'purgely'); ?>
+            <?php esc_html_e('Determines the amount of time that Fastly is allowed to serve stale content while new content is generated.', 'purgely'); ?>
         </p>
         <?php
     }
@@ -1330,7 +1330,7 @@ class Purgely_Settings_Page
         <p class="description">
             <?php
             printf(
-                esc_html__('Turn the "stale if error" behavior on or off. The stale if error behavior allows stale content to be served while the origin is returning an error state. Please see %s', 'purgely'),
+                esc_html__('Toggle "stale if error" behavior. The stale if error behavior allows stale content to be served while the origin is returning an error state. Please see %s', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://www.fastly.com/blog/stale-while-revalidate',
@@ -1354,7 +1354,7 @@ class Purgely_Settings_Page
         <input type='text' name='fastly-settings-advanced[stale_if_error_ttl]'
                value='<?php echo esc_attr($options['stale_if_error_ttl']); ?>' size="<?php echo self::INPUT_SIZE ?>">
         <p class="description">
-            <?php esc_html_e('This setting determines the amount of time that stale content will be served while the origin is returning an error state.', 'purgely'); ?>
+            <?php esc_html_e('Determines the amount of time Fastly is allowed to serve stale content while the origin is returning an error state.', 'purgely'); ?>
         </p>
         <?php
     }
@@ -1696,7 +1696,7 @@ class Purgely_Settings_Page
         </div>
 
         <p class="description">
-            <?php esc_html_e("Enabling turns on Fastly VCL that directs all image requests to the Fastly optimizer. It is a prerequisite for any other IO features. No other changes are made.", 'purgely'); ?>
+            <?php esc_html_e("Upload Fastly VCL that routes all image requests to the Fastly optimizer. It is a prerequisite for any other IO features. No other changes are made.", 'purgely'); ?>
         </p>
 
         <script type='text/javascript'>
@@ -1778,7 +1778,7 @@ class Purgely_Settings_Page
                name='fastly-settings-io[io_adaptive_pixel_ratios]' <?php checked(isset($options['io_adaptive_pixel_ratios']) && false === $options['io_adaptive_pixel_ratios']); ?>
                value='false'>No
         <p class="description">
-            <?php esc_html_e("Image sources will be rewritten to use srcsets supporting adaptive device pixel ratios. Useful for Progressive Web Apps.", 'purgely'); ?>
+            <?php esc_html_e("Image sources will be rewritten to use srcsets supporting adaptive device pixel ratios. <a href='https://docs.fastly.com/guides/imageopto-setup-use/serving-responsive-images#adaptive-device-pixel-ratios'>More details here</a>.", 'purgely'); ?>
         </p>
         <?php
     }
@@ -1799,7 +1799,7 @@ class Purgely_Settings_Page
                name='fastly-settings-io[io_enable_wp]' <?php checked(isset($options['io_enable_wp']) && false === $options['io_enable_wp']); ?>
                value='false'>No
         <p class="description">
-            <?php esc_html_e("Activate to enable Image Optimization on your site.", 'purgely'); ?>
+            <?php esc_html_e("Activate IO rewriting inside Wordpress HTML. This feature adds height and width parameters to serve properly sized image.", 'purgely'); ?>
         </p>
         <?php
     }
@@ -1820,7 +1820,7 @@ class Purgely_Settings_Page
                name='fastly-settings-io[io_adaptive_pixel_ratios_content]' <?php checked(isset($options['io_adaptive_pixel_ratios_content']) && false === $options['io_adaptive_pixel_ratios_content']); ?>
                value='false'>No
         <p class="description">
-            <?php esc_html_e("Active to enable adaptive pixel ratios for images inserted inside content. Only attachments used by default.", 'purgely'); ?>
+            <?php esc_html_e("Enables adaptive pixel ratios for images inserted inside content. Only attachments used by default.", 'purgely'); ?>
         </p>
         <?php
     }
@@ -1846,7 +1846,7 @@ class Purgely_Settings_Page
         </select>
 
         <p class="description">
-            <?php esc_html_e("Usable device pixel ratio sizes.", 'purgely'); ?>
+            <?php esc_html_e("Device pixel ratio sizes offered to the user.", 'purgely'); ?>
         </p>
         <?php
     }
