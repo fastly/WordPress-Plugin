@@ -118,6 +118,9 @@ class Purgely_Settings_Page
      */
     function settings_init()
     {
+        // Init setting errors/notices/success messages
+        settings_errors();
+
         // Set up the option name, "fastly-settings-general". All general values will be in this array.
         register_setting(
             'fastly-settings-general',
@@ -444,9 +447,9 @@ class Purgely_Settings_Page
         $vcl = new Vcl_Handler(array());
         if($vcl->check_io_possible()) {
             add_settings_section(
-                'purgely-fastly_io',
+                'purgely-fastly_io_main',
                 __('Image Optimization', 'purgely'),
-                array($this, 'fastly_io_settings_callback'),
+                array($this, 'fastly_io_main_settings_callback'),
                 'fastly-settings-io'
             );
 
@@ -455,12 +458,19 @@ class Purgely_Settings_Page
                 __('Enable Image Optimization in Fastly configuration', 'purgely'),
                 array($this, 'image_optimization_update_renderer'),
                 'fastly-settings-io',
-                'purgely-fastly_io'
+                'purgely-fastly_io_main'
+            );
+
+            add_settings_section(
+                'purgely-fastly_io',
+                __('Experimental - use at own risk', 'purgely'),
+                array($this, 'fastly_io_settings_callback'),
+                'fastly-settings-io'
             );
 
             add_settings_field(
                 'io_enable_wp',
-                __('Enable Image Optimization in Wordpress (Experimental - use at own risk)', 'purgely'),
+                __('Enable Image Optimization in Wordpress', 'purgely'),
                 array($this, 'image_optimization_enable_wp_renderer'),
                 'fastly-settings-io',
                 'purgely-fastly_io'
@@ -1208,9 +1218,20 @@ class Purgely_Settings_Page
      *
      * @return void
      */
+    public function fastly_io_main_settings_callback()
+    {
+
+        _e("This section allows you to enable Fastly IO options.", 'purgely');
+    }
+
+    /**
+     * Print the description for the IO settings.
+     *
+     * @return void
+     */
     public function fastly_io_settings_callback()
     {
-        _e("This section allows you to configure Fastly IO options.", 'purgely');
+        _e("This section allows you to configure Fastly IO options for Wordpress.", 'purgely');
     }
 
     /**
