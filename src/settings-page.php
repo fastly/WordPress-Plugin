@@ -444,61 +444,72 @@ class Purgely_Settings_Page
         );
 
         // Set up the Image Optimization settings
-        $vcl = new Vcl_Handler(array());
-        if($vcl->check_io_possible()) {
-            add_settings_section(
-                'purgely-fastly_io_main',
-                __('Image Optimization', 'purgely'),
-                array($this, 'fastly_io_main_settings_callback'),
-                'fastly-settings-io'
-            );
 
-            add_settings_field(
-                'io_enable',
-                __('Enable Image Optimization in Fastly configuration', 'purgely'),
-                array($this, 'image_optimization_update_renderer'),
-                'fastly-settings-io',
-                'purgely-fastly_io_main'
-            );
+        $ioPage = $_GET['page'] === 'fastly-io';
+        if($ioPage) {
+            $vcl = new Vcl_Handler(array());
+            if ($vcl->check_io_possible()) {
+                add_settings_section(
+                    'purgely-fastly_io_main',
+                    __('Image Optimization', 'purgely'),
+                    array($this, 'fastly_io_main_settings_callback'),
+                    'fastly-settings-io'
+                );
 
-            add_settings_section(
-                'purgely-fastly_io',
-                __('Experimental - features below are experimental and should be used at own risk', 'purgely'),
-                array($this, 'fastly_io_settings_callback'),
-                'fastly-settings-io'
-            );
+                add_settings_field(
+                    'io_enable',
+                    __('Enable Image Optimization in Fastly configuration', 'purgely'),
+                    array($this, 'image_optimization_update_renderer'),
+                    'fastly-settings-io',
+                    'purgely-fastly_io_main'
+                );
 
-            add_settings_field(
-                'io_enable_wp',
-                __('Enable Image Optimization in Wordpress', 'purgely'),
-                array($this, 'image_optimization_enable_wp_renderer'),
-                'fastly-settings-io',
-                'purgely-fastly_io'
-            );
+                add_settings_section(
+                    'purgely-fastly_io',
+                    __('Experimental - features below are experimental and should be used at own risk', 'purgely'),
+                    array($this, 'fastly_io_settings_callback'),
+                    'fastly-settings-io'
+                );
 
-            add_settings_field(
-                'io_adaptive_pixel_ratios',
-                __('Enable adaptive pixel ratios', 'purgely'),
-                array($this, 'use_fastly_io_adaptive_pixels'),
-                'fastly-settings-io',
-                'purgely-fastly_io'
-            );
+                add_settings_field(
+                    'io_enable_wp',
+                    __('Enable Image Optimization in Wordpress', 'purgely'),
+                    array($this, 'image_optimization_enable_wp_renderer'),
+                    'fastly-settings-io',
+                    'purgely-fastly_io'
+                );
 
-            add_settings_field(
-                'io_adaptive_pixel_ratio_sizes',
-                __('Adaptive pixel ratio sizes', 'purgely'),
-                array($this, 'fastly_io_adaptive_pixel_sizes'),
-                'fastly-settings-io',
-                'purgely-fastly_io'
-            );
+                add_settings_field(
+                    'io_adaptive_pixel_ratios',
+                    __('Enable adaptive pixel ratios', 'purgely'),
+                    array($this, 'use_fastly_io_adaptive_pixels'),
+                    'fastly-settings-io',
+                    'purgely-fastly_io'
+                );
 
-            add_settings_field(
-                'io_adaptive_pixel_ratios_content',
-                __('Rewrite content images', 'purgely'),
-                array($this, 'fastly_io_adaptive_pixel_content'),
-                'fastly-settings-io',
-                'purgely-fastly_io'
-            );
+                add_settings_field(
+                    'io_adaptive_pixel_ratio_sizes',
+                    __('Adaptive pixel ratio sizes', 'purgely'),
+                    array($this, 'fastly_io_adaptive_pixel_sizes'),
+                    'fastly-settings-io',
+                    'purgely-fastly_io'
+                );
+
+                add_settings_field(
+                    'io_adaptive_pixel_ratios_content',
+                    __('Rewrite content images', 'purgely'),
+                    array($this, 'fastly_io_adaptive_pixel_content'),
+                    'fastly-settings-io',
+                    'purgely-fastly_io'
+                );
+            } else {
+                add_settings_section(
+                    'purgely-fastly_io',
+                    __('Image Optimization', 'purgely'),
+                    array($this, 'fastly_io_settings_disabled_callback'),
+                    'fastly-settings-io'
+                );
+            }
         } else {
             add_settings_section(
                 'purgely-fastly_io',
