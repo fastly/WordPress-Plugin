@@ -48,7 +48,7 @@ class Purgely_Settings_Page
     public function __construct()
     {
         add_action('admin_menu', array($this, 'add_admin_menu'));
-        add_action('admin_init', array($this, 'settings_init'));
+        add_action('admin_menu', array($this, 'settings_init'));
         add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
         add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
         add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
