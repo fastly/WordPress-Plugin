@@ -445,7 +445,7 @@ class Purgely_Settings_Page
 
         // Set up the Image Optimization settings
 
-        $ioPage = $_GET['page'] === 'fastly-io';
+        $ioPage = isset( $_GET['page'] ) && $_GET['page'] === 'fastly-io';
         if($ioPage) {
             $vcl = new Vcl_Handler(array());
             if ($vcl->check_io_possible()) {
