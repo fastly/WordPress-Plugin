@@ -21,7 +21,7 @@ Installation:
 You can either install from source (you\'re looking at it), or from the WordPress [plugin directory](http://wordpress.org/plugins/fastly/).
 
 1. To proceed with configuration you will need to [sign up for Fastly](https://www.fastly.com/signup) and create and activate a new service (unless you already have one). Details of how to create and activate a new service can be found [here](https://docs.fastly.com/guides/basic-setup/sign-up-and-create-your-first-service). You will also need to find your Service ID and make a note of the string.
-2. You will need to create an API token with the default scope and access level. [Click here for token management screen](https://manage.fastly.com/account/personal/tokens).
+2. You will need to create an API token with the Global API access option selected. [Click here for token management screen](https://manage.fastly.com/account/personal/tokens).
 3. Set up the Fastly plugin inside your WordPress admin panel
 4. In your Wordpress blog admin panel, Under Fastly->General, enter & save your Fastly API token and Service ID
 5. Verify connection by pressing `TEST CONNECTION` button.
