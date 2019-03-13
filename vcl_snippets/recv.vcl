@@ -1,5 +1,5 @@
   ## always cache these images & static assets
-  if (req.request == "GET" && req.url.ext ~ "(?i)(css|js|gif|jpg|jpeg|bmp|png|ico|img|tga|wmf)") {
+  if (req.request == "GET" && req.url.ext ~ "(?i)(css|js|gif|jpg|jpeg|bmp|png|ico|img|tga|webp|wmf)") {
     remove req.http.cookie;
   } else if (req.request == "GET" && req.url.path ~ "(xmlrpc\.php|wlmanifest\.xml)") {
     remove req.http.cookie;
@@ -12,7 +12,7 @@
   } else if (req.http.X-Requested-With == "XMLHttpRequest" && req.url !~ "recent_reviews") {
   # Do not cache ajax requests except for recent reviews
     set req.http.X-Pass = "1";
-  } if (req.url ~ "nocache" ||
+  } if (req.url.qs ~ "nocache" ||
       req.url.path ~ "(control\.php|wp-comments-post\.php|wp-login\.php|bb-login\.php|bb-reset-password\.php|register\.php)") {
     set req.http.X-Pass = "1";
   }

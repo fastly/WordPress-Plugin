@@ -103,7 +103,7 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 * Minor fixes
 
-= 1.2.8 =
+= 1.2.7 =
 
 * Fixed duplicated API calls on admin page loads
 
