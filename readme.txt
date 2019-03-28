@@ -28,7 +28,7 @@ You can either install from source (you\'re looking at it), or from the WordPres
 6. In order to get the most value out of Fastly we recommend you upload VCL snippets from https://github.com/fastly/WordPress-Plugin/tree/master/vcl_snippets. These snippets will add code for following
 - Force certain paths to be passed (not cached) e.g. wp-admin, wp-login.php
 - Makes sure that logged in user sessions are never cached
-- Handling for serving [stale on error](https://docs.fastly.com/guides/performance-tuning/serving-stale-content.html) 
+- Handling for serving [stale on error](https://docs.fastly.com/guides/performance-tuning/serving-stale-content.html)
 
 You can upload them by hand or press `Update VCL` button in the UI.
 
@@ -98,6 +98,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 3. Fastly Webhooks Tab
 
 == Changelog ==
+
+= 1.2.9 =
+
+* Added fix for scheduled posts transition to published
 
 = 1.2.8 =
 
