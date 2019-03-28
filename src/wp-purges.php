@@ -80,6 +80,7 @@ class Purgely_Purges
             'deleted_post',
             'trashed_post',
             'delete_attachment',
+            'future_to_publish'
         );
     }
 }

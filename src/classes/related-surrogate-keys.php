@@ -36,6 +36,11 @@ class Purgely_Related_Surrogate_Keys
      */
     public function __construct($identifier)
     {
+        // Cast Object to string in special cases
+        if ($identifier instanceof WP_Post) {
+            $identifier = $identifier->ID;
+        }
+
         // Pull the post object from the $identifiers array and setup a standard post object.
         $this->set_post_id($identifier);
         $this->set_post(get_post($identifier));
