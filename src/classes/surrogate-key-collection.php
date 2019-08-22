@@ -39,7 +39,6 @@ class Purgely_Surrogate_Key_Collection
         'trackback',
         'home',
         '404',
-        'comments_popup',
         'paged',
         'admin',
         'attachment',
