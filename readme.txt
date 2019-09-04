@@ -99,6 +99,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.10 =
+
+* Remove a call to a now deprecated function https://github.com/fastly/WordPress-Plugin/issues/72
+
 = 1.2.9 =
 
 * Added fix for scheduled posts transition to published
