@@ -2,7 +2,7 @@
 Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
 Requires at least: 4.6.2
-Tested up to: 5.2.2
+Tested up to: 5.2.4
 Stable tag: trunk
 License: GPLv2
 
@@ -98,6 +98,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 3. Fastly Webhooks Tab
 
 == Changelog ==
+
+= 1.2.11 =
+
+* API token sanitization was too aggressive stripping off underscores which are now legitimate characters in a token
 
 = 1.2.10 =
 
