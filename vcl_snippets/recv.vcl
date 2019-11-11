@@ -24,7 +24,7 @@
 
   if ( req.http.Cookie ) {
     ### do not cache authenticated sessions
-    if (req.http.Cookie ~ "(wordpress_|PHPSESSID)") {
+    if (req.http.Cookie ~ "(wordpress_|wp-postpass_|PHPSESSID)") {
       set req.http.X-Pass = "1";
     } else if (!req.http.X-Pass) {
       # Cleans up cookies by removing everything except vendor_region, PHPSESSID and themetype2
