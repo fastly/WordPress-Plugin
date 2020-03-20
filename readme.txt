@@ -34,7 +34,7 @@ You can upload them by hand or press `Update VCL` button in the UI.
 
 For more information, or if you have any problems, please email us.
 
-_Note: you may have to disable other caching plugins like W3TotalCache to avoid getting odd cache behaviour._
+_Note: you may have to disable other caching plugins like W3TotalCache or WP Rocket to avoid getting odd cache behaviour._
 
 - Pulls in the [Fastly API](http://docs.fastly.com/api)
 - Integrates purging in post/page/taxonomies publishing
