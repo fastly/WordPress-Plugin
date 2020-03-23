@@ -99,6 +99,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.12 =
+
+* Removed restart logic from VCL snippets as it may clash with Image Optimization
+
 = 1.2.11 =
 
 * API token sanitization was too aggressive stripping off underscores which are now legitimate characters in a token
