@@ -2,7 +2,7 @@
 Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
 Requires at least: 4.6.2
-Tested up to: 5.3.2
+Tested up to: 5.4
 Stable tag: trunk
 License: GPLv2
 
