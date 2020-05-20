@@ -56,6 +56,7 @@ class Purgely_Settings_Page
         add_action('wp_ajax_purge_by_url', array($this, 'fastly_purge_by_url_callback'));
         add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
         add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
+        add_action('wp_ajax_fastly_edgemodule_data', array($this, 'fastly_edgemodule_data'));
     }
 
     /**
@@ -108,6 +109,16 @@ class Purgely_Settings_Page
             'fastly-webhooks',
             array($this, 'options_page_webhooks')
         );
+
+        $edgemodulesHookname = add_submenu_page(
+            'fastly',
+            __('Fastly Edge Modules', 'purgely'),
+            __('Edge Modules', 'purgely'),
+            'manage_options',
+            'fastly-edge-modules',
+            array($this, 'options_page_edgemodules')
+        );
+        add_action( $edgemodulesHookname, array($this, 'options_page_edgemodules_submit') );
     }
 
 
@@ -1862,7 +1873,6 @@ class Purgely_Settings_Page
         <?php
     }
 
-
     /**
      * Render the setting input.
      *
@@ -1995,6 +2005,90 @@ class Purgely_Settings_Page
             </form>
         </div>
         <?php
+    }
+
+    /**
+     * Print the edge modules settings page.
+     *
+     * @return void
+     */
+    public function options_page_edgemodules()
+    {
+        add_thickbox();
+        $modules = $this->fastly_modules_with_data();
+        ?>
+        <div class="wrap">
+            <div id="fastly-admin" class="wrap">
+                <h1>
+                    <img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL . 'static/logo_white.gif'; ?>"><br>
+                    <span style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span>
+                </h1>
+            </div>
+            <table class="form-table">
+                <tbody>
+                    <?php foreach ($modules as $module): ?>
+                    <tr>
+                        <td>
+                            <strong><?php echo $module->name; ?></strong><br>
+                            <p>
+                                <em><?php echo $module->description; ?></em>
+                            </p>
+                        </td>
+                        <td nowrap="nowrap">
+                            <em>
+                                <strong>Disabled</strong><br> <!-- ToDo: implement from data -->
+                                Last updated: 12/31/2019 <!-- ToDo: implement from data -->
+                            </em>
+                        </td>
+                        <td nowrap="nowrap">
+                            <a href="#TB_inline?&inlineId=fastly-edge-module-<?php echo $module->id; ?>" title="<?php echo $module->name; ?>" class="button thickbox">Manage</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <span class="spinner" id="html-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
+        </div>
+        <?php foreach ($modules as $module): ?>
+        <div id="fastly-edge-module-<?php echo $module->id; ?>" style="display:none;">
+            <form action="<?php menu_page_url( 'fastly-edge-modules' ) ?>" method="post">
+                <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('fastly-edge-modules'); ?>">
+                 <!-- ToDo: implement dynamic form building, checkout M2 module modly.js -->
+                 <!-- ToDo: will most likely require a proper js file -->
+                 <!-- ToDo: will require import of Handlebars library -->
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+        <?php endforeach; ?>
+        <?php
+    }
+
+    protected function fastly_modules_with_data()
+    {
+        $modulesData = fastly_api()->get_all_snippets();
+        return array_map(function ($module) use ($modulesData) {
+            foreach ($modulesData as $datum) {
+                if ($datum->name === $module->id) {
+                    $module->data = $datum;
+                }
+            }
+            return $module;
+        }, get_purgely_instance()->fastly_edge_modules());
+    }
+
+    public function options_page_edgemodules_submit()
+    {
+        if ('POST' === $_SERVER['REQUEST_METHOD'] && wp_verify_nonce($_POST['nonce'], 'fastly-edge-modules')) {
+            // data from frontend should be parsed into VCL snippet format by Handlebars lib
+            // only task here would be to save/update/delete the snippet on Fastly
+            echo 'yaaay!';
+        }
+    }
+
+    public function fastly_edgemodule_data()
+    {
+        echo json_encode(array('foo' => 'bar'));
+        wp_die();
     }
 
     /**

@@ -87,6 +87,20 @@ class Purgely
     var $src_dir = '';
 
     /**
+     * File path to the plugin vcl snippets files (e.g., /var/www/mysite/wp-content/plugins/purgely/vcl_snippets).
+     *
+     * @var   string    Path to the vcl snippets folder.
+     */
+    var $vcl_dir = '';
+
+    /**
+     * File path to the plugin src files (e.g., /var/www/mysite/wp-content/plugins/purgely/fastly_edge_modules).
+     *
+     * @var   string    Path to the edge modules folder.
+     */
+    var $edge_modules_dir = '';
+
+    /**
      * File path to the plugin main file (e.g., /var/www/mysite/wp-content/plugins/mixed-content-detector/purgely.php).
      *
      * @var   string    Path to the plugin's main file.
@@ -139,6 +153,7 @@ class Purgely
         $this->root_dir = dirname(__FILE__);
         $this->src_dir = $this->root_dir . '/src';
         $this->vcl_dir = $this->root_dir . '/vcl_snippets';
+        $this->edge_modules_dir = $this->root_dir . '/fastly_edge_modules';
         $this->file_path = $this->root_dir . '/' . basename(__FILE__);
         $this->url_base = untrailingslashit(plugins_url('/', __FILE__));
         $this->current_version = get_option("fastly-schema-version", false);
@@ -146,6 +161,7 @@ class Purgely
         $include_files = array(
             $this->src_dir . '/config.php',
             $this->src_dir . '/utils.php',
+            $this->src_dir . '/classes/api.php',
             $this->src_dir . '/classes/settings.php',
             $this->src_dir . '/classes/upgrades.php',
             $this->src_dir . '/classes/vcl-handler.php',
@@ -526,6 +542,21 @@ class Purgely
             $content = str_replace( $image, $replacement, $content );
         }
         return $content;
+    }
+
+    /**
+     * Get Edge Modules data
+     * @return array
+     */
+    function fastly_edge_modules() {
+        $result = [];
+        foreach ( glob( $this->edge_modules_dir . "/*.json" ) as $file ) {
+            if (is_file($file) && $contents = file_get_contents($file)) {
+                $json = json_decode($contents);
+                $result[$json->id] = $json;
+            }
+        }
+        return $result;
     }
 }
 
