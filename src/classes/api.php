@@ -67,7 +67,19 @@ class Fastly_Api
 
     public function get_all_snippets()
     {
-        $url = $this->base_url . "/{$this->active_version->number}/snippet";
+        $url = $this->base_url . "/{$this->get_active_version()->number}/snippet";
+        return json_decode(Requests::get($url, $this->headers_get)->body);
+    }
+
+    public function get_all_acls()
+    {
+        $url = $this->base_url . "/{$this->get_active_version()->number}/acl";
+        return json_decode(Requests::get($url, $this->headers_get)->body);
+    }
+
+    public function get_all_dictionaries()
+    {
+        $url = $this->base_url . "/{$this->get_active_version()->number}/dictionary";
         return json_decode(Requests::get($url, $this->headers_get)->body);
     }
 }

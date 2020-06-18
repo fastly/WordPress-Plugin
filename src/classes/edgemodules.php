@@ -6,6 +6,10 @@ class Fastly_Edgemodules
 
     private static $instance;
 
+    protected $acls = null;
+
+    protected $dictionaries = null;
+
     protected function __construct() {}
 
     protected function __clone() {}
@@ -179,9 +183,19 @@ class Fastly_Edgemodules
 
         switch ($property->type) {
             case 'acl':
-                return '<p>ACL</p>';
+                $options = '';
+                foreach ($this->getAcls() as $acl) {
+                    $selected = $acl->name === $value ? 'selected' : '';
+                    $options .= "<option value='$acl->name' {$selected}>{$acl->name}</option>";
+                };
+                return "<select style='width: 100%;' id='{$id}' name='{$name}' {$required}>{$options}</select>";
             case 'dict':
-                return '<p>Dictionary</p>';
+                $options = '';
+                foreach ($this->getDictionaries() as $dictionary) {
+                    $selected = $dictionary->name === $value ? 'selected' : '';
+                    $options .= "<option value='$dictionary->name' {$selected}>{$dictionary->name}</option>";
+                };
+                return "<select style='width: 100%;' id='{$id}' name='{$name}' {$required}>{$options}</select>";
             case 'select':
                 $options = '';
                 foreach ((array) $property->options as $k => $label) {
@@ -206,6 +220,22 @@ class Fastly_Edgemodules
                 $type = 'text';
                 return "<input style='width: 100%;' type='{$type}' id='{$id}' name='{$name}' value='{$value}' {$required}/>";
         }
+    }
+
+    protected function getAcls()
+    {
+        if (is_null($this->acls)) {
+            $this->acls = fastly_api()->get_all_acls();
+        }
+        return $this->acls;
+    }
+
+    protected function getDictionaries()
+    {
+        if (is_null($this->dictionaries)) {
+            $this->dictionaries = fastly_api()->get_all_dictionaries();
+        }
+        return $this->dictionaries;
     }
 
     public function processFormSubmission($data)
