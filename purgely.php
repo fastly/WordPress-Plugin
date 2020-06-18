@@ -162,6 +162,7 @@ class Purgely
             $this->src_dir . '/config.php',
             $this->src_dir . '/utils.php',
             $this->src_dir . '/classes/api.php',
+            $this->src_dir . '/classes/edgemodules.php',
             $this->src_dir . '/classes/settings.php',
             $this->src_dir . '/classes/upgrades.php',
             $this->src_dir . '/classes/vcl-handler.php',
@@ -241,6 +242,9 @@ class Purgely
 
         // Load the textdomain.
         add_action('plugins_loaded', array($this, 'load_plugin_textdomain'));
+
+        // Load custom JS for EdgeModules
+        add_action( 'admin_enqueue_scripts', array($this, 'enqueue_admin_script_edgemodules'));
     }
 
     /**
@@ -557,6 +561,14 @@ class Purgely
             }
         }
         return $result;
+    }
+
+    public function enqueue_admin_script_edgemodules($hook)
+    {
+        if ('fastly_page_fastly-edge-modules' != $hook) {
+            return;
+        }
+        wp_enqueue_script( 'fastly_edgemodules_script', plugin_dir_url( __FILE__ ) . 'js/edgemodules.js', array(), '1.0' );
     }
 }
 
