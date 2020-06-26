@@ -56,6 +56,7 @@ class Purgely_Settings_Page
         add_action('wp_ajax_purge_by_url', array($this, 'fastly_purge_by_url_callback'));
         add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
         add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
+        add_action( 'admin_post_fastly_module_disable_form', array($this, 'options_page_edgemodules_submit_disable') );
     }
 
     /**
@@ -2025,6 +2026,19 @@ class Purgely_Settings_Page
     {
         if ('POST' === $_SERVER['REQUEST_METHOD'] && wp_verify_nonce($_POST['nonce'], 'fastly-edge-modules')) {
             Fastly_Edgemodules::getInstance()->processFormSubmission($_POST);
+        }
+    }
+
+    /**
+     * Disable snippets on Fastly and remove form database
+     *
+     * @return void
+     */
+    public function options_page_edgemodules_submit_disable()
+    {
+        if ('POST' === $_SERVER['REQUEST_METHOD'] && wp_verify_nonce($_POST['nonce'], 'fastly-edge-modules-disable')) {
+            Fastly_Edgemodules::getInstance()->processFormSubmissionDisable($_POST);
+            wp_redirect( $_SERVER["HTTP_REFERER"], 302, 'WordPress' );
         }
     }
 

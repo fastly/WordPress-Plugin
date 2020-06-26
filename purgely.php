@@ -568,6 +568,8 @@ class Purgely
         if ('fastly_page_fastly-edge-modules' != $hook) {
             return;
         }
+        wp_enqueue_script( 'fastly_edgemodules_jquery_serializejson_library', plugin_dir_url( __FILE__ ) . 'js/jquery.serializejson.min.js', array(), '1.0' );
+        wp_enqueue_script( 'fastly_edgemodules_handlebars_library', plugin_dir_url( __FILE__ ) . 'js/handlebars-v4.0.12.js', array(), '1.0' );
         wp_enqueue_script( 'fastly_edgemodules_script', plugin_dir_url( __FILE__ ) . 'js/edgemodules.js', array(), '1.0' );
     }
 }

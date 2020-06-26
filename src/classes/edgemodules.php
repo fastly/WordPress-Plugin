@@ -4,6 +4,8 @@ class Fastly_Edgemodules
 {
     const SETTINGS = 'fastly-settings-edgemodules';
 
+    const EDGE_PREFIX = 'edgemodule';
+
     private static $instance;
 
     protected $acls = null;
@@ -65,28 +67,45 @@ class Fastly_Edgemodules
             <span class="spinner" id="html-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
         </div>
         <?php foreach ($modules as $module): ?>
-        <div id="fastly-edge-module-<?php echo $module->id; ?>" style="display:none;">
-            <form action="<?php menu_page_url( 'fastly-edge-modules' ) ?>" method="post">
+        <div id="fastly-edge-module-<?php echo $module->id; ?>"style="display:none;">
+            <form action="<?php menu_page_url( 'fastly-edge-modules' ) ?>" onsubmit="return EdgeModules.submit(this)" method="post">
                 <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('fastly-edge-modules'); ?>">
+                <input type="hidden" id="<?php echo "{$module->id}-key"; ?>" value='<?php echo $module->id; ?>'>
+                <input type="hidden" id="<?php echo "{$module->id}-vcl"; ?>" value='<?php echo rawurlencode(json_encode($module->vcl)); ?>'>
+                <input type="hidden" id="<?php echo "{$module->id}-snippet"; ?>" name="<?php echo "{$module->id}[snippet]"; ?>">
                 <table class="form-table">
                     <tbody>
-                    <?php foreach($module->properties as $property): ?>
-                        <?php if($property->type === 'group'): ?>
-                            <?php $this->renderGroup($property, $module->data[$property->name], $module->id); ?>
-                        <?php else: ?>
-                            <?php $this->renderProperty($module->id, $property, $module->data[$property->name]); ?>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
+                    <?php if($module->properties): ?>
+                        <?php foreach($module->properties as $property): ?>
+                            <?php if($property->type === 'group'): ?>
+                                <?php $this->renderGroup($property, $module->data[$property->name], $module->id); ?>
+                            <?php else: ?>
+                                <?php $this->renderProperty($module->id, $property, $module->data[$property->name]); ?>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                <span class="submitbox">
+                                    <a class="submitdelete" href="#" onclick="return EdgeModules.disableModule('<?php echo $module->id; ?>')">Disable</a>
+                                </span>
+                            </td>
+                            <td>
+                                <input type="submit" value="Upload" class="button button-primary" style="float: right">
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
-
-                <!-- ToDo: will most likely require a proper js file -->
-                <!-- ToDo: will require import of Handlebars library -->
-                <!-- ToDo: Form submission in 2 steps:
-                   1. parse values with Handlebars to generate snippet and dynamically add to form (maybe as value of hidden field?)
-                   2. from backend push snippet to Fastly, and on success store values on DB
-                -->
-                <input type="submit" value="Upload">
+            </form>
+            <form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="<?php echo "{$module->id}-disable-form"; ?>" method="post" style="display: none;">
+                <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('fastly-edge-modules-disable'); ?>">
+                <input type="hidden" name="action" value="fastly_module_disable_form">
+                <input type="hidden" name="module_name" value='<?php echo $module->id; ?>'>
+                <?php for ($i = 0; $i < count($module->vcl); $i++): ?>
+                    <input type="hidden" name="types[<?php echo $i; ?>]" value='<?php echo $module->vcl[$i]->type; ?>'>
+                <?php endfor; ?>
             </form>
         </div>
         <?php endforeach; ?>
@@ -99,7 +118,7 @@ class Fastly_Edgemodules
         $localData = get_option(self::SETTINGS, []);
         return array_map(function ($module) use ($apiData, $localData) {
             $module->data = isset($localData[$module->id]) ? $localData[$module->id] : [];
-            $query = 'edgemodule_'.$module->id;
+            $query = self::EDGE_PREFIX.'_'.$module->id;
             foreach ($apiData as $apiModule) {
                 if (substr($apiModule->name, 0, strlen($query)) === $query) {
                     $module->enabled = true;
@@ -150,7 +169,7 @@ class Fastly_Edgemodules
                 </tbody>
             </table>
             <span class="submitbox">
-                <a class="submitdelete" href="#" onclick="return EdgeModules.removeGroup(this)">Remove</a>
+                <a class="submitdelete" href="#" onclick="return EdgeModules.removeGroup(this)">Remove group</a>
             </span>
             <hr/>
         </div>
@@ -242,14 +261,53 @@ class Fastly_Edgemodules
     {
         unset($data['nonce']);
 
-        // upload to Fastly's API, continue if successful, else return message
-        // each group should have a snippet key already parsed by Handlebars.js before form submission
+        $clone = fastly_api()->clone_active_version();
+        foreach ($data as $key => $datum) {
+            $snippets = json_decode(rawurldecode($datum['snippet']));
+            foreach ($snippets as $snippet) {
+                $success = fastly_api()->upload_snippet($clone->number, [
+                    'name'      => self::EDGE_PREFIX.'_'.$key.'_'.$snippet->type,
+                    'type'      => $snippet->type,
+                    'dynamic'   => "0",
+                    'priority'  => $snippet->priority,
+                    'content'   => $snippet->snippet
+                ]);
+                if (!$success) {
+                    return;
+                }
+            }
+        }
+        if (!fastly_api()->validate_version($clone->number)) {
+            return;
+        }
+        fastly_api()->activate_version($clone->number);
 
         $currentData = get_option(self::SETTINGS, []);
         $data = array_merge($currentData , array_map(function ($d) {
+            unset($d['snippet']);
             $d['uploaded_at'] = date(DATE_ISO8601);
             return $d;
         }, $data));
         update_option(self::SETTINGS, $data);
+    }
+
+    public function processFormSubmissionDisable($data)
+    {
+        $clone = fastly_api()->clone_active_version();
+        foreach ($data['types'] as $type) {
+            $name = self::EDGE_PREFIX.'_'.$data['module_name'].'_'.$type;
+            if (!fastly_api()->delete_snippet($clone->number, $name)) {
+                return;
+            }
+        }
+
+        if (!fastly_api()->validate_version($clone->number)) {
+            return;
+        }
+        fastly_api()->activate_version($clone->number);
+
+        $currentData = get_option(self::SETTINGS, []);
+        unset($currentData[$data['module_name']]);
+        update_option(self::SETTINGS, $currentData);
     }
 }
