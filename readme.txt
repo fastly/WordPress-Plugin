@@ -119,6 +119,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.14 =
+
+* Add missing files that were missing in 1.2.13 deploy
+
 = 1.2.13 =
 
 * Introduce Edge Modules https://github.com/fastly/WordPress-Plugin/pull/79
