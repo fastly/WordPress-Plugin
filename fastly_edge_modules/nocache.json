@@ -34,11 +34,11 @@
 	"vcl": [
 		{
 			"type": "recv",
-			"template": "{{#each rules}}\n{{#ifMatch mode 'both|fastly'}}\nif (req.url ~ \"{{../pathpattern}}\") {\n  return(pass);\n}\n{{/ifMatch}}\n{{/each}}"
+			"template": "{{#each rules}}\n{{#ifMatch mode 'both|fastly'}}\nif (req.url ~ \"{{../pathpattern}}\") {\n  set req.http.x-pass = \"1\";\n}\n{{/ifMatch}}\n{{/each}}"
 		},
 		{
 			"type": "deliver",
-			"template": "{{#each rules}}\n{{#ifMatch mode 'both|browser'}}\nif (req.url ~ \"{{../pathpattern}}\") {\n  set resp.http.Cache-Control = \"no-cache, private\";\n  unset resp.http.Expires;\n  unset resp.http.Pragma;\n}\n{{/ifMatch}}\n{{/each}}"
+			"template": "{{#each rules}}\n{{#ifMatch mode 'both|browser'}}\nif (req.url ~ \"{{../pathpattern}}\" && fastly.ff.visits_this_service == 0 ) {\n  set resp.http.Cache-Control = \"no-cache, private\";\n  unset resp.http.Expires;\n  unset resp.http.Pragma;\n}\n{{/ifMatch}}\n{{/each}}"
 		}
 	],
 	"test": {

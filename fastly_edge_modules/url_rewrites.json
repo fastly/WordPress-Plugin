@@ -1,7 +1,7 @@
 {
-    "description": "URL rewrite /sitemap.xml path to point to the correct URL on the backend",
-    "id": "magento_cloud_sitemap_rewrite",
-    "name": "Magento Cloud Sitemap rewrites",
+    "description": "Rewrite URL path to point to the correct URL on the backend. NOT a redirect.",
+    "id": "url_rewrites",
+    "name": "URL rewrites",
     "properties": [
         {
             "entryTemplate": "{{source}} => {{dest}}",

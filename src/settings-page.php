@@ -85,29 +85,11 @@ class Purgely_Settings_Page
 
         add_submenu_page(
             'fastly',
-            __('Fastly Advanced Options', 'purgely'),
-            __('Advanced', 'purgely'),
-            'manage_options',
-            'fastly-advanced',
-            array($this, 'options_page_advanced')
-        );
-
-        add_submenu_page(
-            'fastly',
             __('Fastly Image Optimization', 'purgely'),
             __('Image Optimization', 'purgely'),
             'manage_options',
             'fastly-io',
             array($this, 'options_page_io')
-        );
-
-        add_submenu_page(
-            'fastly',
-            __('Fastly Webhooks', 'purgely'),
-            __('Webhooks', 'purgely'),
-            'manage_options',
-            'fastly-webhooks',
-            array($this, 'options_page_webhooks')
         );
 
         $edgemodulesHookname = add_submenu_page(
@@ -119,6 +101,24 @@ class Purgely_Settings_Page
             array($this, 'options_page_edgemodules')
         );
         add_action( 'load-'.$edgemodulesHookname, array($this, 'options_page_edgemodules_submit') );
+
+        add_submenu_page(
+            'fastly',
+            __('Fastly Advanced Options', 'purgely'),
+            __('Advanced', 'purgely'),
+            'manage_options',
+            'fastly-advanced',
+            array($this, 'options_page_advanced')
+        );
+
+        add_submenu_page(
+            'fastly',
+            __('Fastly Webhooks', 'purgely'),
+            __('Webhooks', 'purgely'),
+            'manage_options',
+            'fastly-webhooks',
+            array($this, 'options_page_webhooks')
+        );
     }
 
 

@@ -41,6 +41,10 @@ class Fastly_Edgemodules
                     <span style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span>
                 </h1>
             </div>
+            Fastly Edge Modules is a framework that allows you to enable specific functionality on Fastly without needing to write any VCL code.
+	    Below is a list of functions you can enable. Some may have additional options you can configure. To enable or disable click
+            on the <strong>Manage</strong> button next to the functionality you want to enable, configure any available options then click <strong>Upload</strong>.  
+            To disable/remove the module click on <strong>Manage</strong> then click on <strong>Disable</strong>.
             <table class="form-table">
                 <tbody>
                 <?php foreach ($modules as $module): ?>
@@ -54,7 +58,7 @@ class Fastly_Edgemodules
                         <td nowrap="nowrap">
                             <em>
                                 <strong><?php echo ($module->enabled) ? __('Enabled') : __('Disabled'); ?></strong><br>
-                                Last updated: <?php echo isset($module->data['uploaded_at']) ? date ( 'Y/m/d' , strtotime($module->data['uploaded_at'])) : __('never'); ?>
+                                Uploaded: <?php echo isset($module->data['uploaded_at']) ? date ( 'Y/m/d' , strtotime($module->data['uploaded_at'])) : __('never'); ?>
                             </em>
                         </td>
                         <td nowrap="nowrap">

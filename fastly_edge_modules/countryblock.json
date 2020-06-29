@@ -12,7 +12,7 @@
   "vcl": [
     {
       "type": "recv", 
-      "template": "if (client.geo.country_code ~ \"(?i)^({{replace countryList '[ ,]+' '|'}})$\") {\n  error 921 \"[modly:countryblock]\";\n}"
+      "template": "if (fastly.ff.visits_this_service == 0 && client.geo.country_code ~ \"(?i)^({{replace countryList '[ ,]+' '|'}})$\") {\n  error 921 \"[modly:countryblock]\";\n}"
     }, 
     {
       "type": "error", 

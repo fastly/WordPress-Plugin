@@ -2,7 +2,7 @@
 Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
 Requires at least: 4.6.2
-Tested up to: 5.4
+Tested up to: 5.4.2
 Stable tag: trunk
 License: GPLv2
 
@@ -44,14 +44,31 @@ _Note: you may have to disable other caching plugins like W3TotalCache or WP Roc
 
 Using this plugin means you won't have to purge content in Fastly when you make changes to your WordPress content. Purges will automatically happen with no need for manual intervention.
 
-Customization:
+== Customization ==
 
-Image optimization:
- To activate, contact support@fastly.com to request image optimization activation for your Fastly service.
+= Edge Modules =
+
+Edge Modules are a framework that enables specific functions to be enabled on Fastly Edge without
+the need to write VCL. Current list of functions that can be included includes
+
+- Enable Blackfire metrics and tracing
+- Set CORS headers
+- Enable support for bot detection partners such as Datadome/Netacea
+- Redirect one domain to another e.g. domain.com => www.domain.com
+- Rewrite URLs going to a backend e.g. /sitemap.xml => /media/sitemap.xml
+- Domain masking an external backend/origin
+
+More details can be found at https://github.com/fastly/WordPress-Plugin/blob/master/EDGE-MODULES.md
+
+= Image optimization =
+
+ Image Optimization is a separately contracted feature. Please contact support@fastly.com to request
+ pricing and activation.
+
  Once activated on service level, you will be able to enable it in your blog under Fastly->Advanced.
 
  Breakdown of IO options:
-    Enable Image Optimization in Fastly configuration - Activating this uploads VCL with needed headers to specific service and activates new version
+    Enable Image Optimization in Fastly configuration - Activating this uploads VCL that steers image traffic to the image optimization service
 
     Enable Image Optimization in Wordpress - Main switch to activate IO which is needed for all other options to work.
 
@@ -60,6 +77,9 @@ Image optimization:
     Adaptive pixel ratio sizes - Select pixel ratios that will be generated when creating image srcset html.
 
     Enable image optimization for content images - Safe switch for Image optimization of content images (due to difference from featured images, those are processed differently). To fully utilize, insert full size images in content.
+
+
+= Wordpress Hooks =
 
 Available wordpress hooks (add_action) on:
 
@@ -98,6 +118,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 3. Fastly Webhooks Tab
 
 == Changelog ==
+
+= 1.2.13 =
+
+* Introduce Edge Modules https://github.com/fastly/WordPress-Plugin/pull/79
 
 = 1.2.12 =
 
