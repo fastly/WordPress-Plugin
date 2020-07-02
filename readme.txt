@@ -119,6 +119,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.15 =
+
+* Always purged keys sanitization callback was overly aggresive stripping underscores
+
 = 1.2.14 =
 
 * Add missing files that were missing in 1.2.13 deploy

@@ -87,26 +87,14 @@ function purgely_get_options()
  */
 function purgely_sanitize_key($key)
 {
-    return preg_replace('/[^a-zA-Z0-9_-]/', '', $key);
-}
-
-/**
- * Sanitize multiple keys
- * Restricts a value to only a-z, A-Z, 0-9 and ,
- *
- * @param  string $key Unsantizied key.
- * @return string      Sanitized key.
- */
-function purgely_sanitize_keys($key)
-{
-    return preg_replace('/[^a-zA-Z0-9,-]/', '', $key);
+    return preg_replace('/[^a-zA-Z0-9,_-]/', '', $key);
 }
 
 /**
  * Sanitize custom ttl templates
  * Restricts a value to integer
  *
- * @param  string $key Unsantizied key.
+ * @param  string $key Unsanitized key.
  * @return string      Sanitized key.
  */
 function purgely_sanitize_ttl_templates($key)
