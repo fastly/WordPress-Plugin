@@ -12,8 +12,11 @@
   } else if (req.http.X-Requested-With == "XMLHttpRequest" && req.url !~ "recent_reviews") {
   # Do not cache ajax requests except for recent reviews
     set req.http.X-Pass = "1";
-  } if (req.url.qs ~ "nocache" ||
+  } else if (req.url.qs ~ "nocache" ||
       req.url.path ~ "(control\.php|wp-comments-post\.php|wp-login\.php|bb-login\.php|bb-reset-password\.php|register\.php)") {
+    set req.http.X-Pass = "1";
+  # Woocommerce sets cart as cacheable. Need to make sure we never cache it
+  } else if (req.url.path ~ "/cart/?$" ) {
     set req.http.X-Pass = "1";
   }
 
