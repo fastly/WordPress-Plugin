@@ -37,8 +37,6 @@ class Fastly_Api
             trailingslashit('service'),
             trailingslashit(purgely_get_option('fastly_service_id')),
         ]);
-        
-        $this->get_active_version();
     }
 
     /**
@@ -47,9 +45,22 @@ class Fastly_Api
     public static function getInstance()
     {
         if (is_null(self::$instance)) {
-            self::$instance = new self();
+            $instance = new self();
+            $instance->validate();
+            self::$instance = $instance;
         }
         return self::$instance;
+    }
+
+    protected function validate()
+    {
+        try {
+            $this->get_active_version();
+        } catch (\Exception $e) {
+            wp_die("<div class=\"error notice\">
+                <p>Unable to connect to Fastly. Please go to General settings and review your settings.</p>
+            </div>");
+        }
     }
 
     public function get_active_version()
@@ -118,25 +129,6 @@ class Fastly_Api
 
     public function upload_snippet($version, $snippet)
     {
-        // Perform replacements vcl template replacements
-//        if (isset($snippet['content'])) {
-//            $adminUrl = $this->vcl->getAdminFrontName();
-//            $adminPathTimeout = $this->config->getAdminPathTimeout();
-//            $ignoredUrlParameters = $this->config->getIgnoredUrlParameters();
-//
-//            if ($ignoredUrlParameters === "") {
-//                $queryParameters = '&';
-//            } else {
-//                $ignoredUrlParameterPieces = explode(",", $ignoredUrlParameters);
-//                $filterIgnoredUrlParameterPieces = array_filter(array_map('trim', $ignoredUrlParameterPieces));
-//                $queryParameters = implode('|', $filterIgnoredUrlParameterPieces);
-//            }
-//
-//            $snippet['content'] = str_replace('####ADMIN_PATH####', $adminUrl, $snippet['content']);
-//            $snippet['content'] = str_replace('####ADMIN_PATH_TIMEOUT####', $adminPathTimeout, $snippet['content']);
-//            $snippet['content'] = str_replace('####QUERY_PARAMETERS####', $queryParameters, $snippet['content']);
-//        }
-
         $url = $this->base_url . "version/{$version}/snippet";
         if (!$this->snippet_exists($snippet['name'], $version)) {
             $verb = Requests::POST;
