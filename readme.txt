@@ -119,6 +119,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.16 =
+
+* Scheduling posts would purge content at submission and activation. Make sure we don't purge at submission time https://github.com/fastly/WordPress-Plugin/pull/82
+
 = 1.2.15 =
 
 * Always purged keys sanitization callback was overly aggresive stripping underscores
