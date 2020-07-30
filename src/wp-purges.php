@@ -5,6 +5,8 @@
  */
 class Purgely_Purges
 {
+    private $postIdsProcessed = [];
+
     /**
      * The one instance of Purgely_Purges.
      *
@@ -44,8 +46,12 @@ class Purgely_Purges
      */
     public function purge($post_id)
     {
+        if (in_array($this->getPostId($post_id), $this->postIdsProcessed)) {
+            return;
+        }
 
-        if (!in_array(get_post_status($post_id), array('publish', 'trash', 'future', 'draft'))) {
+        array_push($this->postIdsProcessed, $this->getPostId($post_id));
+        if (!in_array(get_post_status($post_id), array('publish', 'trash', 'draft'))) {
             return;
         }
 
@@ -66,6 +72,14 @@ class Purgely_Purges
         {
             $purgely->purge('key-collection', $collection, array());
         }
+    }
+
+    private function getPostId($post)
+    {
+        if ($post instanceof WP_Post) {
+            return $post->ID;
+        }
+        return $post;
     }
 
     /**
