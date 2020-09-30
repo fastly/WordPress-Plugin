@@ -2,7 +2,7 @@
 Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
 Requires at least: 4.6.2
-Tested up to: 5.4.2
+Tested up to: 5.5.1
 Stable tag: trunk
 License: GPLv2
 
@@ -118,6 +118,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 3. Fastly Webhooks Tab
 
 == Changelog ==
+
+= 1.2.17
+
+* Fix for edge modules with option values defaulting to a single value https://github.com/fastly/WordPress-Plugin/pull/83
 
 = 1.2.16 =
 
