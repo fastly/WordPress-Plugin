@@ -229,10 +229,10 @@ class Fastly_Edgemodules
             case 'boolean':
                 $value = $value === 'true';
                 $options = implode('', [
-                    "<option value='false' ".(!$value ? 'selected' : '').">No</option>",
-                    "<option value='true' ".($value ? 'selected' : '').">Yes</option>",
+                    "<option value='' ".(!$value ? 'selected' : '').">No</option>",
+                    "<option value='1' ".($value ? 'selected' : '').">Yes</option>",
                 ]);
-                return "<select style='width: 100%;' id='{$id}' name='{$name}' {$required}>{$options}</select>";
+                return "<select style='width: 100%;' id='{$id}' name='{$name}'>{$options}</select>";
             case 'integer':
             case 'float':
                 $type = 'number';
