@@ -1,3 +1,8 @@
+  if (fastly.ff.visits_this_service > 0) {
+    # Needed for proper handling of stale while revalidated when shielding is involved
+    set req.max_stale_while_revalidate = 0s;
+  }
+
   ## always cache these images & static assets
   if (req.request == "GET" && req.url.ext ~ "(?i)(css|js|gif|jpg|jpeg|bmp|png|ico|img|tga|webp|wmf)") {
     remove req.http.cookie;
