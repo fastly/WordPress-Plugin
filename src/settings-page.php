@@ -49,6 +49,7 @@ class Purgely_Settings_Page
     {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_menu', array($this, 'settings_init'));
+	    add_action('admin_notices', array($this, 'add_admin_notices'));
         add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
         add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
         add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
@@ -121,6 +122,13 @@ class Purgely_Settings_Page
         );
     }
 
+	/**
+	 * Init setting errors/notices/success messages
+	 */
+    function add_admin_notices()
+    {
+	    settings_errors();
+    }
 
     /**
      * Initialize all of the settings.
@@ -129,9 +137,6 @@ class Purgely_Settings_Page
      */
     function settings_init()
     {
-        // Init setting errors/notices/success messages
-        settings_errors();
-
         // Set up the option name, "fastly-settings-general". All general values will be in this array.
         register_setting(
             'fastly-settings-general',
