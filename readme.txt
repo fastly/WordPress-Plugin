@@ -2,7 +2,7 @@
 Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
 Requires at least: 4.6.2
-Tested up to: 5.5.1
+Tested up to: 5.8
 Stable tag: trunk
 License: GPLv2
 
@@ -61,7 +61,6 @@ the need to write VCL. Current list of functions that can be included includes
 More details can be found at https://github.com/fastly/WordPress-Plugin/blob/master/EDGE-MODULES.md
 
 = Image optimization =
-
  Image Optimization is a separately contracted feature. Please contact support@fastly.com to request
  pricing and activation.
 
@@ -118,6 +117,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 3. Fastly Webhooks Tab
 
 == Changelog ==
+
+= 1.2.18
+
+* ‘front page’ should be automatically purged just like the ‘home' page https://github.com/fastly/WordPress-Plugin/pull/87
 
 = 1.2.17
 
