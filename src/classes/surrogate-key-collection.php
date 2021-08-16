@@ -231,11 +231,15 @@ class Purgely_Surrogate_Key_Collection
      */
     private function _add_key_author($post)
     {
-        $author = absint($post->post_author);
+        $authors = array(absint($post->post_author));
+        $authors = apply_filters('purgely_post_authors', $authors, $post);
+
         $key = array();
 
-        if ($author > 0) {
-            $key[] = 'a-' . absint($author);
+        foreach ($authors as $author) {
+            if ($author > 0) {
+                $key[] = 'a-' . absint($author);
+            }
         }
 
         return $key;
