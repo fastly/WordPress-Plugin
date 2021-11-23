@@ -71,6 +71,12 @@ class Purgely_Surrogate_Key_Collection
             $taxonomies = apply_filters('purgely_taxonomy_keys', (array)get_taxonomies());
 
             foreach ($taxonomies as $taxonomy) {
+                // $wp_query->post can be null, and then PHP 8 will throw a warning when trying to access post->ID.
+                // In lower versions of PHP, there would be no warning, but the end result in $term_keys would be the
+                // same, as it would merge an empty array to current array. So, check if there is $wp_query->post and
+                // skip if it's null.
+                if (!$wp_query->post) continue;
+
                 $term_keys = array_merge($term_keys, $this->_add_key_terms_single($wp_query->post->ID, $taxonomy));
             }
 
@@ -184,7 +190,6 @@ class Purgely_Surrogate_Key_Collection
      *
      * @param  int $post_id Post ID.
      * @param  string $taxonomy The taxonomy to look for associated terms.
-     * @param  WP_Query $wp_query The current wp_query to investigate.
      * @return array              The term slug/taxonomy combos for the post.
      */
     private function _add_key_terms_single($post_id, $taxonomy)
