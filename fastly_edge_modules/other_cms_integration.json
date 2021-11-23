@@ -1,7 +1,7 @@
 {
   "name": "Other CMS/backend integration",
   "id": "other_cms_integration",
-  "description": "This edge module is intended to integrate other CMSes/backend into your site e.g. 3rd party blog/shop etc. Sometimes referred to as domain masking",
+  "description": "This edge module is intended to integrate other CMSes/backend into your shop e.g. Wordpress blog etc. Sometimes referred to as domain masking",
   "version": 1,
   "properties": [
     {
