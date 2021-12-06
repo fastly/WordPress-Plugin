@@ -236,6 +236,8 @@ class Purgely_Surrogate_Key_Collection
      */
     private function _add_key_author($post)
     {
+        if (!$post) return array();
+
         $author = absint($post->post_author);
         $key = array();
 
