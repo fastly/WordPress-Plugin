@@ -82,7 +82,10 @@ More details can be found at https://github.com/fastly/WordPress-Plugin/blob/mas
 
 Available wordpress hooks (add_action) on:
 
-Editing purging keys output
+Editing related (purging) keys for a given post
+ purgely_related_keys
+
+Editing surrogate keys output
  purgely_pre_send_keys
  purgely_post_send_keys
     functions: add_keys
@@ -102,6 +105,12 @@ add_action(\'purgely_pre_send_surrogate_control\', \'custom_headers_edit\');
 function custom_headers_edit($header_object)
 {
   $header_object->edit_headers(array(\'custom-header\' => \'555\', \'max-age\' => \'99\'));
+}
+
+add_filter(\'purgely_related_keys\', \'custom_related_keys\');
+function custom_related_keys($keys_array, $post_object) {
+    $keys_array[] = \'custom-key\';
+    return $keys_array;
 }
 
 add_action(\'purgely_pre_send_keys\', \'custom_surrogate_keys\');
