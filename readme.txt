@@ -107,7 +107,7 @@ function custom_headers_edit($header_object)
   $header_object->edit_headers(array(\'custom-header\' => \'555\', \'max-age\' => \'99\'));
 }
 
-add_filter(\'purgely_related_keys\', \'custom_related_keys\');
+add_filter(\'purgely_related_keys\', \'custom_related_keys\', 10, 2);
 function custom_related_keys($keys_array, $post_object) {
     $keys_array[] = \'custom-key\';
     return $keys_array;
