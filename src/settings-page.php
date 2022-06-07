@@ -705,9 +705,8 @@ class Purgely_Settings_Page
             /** Proceed to step 2 vcl update **/
             function vcl_step2() {
                 var vcl_response_msg = document.getElementById('vcl-response-msg');
-                var activate = 0;
                 var spinner = jQuery('#vcl-popup-spinner');
-                activate = jQuery('#vcl_activate_new').is(":checked") ? 1 : 0;
+                var activate = jQuery('#vcl_activate_new').is(":checked") ? 1 : 0;
                 spinner.toggleClass('is-active');
                 jQuery.ajax({
                     method: 'GET',
