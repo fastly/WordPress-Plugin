@@ -701,17 +701,16 @@ class Purgely_Settings_Page
         </div>
 
         <script type='text/javascript'>
-            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
-            var activate = 0;
-            var vcl_response_msg = document.getElementById('vcl-response-msg');
-            var spinner = jQuery('#vcl-popup-spinner');
+
             /** Proceed to step 2 vcl update **/
             function vcl_step2() {
-                activate = jQuery('#vcl_activate_new').is(":checked") ? 1 : 0;
+                var vcl_response_msg = document.getElementById('vcl-response-msg');
+                var spinner = jQuery('#vcl-popup-spinner');
+                var activate = jQuery('#vcl_activate_new').is(":checked") ? 1 : 0;
                 spinner.toggleClass('is-active');
                 jQuery.ajax({
                     method: 'GET',
-                    url: url,
+                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
                     data: {
                         action: 'fastly_vcl_update_ok',
                         activate: activate
@@ -759,12 +758,11 @@ class Purgely_Settings_Page
             </strong>
         </em>
         <script type='text/javascript'>
-            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             jQuery(document).ready(function ($) {
                 jQuery('#test-connection-btn').click(function () {
                     $.ajax({
                         method: 'GET',
-                        url: url,
+                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
                         data: {
                             action: 'test_fastly_connection'
                         },
@@ -802,12 +800,11 @@ class Purgely_Settings_Page
             </strong>
         </em>
         <script type='text/javascript'>
-            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             jQuery(document).ready(function ($) {
                 jQuery('#test-webhooks-connection-btn').click(function () {
                     $.ajax({
                         method: 'GET',
-                        url: url,
+                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
                         data: {
                             action: 'test_fastly_webhooks_connection'
                         },
@@ -841,12 +838,11 @@ class Purgely_Settings_Page
         <input type='button' class='button button-secondary' id="test-connection-btn" value="Purge All"/>
         <div id="purge-all-response"></div>
         <script type='text/javascript'>
-            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
             jQuery(document).ready(function ($) {
                 jQuery('#test-connection-btn').click(function () {
                     $.ajax({
                         method: 'GET',
-                        url: url,
+                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
                         data: {
                             action: 'purge_all'
                         },
@@ -1461,19 +1457,16 @@ class Purgely_Settings_Page
             <?php esc_html_e('Paste the url you want to purge and click Purge URL button', 'purgely'); ?>
         </p>
         <script type='text/javascript'>
-            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
-            var purge_url_status = document.getElementById('purge-by-url-status');
-            var spinner = jQuery('#vcl-popup-spinner');
-            var purge_url_value;
-
             jQuery(document).ready(function ($) {
                 jQuery('#purge-by-url').click(function () {
+                    var purge_url_status = document.getElementById('purge-by-url-status');
+                    var spinner = jQuery('#vcl-popup-spinner');
                     spinner.toggleClass('is-active');
-                    purge_url_value = document.getElementById('purge_by_url').value;
+                    var purge_url_value = document.getElementById('purge_by_url').value;
 
                     $.ajax({
                         method: 'GET',
-                        url: url,
+                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
                         data: {
                             action: 'purge_by_url',
                             purge_url: purge_url_value
@@ -1607,18 +1600,17 @@ class Purgely_Settings_Page
         </div>
 
         <script type='text/javascript'>
-            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
-            var activate = 0;
-            var vcl_response_msg_html = document.getElementById('html-response-msg');
-            var spinner_html = jQuery('#html-popup-spinner');
+
             /** Proceed to step 2 vcl update **/
             function vcl_step2() {
-                activate = jQuery('#html_activate_new').is(":checked") ? 1 : 0;
+                var vcl_response_msg_html = document.getElementById('html-response-msg');
+                var spinner_html = jQuery('#html-popup-spinner');
+                var activate = jQuery('#html_activate_new').is(":checked") ? 1 : 0;
                 var html = jQuery('#maintenance-html-update');
                 spinner_html.toggleClass('is-active');
                 jQuery.ajax({
                     method: 'GET',
-                    url: url,
+                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
                     data: {
                         action: 'fastly_html_update_ok',
                         activate: activate,
@@ -1722,17 +1714,15 @@ class Purgely_Settings_Page
         </p>
 
         <script type='text/javascript'>
-            var url = '<?php echo admin_url('admin-ajax.php'); ?>';
-            var activate = 0;
-            var vcl_response_msg_io = document.getElementById('io-response-msg');
-            var spinner_io = jQuery('#io-popup-spinner');
             /** Proceed to step 2 vcl update **/
             function vcl_step3() {
-                activate = jQuery('#io_activate_new').is(":checked") ? 1 : 0;
+                var vcl_response_msg_io = document.getElementById('io-response-msg');
+                var spinner_io = jQuery('#io-popup-spinner');
+                var activate = jQuery('#io_activate_new').is(":checked") ? 1 : 0;
                 spinner_io.toggleClass('is-active');
                 jQuery.ajax({
                     method: 'GET',
-                    url: url,
+                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
                     data: {
                         action: 'fastly_io_update_ok',
                         activate: activate,
