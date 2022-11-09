@@ -178,8 +178,14 @@ class Fastly_Api
 
     public function get_all_acls()
     {
-        $url = $this->base_url . "version/{$this->get_active_version()->number}/acl";
-        return json_decode(Requests::get($url, $this->headers_get)->body);
+        $activeVersion = $this->get_active_version();
+        if($activeVersion){
+            $url = $this->base_url . "version/{$activeVersion->number}/acl";
+            $data = Requests::get($url, $this->headers_get)->body;
+        }else{
+            $data = '{}';
+        }
+        return json_decode($data);
     }
 
     public function get_all_dictionaries()
