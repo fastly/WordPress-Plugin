@@ -57,7 +57,7 @@ class Fastly_Edgemodules
                         </td>
                         <td nowrap="nowrap">
                             <em>
-                                <strong><?php echo ($module->enabled) ? __('Enabled') : __('Disabled'); ?></strong><br>
+                                <strong><?php echo (isset($module->enabled) && $module->enabled) ? __('Enabled') : __('Disabled'); ?></strong><br>
                                 Uploaded: <?php echo isset($module->data['uploaded_at']) ? date ( 'Y/m/d' , strtotime($module->data['uploaded_at'])) : __('never'); ?>
                             </em>
                         </td>
@@ -82,9 +82,9 @@ class Fastly_Edgemodules
                     <?php if($module->properties): ?>
                         <?php foreach($module->properties as $property): ?>
                             <?php if($property->type === 'group'): ?>
-                                <?php $this->renderGroup($property, $module->data[$property->name], $module->id); ?>
+                                <?php $this->renderGroup($property, (isset($module->data[$property->name])) ? $module->data[$property->name] : null, $module->id); ?>
                             <?php else: ?>
-                                <?php $this->renderProperty($module->id, $property, $module->data[$property->name]); ?>
+                                <?php $this->renderProperty($module->id, $property, (isset($module->data[$property->name])) ? $module->data[$property->name] : null); ?>
                             <?php endif; ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -201,7 +201,12 @@ class Fastly_Edgemodules
     {
         $id = $property->name;
         $name = "{$name}[{$property->name}]";
-        $value = !is_null($value) ? $value : $property->default;
+
+        if(!$value && isset($property->default)){
+            $value = $property->default;
+        }
+
+
         $required = $property->required ? 'required' : '';
 
         switch ($property->type) {

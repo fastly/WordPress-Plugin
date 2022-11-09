@@ -109,9 +109,23 @@ class Fastly_Api
 
     public function get_all_snippets($version = null)
     {
-        $v = is_null($version) ? $this->get_active_version()->number : $version;
-        $url = $this->base_url . "version/{$v}/snippet";
-        return json_decode(Requests::get($url, $this->headers_get)->body);
+        $v = 0;
+        if(!$version){
+            $activeVersion   = $this->get_active_version();
+            if($activeVersion){
+                $v = $this->get_active_version()->number;
+            }
+        }else{
+            $v = $version;
+        }
+
+        if($v){
+            $url = $this->base_url . "version/{$v}/snippet";
+            $response = Requests::get($url, $this->headers_get)->body;
+        }else{
+            $response = '{}';
+        }
+        return json_decode($response);
     }
 
     public function get_snippet($name, $version = null)
@@ -164,8 +178,14 @@ class Fastly_Api
 
     public function get_all_acls()
     {
-        $url = $this->base_url . "version/{$this->get_active_version()->number}/acl";
-        return json_decode(Requests::get($url, $this->headers_get)->body);
+        $activeVersion = $this->get_active_version();
+        if($activeVersion){
+            $url = $this->base_url . "version/{$activeVersion->number}/acl";
+            $data = Requests::get($url, $this->headers_get)->body;
+        }else{
+            $data = '{}';
+        }
+        return json_decode($data);
     }
 
     public function get_all_dictionaries()
