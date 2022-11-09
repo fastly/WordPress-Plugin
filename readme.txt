@@ -118,6 +118,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.22
+
+* Fixes for PHP 8.1
+
 = 1.2.20
 
 * Another fix for PHP 8
