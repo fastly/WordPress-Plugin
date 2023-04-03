@@ -1,5 +1,7 @@
 <?php
 
+use WpOrg\Requests\Response as Requests;
+
 /**
  * Sanitize a surrogate key to only allow hash-like keys.
  *
@@ -255,10 +257,10 @@ function test_web_hook()
 
 /**
  * Do logging where needed
- * @param Requests_Response $response
+ * @param object $response
  * @param $message
  */
-function handle_logging(Requests_Response $response, $message = false)
+function handle_logging(object $response, $message = false)
 {
     $debug_mode = Purgely_Settings::get_setting('fastly_debug_mode');
     $log_purges = Purgely_Settings::get_setting('fastly_log_purges');

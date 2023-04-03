@@ -3,6 +3,8 @@
 /**
  * Class to control the VCL handling.
  */
+
+use WpOrg\Requests\Response as Requests;
 class Vcl_Handler
 {
 
