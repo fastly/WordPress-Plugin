@@ -8,6 +8,12 @@ Version: 1.2.22
 Author URI: http://fastly.com/
 */
 
+// todo: update the module to use the new requests once we're ready to deprecate older WP versions
+if (!defined('REQUESTS_SILENCE_PSR0_DEPRECATIONS'))
+{
+    define('REQUESTS_SILENCE_PSR0_DEPRECATIONS', true);
+}
+
 /**
  * Singleton for kicking off functionality for this plugin.
  */
