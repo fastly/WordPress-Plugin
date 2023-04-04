@@ -49,6 +49,7 @@ class Purgely_Settings_Page
     {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_menu', array($this, 'settings_init'));
+        add_action('admin_notices', array($this, 'fastly_admin_notices'));
         add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
         add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
         add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
@@ -57,6 +58,12 @@ class Purgely_Settings_Page
         add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
         add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
         add_action( 'admin_post_fastly_module_disable_form', array($this, 'options_page_edgemodules_submit_disable') );
+    }
+
+    function fastly_admin_notices()
+    {
+        // todo: scope by fastly?
+        settings_errors();
     }
 
     /**
@@ -129,9 +136,6 @@ class Purgely_Settings_Page
      */
     function settings_init()
     {
-        // Init setting errors/notices/success messages
-        settings_errors();
-
         // Set up the option name, "fastly-settings-general". All general values will be in this array.
         register_setting(
             'fastly-settings-general',
@@ -2040,6 +2044,10 @@ class Purgely_Settings_Page
      */
     public function sanitize_settings($settings)
     {
+        if (!is_array($settings)) {
+            return $settings;
+        }
+
         $clean_settings = array();
         $registered_settings = Purgely_Settings::get_registered_settings();
 

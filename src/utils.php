@@ -255,10 +255,10 @@ function test_web_hook()
 
 /**
  * Do logging where needed
- * @param Requests_Response $response
+ * @param \WpOrg\Requests\Response $response
  * @param $message
  */
-function handle_logging(Requests_Response $response, $message = false)
+function handle_logging($response, $message = false)
 {
     $debug_mode = Purgely_Settings::get_setting('fastly_debug_mode');
     $log_purges = Purgely_Settings::get_setting('fastly_log_purges');
