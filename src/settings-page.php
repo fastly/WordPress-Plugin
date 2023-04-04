@@ -2044,6 +2044,10 @@ class Purgely_Settings_Page
      */
     public function sanitize_settings($settings)
     {
+        if (!is_array($settings)) {
+            return [];
+        }
+
         $clean_settings = array();
         $registered_settings = Purgely_Settings::get_registered_settings();
 
