@@ -2045,7 +2045,7 @@ class Purgely_Settings_Page
     public function sanitize_settings($settings)
     {
         if (!is_array($settings)) {
-            return [];
+            return $settings;
         }
 
         $clean_settings = array();
