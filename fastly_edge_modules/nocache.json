@@ -34,7 +34,7 @@
 	"vcl": [
 		{
 			"type": "recv",
-			"template": "{{#each rules}}\n{{#ifMatch mode 'both|fastly'}}\nif (req.url ~ \"{{../pathpattern}}\") {\n  set req.http.x-pass = \"1\";\n}\n{{/ifMatch}}\n{{/each}}"
+			"template": "{{#each rules}}\n{{#ifMatch mode 'both|fastly'}}\nif (req.url ~ \"{{../pathpattern}}\") {\n  set req.http.X-Pass = \"1\";\n}\n{{/ifMatch}}\n{{/each}}"
 		},
 		{
 			"type": "deliver",
