@@ -174,7 +174,7 @@ class Purgely_Settings
             foreach ($registered_settings as $key => $values) {
                 $value = '';
 
-                if (isset($saved_settings[$key])) {
+                if (isset($saved_settings[$key]) && $saved_settings[$key]) {
                     $value = $saved_settings[$key];
                 } else if (isset($values['default'])) {
                     $value = $values['default'];
