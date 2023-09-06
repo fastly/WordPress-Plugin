@@ -118,6 +118,10 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 
 == Changelog ==
 
+= 1.2.24
+
+* Updates to Datadome and Netacea edge modules
+
 = 1.2.23
 
 * Compatibility fixes for Wordpress 6.2
