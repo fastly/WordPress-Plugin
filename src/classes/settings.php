@@ -174,14 +174,14 @@ class Purgely_Settings
             foreach ($registered_settings as $key => $values) {
                 $value = '';
 
-                if (isset($saved_settings[$key])) {
-                    $value = $saved_settings[$key];
-                } else if (isset($values['default'])) {
+                if ( ! empty( $saved_settings[ $key ] ) ) {
+                    $value = $saved_settings[ $key ];
+                } else if ( ! empty( $values['default'] ) ) {
                     $value = $values['default'];
                 }
 
-                if (isset($values['sanitize_callback'])) {
-                    $value = call_user_func($values['sanitize_callback'], $value);
+                if ( ! empty ( $values['sanitize_callback'] ) ) {
+                    $value = call_user_func( $values['sanitize_callback'], $value );
                 }
 
                 $negotiated_settings[$key] = $value;
