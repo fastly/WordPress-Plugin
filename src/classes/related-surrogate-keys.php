@@ -60,6 +60,8 @@ class Purgely_Related_Surrogate_Keys
         $this->locate_author_surrogate_key($this->get_post_id());
         $this->include_always_purged_types();
 
+        $this->_collection = apply_filters('purgely_related_keys', $this->_collection, $this->get_post());
+
         $sitecode = Purgely_Settings::get_setting('sitecode');
 
         if(is_multisite() or $sitecode) {
