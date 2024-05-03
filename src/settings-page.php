@@ -47,17 +47,20 @@ class Purgely_Settings_Page
      */
     public function __construct()
     {
-        add_action('admin_menu', array($this, 'add_admin_menu'));
-        add_action('admin_menu', array($this, 'settings_init'));
-        add_action('admin_notices', array($this, 'fastly_admin_notices'));
-        add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
-        add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
-        add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
-        add_action('wp_ajax_fastly_io_update_ok', array($this, 'fastly_io_update_ok_callback'));
-        add_action('wp_ajax_purge_by_url', array($this, 'fastly_purge_by_url_callback'));
-        add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
-        add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
-        add_action( 'admin_post_fastly_module_disable_form', array($this, 'options_page_edgemodules_submit_disable') );
+
+        if ( current_user_can('administrator') ) {
+            add_action('admin_menu', array($this, 'add_admin_menu'));
+            add_action('admin_menu', array($this, 'settings_init'));
+            add_action('admin_notices', array($this, 'fastly_admin_notices'));
+            add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
+            add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
+            add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
+            add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
+            add_action('wp_ajax_fastly_io_update_ok', array($this, 'fastly_io_update_ok_callback'));
+            add_action('wp_ajax_purge_by_url', array($this, 'fastly_purge_by_url_callback'));
+            add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
+            add_action( 'admin_post_fastly_module_disable_form', array($this, 'options_page_edgemodules_submit_disable') );
+        }
     }
 
     function fastly_admin_notices()
@@ -218,7 +221,7 @@ class Purgely_Settings_Page
 
         add_settings_field(
             'fastly_test_connection',
-            __('', 'purgely'),
+            '',
             array($this, 'fastly_test_connection_render'),
             'fastly-settings-general',
             'purgely-fastly_settings'
@@ -420,7 +423,7 @@ class Purgely_Settings_Page
 
         add_settings_field(
             'webhooks_test_connection',
-            __('', 'purgely'),
+            '',
             array($this, 'webhooks_test_connection_render'),
             'fastly-settings-webhooks',
             'purgely-webhooks_settings'
@@ -542,7 +545,15 @@ class Purgely_Settings_Page
      */
     public function fastly_settings_newcomers()
     {
-        echo __("New to Fastly? <a href='https://docs.fastly.com/guides/basic-setup/sign-up-and-create-your-first-service' target='_blank'>Sign up and get started!</a>", 'purgely');
+        printf(
+        /* translators: %s: Link to Fastly sign up */
+            esc_html__('New to Fastly? %s', 'purgely'),
+            sprintf(
+                '<a href="%1$s" target="_blank">%2$s</a>',
+                'https://docs.fastly.com/guides/basic-setup/sign-up-and-create-your-first-service',
+                esc_html__('Sign up and get started', 'purgely')
+            )
+        );
     }
 
     /**
@@ -565,12 +576,13 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='text' name='fastly-settings-general[fastly_api_key]'
-               value='<?php echo esc_attr($options['fastly_api_key']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['fastly_api_key']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <em><strong><?php esc_html_e('Required for surrogate key and full cache purges', 'purgely'); ?></strong></em>
         <p class="description">
             <?php esc_html_e('API token for the Fastly account associated with this site.', 'purgely'); ?>
             <?php
             printf(
+            /* translators: %s: Link to Fastly account management details */
                 esc_html__('Please see Fastly\'s documentation for %s.', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
@@ -593,13 +605,14 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='text' name='fastly-settings-general[fastly_service_id]'
-               value='<?php echo esc_attr($options['fastly_service_id']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['fastly_service_id']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <em><strong><?php esc_html_e('Required for surrogate key and full cache purges', 'purgely'); ?></strong></em>
         <p class="description">
             <?php esc_html_e('Fastly service ID for this site.', 'purgely'); ?>
             <?php
             printf(
-                esc_html__('Please see Fastly\'s documentation for %s.', 'purgely'),
+            /* translators: %s: Link to Fastly account management details */
+            esc_html__('Please see Fastly\'s documentation for %s.', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://docs.fastly.com/guides/account-management-and-security/finding-and-managing-your-account-info#finding-your-service-id',
@@ -621,7 +634,7 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='text' name='fastly-settings-general[fastly_api_hostname]'
-               value='<?php echo esc_attr($options['fastly_api_hostname']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['fastly_api_hostname']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('API endpoint for this service.', 'purgely'); ?>
         </p>
@@ -636,7 +649,7 @@ class Purgely_Settings_Page
     public function fastly_vcl_update_render()
     {
         add_thickbox();
-        $message = __('Make sure you have proper credentials.');
+        $message = __('Make sure you have proper credentials.', 'purgely');
         $service_id = false;
         $vcl = new Vcl_Handler(array());
         $purgely_instance = Purgely::instance();
@@ -644,9 +657,11 @@ class Purgely_Settings_Page
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
             $service_id = purgely_get_option('fastly_service_id');
-            $message = __("You are about to clone active version
-                        {$vcl->_last_active_version_num} for service <b>{$service_name}</b>.
-                        We'll upload VCL snippets to version {$vcl->_next_cloned_version_num}");
+            /* translators: %1\$s: current active VCL version, %2\$s: Fastly service name, %3\$s: new VCL version */
+            $message = sprintf(
+                __("You are about to clone active version %1\$s for service \"%2\$s\". We'll make changes to version %3\$s", 'purgely'),
+                $vcl->_last_active_version_num, $service_name, $vcl->_next_cloned_version_num
+            );
         } else {
             $errors = $vcl->get_errors();
             if (!empty($errors)) {
@@ -657,14 +672,14 @@ class Purgely_Settings_Page
         ?>
         <div id="vcl-popup-wrapper" style="display:none;">
             <div id="vcl-main-ui" style="relative;">
-                <p style="margin-bottom:0;padding-bottom:0;"><?php echo $message; ?></p>
+                <p style="margin-bottom:0;padding-bottom:0;"><?php echo esc_html( $message ); ?></p>
                 <?php if ($service_id) : ?>
                     <table class="form-table">
                         <tbody>
                         <tr>
                             <th>
                                 <label for="vcl_activate_new">
-                                    <?php echo __('Activate new version'); ?>
+                                    <?php echo esc_html__('Activate new version', 'purgely'); ?>
                                 </label>
                             </th>
                             <td>
@@ -677,16 +692,16 @@ class Purgely_Settings_Page
                     <div>
                         <input type="button" id="vcl-update-btn-ok" class="button button-primary"
                                style="margin-right: 1em;" onclick="vcl_step2()"
-                               value="<?php echo __('Save Changes'); ?>"/>
+                               value="<?php echo esc_attr__('Save Changes', 'purgely'); ?>"/>
                         <input type="button" id="vcl-update-btn-cancel" class="button button-secondary" onclick="vcl_step_cancel()"
-                               value="<?php echo __('Cancel'); ?>"/>
+                               value="<?php echo esc_attr__('Cancel', 'purgely'); ?>"/>
                     </div>
                     <span class="spinner" id="vcl-popup-spinner"
                           style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
                 <?php else: ?>
                     <p>
                         <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
-                               value="<?php echo __('Close'); ?>"/>
+                               value="<?php echo esc_attr__('Close', 'purgely'); ?>"/>
                     </p>
                 <?php endif; ?>
             </div>
@@ -696,7 +711,7 @@ class Purgely_Settings_Page
                name="Confirm VCL Update" class='button button-secondary thickbox' id="vcl-update-btn">VCL UPDATE</a>
             <em class="description" id="vcl-update-response">
                 <strong style="padding-top: 5px; display: inline-block">
-                    <?php echo __('Make sure to save before proceeding'); ?>
+                    <?php echo esc_html__('Make sure to save before proceeding', 'purgely'); ?>
                 </strong>
             </em>
             <p class="description">
@@ -714,7 +729,7 @@ class Purgely_Settings_Page
                 spinner.toggleClass('is-active');
                 jQuery.ajax({
                     method: 'GET',
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                     data: {
                         action: 'fastly_vcl_update_ok',
                         activate: activate
@@ -758,7 +773,7 @@ class Purgely_Settings_Page
         <input type='button' class='button button-secondary' id="test-connection-btn" value="TEST CONNECTION"/>
         <em class="description" id="test-connection-response">
             <strong style="padding-top: 5px; display: inline-block">
-                <?php echo __('Make sure to save before proceeding'); ?>
+                <?php echo esc_html__('Make sure to save before proceeding', 'purgely'); ?>
             </strong>
         </em>
         <script type='text/javascript'>
@@ -766,7 +781,7 @@ class Purgely_Settings_Page
                 jQuery('#test-connection-btn').click(function () {
                     $.ajax({
                         method: 'GET',
-                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                        url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                         data: {
                             action: 'test_fastly_connection'
                         },
@@ -800,7 +815,7 @@ class Purgely_Settings_Page
         <input type='button' class='button button-secondary' id="test-webhooks-connection-btn" value="TEST CONNECTION"/>
         <em class="description" id="test-connection-response">
             <strong>
-                <?php echo __('Make sure to save before proceeding'); ?>
+                <?php echo esc_html__('Make sure to save before proceeding', 'purgely'); ?>
             </strong>
         </em>
         <script type='text/javascript'>
@@ -808,7 +823,7 @@ class Purgely_Settings_Page
                 jQuery('#test-webhooks-connection-btn').click(function () {
                     $.ajax({
                         method: 'GET',
-                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                        url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                         data: {
                             action: 'test_fastly_webhooks_connection'
                         },
@@ -846,7 +861,7 @@ class Purgely_Settings_Page
                 jQuery('#test-connection-btn').click(function () {
                     $.ajax({
                         method: 'GET',
-                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                        url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                         data: {
                             action: 'purge_all'
                         },
@@ -879,7 +894,7 @@ class Purgely_Settings_Page
         $api_key = Purgely_Settings::get_setting('fastly_api_key');
 
         $result = test_fastly_api_connection($hostname, $service_id, $api_key);
-        echo json_encode($result);
+        echo wp_json_encode($result);
 
         die();
     }
@@ -912,12 +927,12 @@ class Purgely_Settings_Page
             }
 
             if (is_array($result)) {
-                $result = array('status' => false, 'message' => __($result[0]));
+                $result = array('status' => false, 'message' => $result[0]);
             } else {
                 $result = array('status' => true, 'message' => $message);
             }
         }
-        echo json_encode($result);
+        echo wp_json_encode($result);
         die();
     }
 
@@ -939,7 +954,7 @@ class Purgely_Settings_Page
 
         if(empty($html)) {
             $result = array('status' => false, 'message' => __('Please enter HTML in textarea.'));
-            echo json_encode($result);
+            echo wp_json_encode($result);
             die();
         }
 
@@ -954,12 +969,12 @@ class Purgely_Settings_Page
         }
 
         if (is_array($result)) {
-            $result = array('status' => false, 'message' => __($result[0]));
+            $result = array('status' => false, 'message' => $result[0]);
         } else {
             $result = array('status' => true, 'message' => $message);
         }
 
-        echo json_encode($result);
+        echo wp_json_encode($result);
         die();
     }
 
@@ -987,12 +1002,12 @@ class Purgely_Settings_Page
         }
 
         if (is_array($result)) {
-            $result = array('status' => false, 'message' => __($result[0]));
+            $result = array('status' => false, 'message' => $result[0]);
         } else {
             $result = array('status' => true, 'message' => $message);
         }
 
-        echo json_encode($result);
+        echo wp_json_encode($result);
         die();
     }
 
@@ -1002,20 +1017,29 @@ class Purgely_Settings_Page
     function fastly_purge_by_url_callback()
     {
         $purge_url = $_GET['purge_url'];
-        $url = !empty($purge_url) ? $purge_url : false;
-        $result = array('status' => false, 'message' => __('Enter url you want to purge first.'));
+        $url = !empty($purge_url) ? sanitize_url( $purge_url ) : false;
 
-        if ($url) {
-            $purgely = new Purgely_Purge();
-            $response = $purgely->purge(Purgely_Purge::URL, $url);
-            if ($response) {
-                $result = array('status' => true, 'message' => __('Successfully purged!'));
-            } else {
-                $result = array('status' => false, 'message' => __('Error while purging, check logs.'));
-            }
+        if ( empty($url) ) {
+            $result = array('status' => false, 'message' => __('Enter url you want to purge first.'));
+            echo wp_json_encode($result);
+            die();
         }
 
-        echo json_encode($result);
+        if ( strpos( $url, get_site_url()) !== 0) {
+            $result = array('status' => false, 'message' => __("Selected URL doesn't match site URL"));
+            echo wp_json_encode($result);
+            die();
+        }
+
+        $purgely = new Purgely_Purge();
+        $response = $purgely->purge(Purgely_Purge::URL, $url);
+        if ($response) {
+            $result = array('status' => true, 'message' => __('Successfully purged!'));
+        } else {
+            $result = array('status' => false, 'message' => __('Error while purging, check logs.'));
+        }
+
+        echo wp_json_encode($result);
         die();
     }
 
@@ -1025,7 +1049,7 @@ class Purgely_Settings_Page
     function test_fastly_webhooks_connection_callback()
     {
         $result = test_web_hook();
-        echo json_encode($result);
+        echo wp_json_encode($result);
         die();
     }
 
@@ -1036,7 +1060,7 @@ class Purgely_Settings_Page
     {
 
         if (!Purgely_Settings::get_setting('allow_purge_all')) {
-            echo json_encode(array('status' => false, 'message' => __('Allow Full Cache Purges first.')));
+            echo wp_json_encode(array('status' => false, 'message' => __('Allow Full Cache Purges first.')));
             die();
         }
 
@@ -1048,7 +1072,7 @@ class Purgely_Settings_Page
         } else {
             $result = array('status' => false, 'message' => __('Purging failed, check logs!'));
         }
-        echo json_encode($result);
+        echo wp_json_encode($result);
         die();
     }
 
@@ -1072,7 +1096,7 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='text' name='fastly-settings-advanced[surrogate_control_ttl]'
-               value='<?php echo esc_attr($options['surrogate_control_ttl']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['surrogate_control_ttl']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('Sets the "Surrogate-Control" header\'s "max-age" value. It defines the cache duration for all pages on the site.', 'purgely'); ?>
         </p>
@@ -1089,7 +1113,7 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='text' name='fastly-settings-advanced[cache_control_ttl]'
-               value='<?php echo esc_attr($options['cache_control_ttl']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['cache_control_ttl']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('Sets the "Cache-Control" header\'s "max-age" value. It specifies how long end users/browsers should cache pages. Typically we don\'t want end users caching pages as that may delay users seeing new/changed content.', 'purgely'); ?>
         </p>
@@ -1107,10 +1131,10 @@ class Purgely_Settings_Page
         ?>
         <?php if(is_multisite()) { ?>
         <input type='text' name='notmuch'
-               value='' size="<?php echo self::INPUT_SIZE ?>" readonly >
+               value='' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>" readonly >
         <?php } else { ?>
         <input type='text' name='fastly-settings-advanced[sitecode]'
-               value='<?php echo esc_attr($options['sitecode']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['sitecode']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <?php } ?>
         <p class="description">
         <?php esc_html_e('Prepends sitecode to surrogate keys. Multisite does this automatically. Useful in situations where you have microsite(s) inside a single Fastly service.', 'purgely'); ?>
@@ -1140,7 +1164,8 @@ class Purgely_Settings_Page
         <p class="description">
             <?php
             printf(
-                esc_html__('The purge type setting controls the manner in which the cache is purged. Instant purging causes the cached object(s) to be purged immediately. Soft purging causes the origin to revalidate the cache and Fastly will serve stale content until revalidation is completed. For more information, please see %s.', 'purgely'),
+            /* translators: %s Link to Fastly purging documentation*/
+            esc_html__('The purge type setting controls the manner in which the cache is purged. Instant purging causes the cached object(s) to be purged immediately. Soft purging causes the origin to revalidate the cache and Fastly will serve stale content until revalidation is completed. For more information, please see %s.', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://docs.fastly.com/guides/purging/soft-purges',
@@ -1232,7 +1257,7 @@ class Purgely_Settings_Page
      */
     public function fastly_cache_tags_settings_callback()
     {
-        _e("This section allows you to configure fastly cache tags for special purging cases. This should be used only if you have Wordpress configuration where Fastly purging is not working for all cases. <b>Note: default Wordpress tags can be used for this purpose, if you're using them for some custom functionality already, only then use this.</b>", 'purgely');
+        esc_html__("This section allows you to configure fastly cache tags for special purging cases. This should be used only if you have Wordpress configuration where Fastly purging is not working for all cases. <b>Note: default Wordpress tags can be used for this purpose, if you're using them for some custom functionality already, only then use this.</b>", 'purgely');
     }
 
     /**
@@ -1243,7 +1268,7 @@ class Purgely_Settings_Page
     public function fastly_io_main_settings_callback()
     {
 
-        _e("This section allows you to enable Fastly IO options.", 'purgely');
+        esc_html__("This section allows you to enable Fastly IO options.", 'purgely');
     }
 
     /**
@@ -1253,7 +1278,7 @@ class Purgely_Settings_Page
      */
     public function fastly_io_settings_callback()
     {
-        _e("This section allows you to configure Fastly IO options inside Wordpress. Turning them on will rewrite HTML.", 'purgely');
+        esc_html__("This section allows you to configure Fastly IO options inside Wordpress. Turning them on will rewrite HTML.", 'purgely');
     }
 
     /**
@@ -1263,7 +1288,7 @@ class Purgely_Settings_Page
      */
     public function fastly_io_settings_disabled_callback()
     {
-        _e("Image Optimization feature is a separately priced feature. Please contact your sales rep about pricing or send an email to support@fastly.com if you believe it should have already been enabled on your account.", 'purgely');
+        esc_html__("Image Optimization feature is a separately priced feature. Please contact your sales rep about pricing or send an email to support@fastly.com if you believe it should have already been enabled on your account.", 'purgely');
     }
 
     /**
@@ -1304,7 +1329,8 @@ class Purgely_Settings_Page
         <p class="description">
             <?php
             printf(
-                esc_html__('Toggle "stale while revalidate" behavior. The stale while revalidate behavior allows stale content to be served while content is regenerated in the background. Please see %s', 'purgely'),
+            /* translators: %s: Link to Fastly documentation */
+            esc_html__('Toggle "stale while revalidate" behavior. The stale while revalidate behavior allows stale content to be served while content is regenerated in the background. Please see %s', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://www.fastly.com/blog/stale-while-revalidate',
@@ -1327,7 +1353,7 @@ class Purgely_Settings_Page
         ?>
         <input type='text' name='fastly-settings-advanced[stale_while_revalidate_ttl]'
                value='<?php echo esc_attr($options['stale_while_revalidate_ttl']); ?>'
-               size="<?php echo self::INPUT_SIZE ?>">
+               size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('Determines the amount of time that Fastly is allowed to serve stale content while new content is generated.', 'purgely'); ?>
         </p>
@@ -1352,7 +1378,8 @@ class Purgely_Settings_Page
         <p class="description">
             <?php
             printf(
-                esc_html__('Toggle "stale if error" behavior. The stale if error behavior allows stale content to be served while the origin is returning an error state. Please see %s', 'purgely'),
+            /* translators: %s: Link to Fastly documentation */
+            esc_html__('Toggle "stale if error" behavior. The stale if error behavior allows stale content to be served while the origin is returning an error state. Please see %s', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://www.fastly.com/blog/stale-while-revalidate',
@@ -1374,7 +1401,7 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='text' name='fastly-settings-advanced[stale_if_error_ttl]'
-               value='<?php echo esc_attr($options['stale_if_error_ttl']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['stale_if_error_ttl']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('Determines the amount of time Fastly is allowed to serve stale content while the origin is returning an error state.', 'purgely'); ?>
         </p>
@@ -1418,7 +1445,7 @@ class Purgely_Settings_Page
                name='fastly-settings-advanced[use_fastly_cache_tags_for_custom_post_type]' <?php checked(isset($options['use_fastly_cache_tags_for_custom_post_type']) && false === $options['use_fastly_cache_tags_for_custom_post_type']); ?>
                value='false'>No
         <p class="description">
-            <?php _e("Use Fastly Cache Tags on custom post types. <b>Activate only if you have custom post types registered.</b>", 'purgely'); ?>
+            <?php esc_html__("Use Fastly Cache Tags on custom post types. <b>Activate only if you have custom post types registered.</b>", 'purgely'); ?>
         </p>
         <?php
     }
@@ -1434,7 +1461,7 @@ class Purgely_Settings_Page
         ?>
         <input type='text' name='fastly-settings-advanced[always_purged_keys]'
                value='<?php echo esc_attr($options['always_purged_keys']); ?>'
-               size="<?php echo self::INPUT_SIZE ?>">
+               size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('Separate keys that will always be purged by comma (Emergency usage only).', 'purgely'); ?>
             <?php esc_html_e('Example: t-24,t-67 will purge posts with IDs 24 and 67', 'purgely'); ?>
@@ -1453,9 +1480,9 @@ class Purgely_Settings_Page
         <span class="spinner" id="vcl-popup-spinner"
               style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
         <input type='text' id="purge_by_url" name='purge_by_url'
-               placeholder="<?php echo __('https://example.com/test'); ?>" value=''
-               size="<?php echo self::INPUT_SIZE ?>">
-        <input type="button" class="button button-secondary" id="purge-by-url" value="<?php echo __('Purge URL'); ?>">
+               placeholder="<?php echo esc_url('https://example.com/test'); ?>" value=''
+               size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
+        <input type="button" class="button button-secondary" id="purge-by-url" value="<?php echo esc_attr__('Purge URL', 'purgely'); ?>">
         <p id="purge-by-url-status"></p>
         <p class="description">
             <?php esc_html_e('Paste the url you want to purge and click Purge URL button', 'purgely'); ?>
@@ -1470,7 +1497,7 @@ class Purgely_Settings_Page
 
                     $.ajax({
                         method: 'GET',
-                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                        url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                         data: {
                             action: 'purge_by_url',
                             purge_url: purge_url_value
@@ -1498,7 +1525,7 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='text' name='fastly-settings-webhooks[webhooks_url_endpoint]'
-               value='<?php echo esc_attr($options['webhooks_url_endpoint']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['webhooks_url_endpoint']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('Slack URL endpoint.', 'purgely'); ?>
         </p>
@@ -1515,7 +1542,7 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         <input type='text' name='fastly-settings-webhooks[webhooks_username]'
-               value='<?php echo esc_attr($options['webhooks_username']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+               value='<?php echo esc_attr($options['webhooks_username']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('Slack username.', 'purgely'); ?>
         </p>
@@ -1539,9 +1566,11 @@ class Purgely_Settings_Page
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
             $service_id = purgely_get_option('fastly_service_id');
-            $message = __("You are about to clone active version
-                        {$vcl->_last_active_version_num} for service <b>{$service_name}</b>.
-                        We'll make changes to version {$vcl->_next_cloned_version_num}");
+            /* translators: %1\$s: current active VCL version, %2\$s: Fastly service name, %3\$s: new VCL version */
+            $message = sprintf(
+                    __("You are about to clone active version %1\$s for service \"%2\$s\". We'll make changes to version %3\$s", 'purgely'),
+                $vcl->_last_active_version_num, $service_name, $vcl->_next_cloned_version_num)
+            ;
         } else {
             $errors = $vcl->get_errors();
             if (!empty($errors)) {
@@ -1552,14 +1581,14 @@ class Purgely_Settings_Page
         ?>
         <div id="maintenance-html-popup-wrapper" style="display:none;">
             <div id="html-main-ui" style="relative;">
-                <p style="margin-bottom:0;padding-bottom:0;"><?php echo $message; ?></p>
+                <p style="margin-bottom:0;padding-bottom:0;"><?php echo esc_html( $message ); ?></p>
                 <?php if ($service_id) : ?>
                     <table class="form-table">
                         <tbody>
                         <tr>
                             <th>
                                 <label for="html_activate_new">
-                                    <?php echo __('Activate new version'); ?>
+                                    <?php echo esc_html__('Activate new version', 'purgely'); ?>
                                 </label>
                             </th>
                             <td>
@@ -1569,9 +1598,13 @@ class Purgely_Settings_Page
                         <tr>
                             <td colspan="2">
                                 <label for="maintenance-html-update">
-                                    <strong><?php echo __('Maintenance/Error page HTML'); ?></strong>
+                                    <strong><?php echo esc_html__('Maintenance/Error page HTML', 'purgely'); ?></strong>
                                 </label>
-                                <textarea name="maintenance-html-update" id="maintenance-html-update" rows="<?php echo self::INPUT_TEXTAREA_ROWS ?>" cols="<?php echo self::INPUT_TEXTAREA_COLS ?>"><?php echo $html ?></textarea>
+                                <textarea name="maintenance-html-update" id="maintenance-html-update"
+                                          rows="<?php echo esc_attr( self::INPUT_TEXTAREA_ROWS  )?>"
+                                          cols="<?php echo esc_attr( self::INPUT_TEXTAREA_COLS  )?>">
+                                    <?php echo esc_html( $html ) ?>
+                                </textarea>
                             </td>
                         </tr>
                         </tbody>
@@ -1580,15 +1613,15 @@ class Purgely_Settings_Page
                     <div>
                         <input type="button" id="html-update-btn-ok" class="button button-primary"
                                style="margin-right: 1em;" onclick="vcl_step2()"
-                               value="<?php echo __('Save Changes'); ?>"/>
+                               value="<?php echo esc_html__('Save Changes', 'purgely'); ?>"/>
                         <input type="button" id="html-update-btn-cancel" class="button button-secondary" onclick="vcl_step_cancel()"
-                               value="<?php echo __('Cancel'); ?>"/>
+                               value="<?php echo esc_html__('Cancel', 'purgely'); ?>"/>
                     </div>
                     <span class="spinner" id="html-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
                 <?php else: ?>
                     <p>
                         <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
-                               value="<?php echo __('Close'); ?>"/>
+                               value="<?php echo esc_html__('Close', 'purgely'); ?>"/>
                     </p>
                 <?php endif; ?>
             </div>
@@ -1598,7 +1631,7 @@ class Purgely_Settings_Page
                name="Confirm HTML Update" class='button button-secondary thickbox' id="html-update-btn">SET HTML</a>
             <em class="description" id="html-update-response">
                 <strong style="padding-top: 5px; display: inline-block">
-                    <?php echo __('Make sure to have valid credentials before proceeding.'); ?>
+                    <?php echo esc_html__('Make sure to have valid credentials before proceeding.', 'purgely'); ?>
                 </strong>
             </em>
         </div>
@@ -1614,7 +1647,7 @@ class Purgely_Settings_Page
                 spinner_html.toggleClass('is-active');
                 jQuery.ajax({
                     method: 'GET',
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                     data: {
                         action: 'fastly_html_update_ok',
                         activate: activate,
@@ -1657,9 +1690,11 @@ class Purgely_Settings_Page
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
             $service_id = purgely_get_option('fastly_service_id');
-            $message = __("You are about to clone active version
-                        {$vcl->_last_active_version_num} for service <b>{$service_name}</b>.
-                        We'll make changes to version {$vcl->_next_cloned_version_num}");
+            /* translators: %1\$s: current active VCL version, %2\$s: Fastly service name, %3\$s: new VCL version */
+            $message = sprintf(
+                __("You are about to clone active version %1\$s for service \"%2\$s\". We'll make changes to version %3\$s", 'purgely'),
+                $vcl->_last_active_version_num, $service_name, $vcl->_next_cloned_version_num)
+            ;
         } else {
             $errors = $vcl->get_errors();
             if (!empty($errors)) {
@@ -1670,14 +1705,14 @@ class Purgely_Settings_Page
         ?>
         <div id="io-popup-wrapper" style="display:none;">
             <div id="io-main-ui" style="relative;">
-                <p style="margin-bottom:0;padding-bottom:0;"><?php echo $message; ?></p>
+                <p style="margin-bottom:0;padding-bottom:0;"><?php echo esc_html( $message ); ?></p>
                 <?php if ($service_id) : ?>
                     <table class="form-table">
                         <tbody>
                         <tr>
                             <th>
                                 <label for="io_activate_new">
-                                    <?php echo __('Activate new version'); ?>
+                                    <?php echo esc_html__('Activate new version', 'purgely'); ?>
                                 </label>
                             </th>
                             <td>
@@ -1690,25 +1725,29 @@ class Purgely_Settings_Page
                     <div>
                         <input type="button" id="io-update-btn-ok" class="button button-primary"
                                style="margin-right: 1em;" onclick="vcl_step3()"
-                               value="<?php echo __('Save Changes'); ?>"/>
+                               value="<?php echo esc_html__('Save Changes', 'purgely'); ?>"/>
                         <input type="button" id="io-update-btn-cancel" class="button button-secondary" onclick="vcl_step_cancel()"
-                               value="<?php echo __('Cancel'); ?>"/>
+                               value="<?php echo esc_html__('Cancel', 'purgely'); ?>"/>
                     </div>
                     <span class="spinner" id="io-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
                 <?php else: ?>
                     <p>
                         <input type="button" class="button button-secondary" onclick="vcl_step_cancel()"
-                               value="<?php echo __('Close'); ?>"/>
+                               value="<?php echo esc_html__('Close', 'purgely'); ?>"/>
                     </p>
                 <?php endif; ?>
             </div>
         </div>
         <div id="io-wrapper">
             <a href="#TB_inline?&inlineId=io-popup-wrapper&<?php if ($service_id) : ?>width=700&height=400<?php else : ?>width=320&height=120<?php endif; ?>"
-               name="Confirm Image Optimization Update" class='button button-secondary thickbox' id="io-update-btn"><?php echo $io_enabled_label; ?></a>
+               name="Confirm Image Optimization Update"
+               class='button button-secondary thickbox'
+               id="io-update-btn">
+                <?php echo esc_html( $io_enabled_label ); ?>
+            </a>
             <em class="description" id="io-update-response">
                 <strong style="padding-top: 5px; display: inline-block">
-                    <?php echo __('Click to change.'); ?>
+                    <?php echo esc_html__('Click to change.', 'purgely'); ?>
                 </strong>
             </em>
         </div>
@@ -1726,7 +1765,7 @@ class Purgely_Settings_Page
                 spinner_io.toggleClass('is-active');
                 jQuery.ajax({
                     method: 'GET',
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                     data: {
                         action: 'fastly_io_update_ok',
                         activate: activate,
@@ -1737,7 +1776,7 @@ class Purgely_Settings_Page
                         jQuery('#io-update-btn-ok').hide();
                         if(response.status) {
                             var vcl_btn_label = document.getElementById('io-update-btn');
-                            vcl_btn_label.innerHTML = "<?php echo $io_enabled_label_after; ?>";
+                            vcl_btn_label.innerHTML = "<?php echo esc_html( $io_enabled_label_after ); ?>";
                         }
                         vcl_response_msg_io.innerHTML = "<strong>" + response.message + "</strong>";
                     },
@@ -1766,10 +1805,11 @@ class Purgely_Settings_Page
         $data = isset($options['custom_ttl_templates']) ? $options['custom_ttl_templates'] : array();
         ?>
         <?php foreach($template_types as $type): ?>
-        <?php $value = isset($data[$type]) ? $data[$type] : ''; ?>
+        <?php $value = $data[$type] ?? ''; ?>
         <div>
-            <input type='text' value='<?php echo $type; ?>' disabled>
-            <input type='text' name='fastly-settings-advanced[custom_ttl_templates][<?php echo $type; ?>]' value='<?php echo $value; ?>'>
+            <input type='text' value='<?php echo esc_attr( $type ); ?>' disabled>
+            <input type='text' name='fastly-settings-advanced[custom_ttl_templates][<?php echo esc_attr( $type ); ?>]'
+                   value='<?php echo esc_attr( $value ); ?>'>
         </div>
         <?php endforeach; ?>
         <p class="description">
@@ -1854,9 +1894,9 @@ class Purgely_Settings_Page
         <select name="fastly-settings-io[io_adaptive_pixel_ratio_sizes][]" multiple>
             <?php foreach(Purgely_Settings::POSSIBLE_PIXEL_RATIOS as $ratio): ?>
                 <?php if(in_array($ratio, $sizes)) : ?>
-                    <option selected value="<?php echo $ratio; ?>"><?php echo $ratio; ?></option>
+                    <option selected value="<?php echo esc_attr( $ratio ); ?>"><?php echo esc_html( $ratio ); ?></option>
                 <?php else : ?>
-                    <option value="<?php echo $ratio; ?>"><?php echo $ratio; ?></option>
+                    <option value="<?php echo esc_attr( $ratio ); ?>"><?php echo esc_html( $ratio ); ?></option>
                 <?php endif; ?>
             <?php endforeach; ?>
         </select>
@@ -1877,7 +1917,7 @@ class Purgely_Settings_Page
         $options = Purgely_Settings::get_settings();
         ?>
         #<input type='text' name='fastly-settings-webhooks[webhooks_channel]'
-                value='<?php echo esc_attr($options['webhooks_channel']); ?>' size="<?php echo self::INPUT_SIZE ?>">
+                value='<?php echo esc_attr($options['webhooks_channel']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
         <p class="description">
             <?php esc_html_e('Slack channel.', 'purgely'); ?>
         </p>
@@ -1916,8 +1956,8 @@ class Purgely_Settings_Page
         <div class="wrap">
             <form action='options.php' method='post'>
                 <div id="fastly-admin" class="wrap">
-                    <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL . 'static/logo_white.gif'; ?>"><br><span
-                                style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
+                    <h1><img alt="fastly" src="<?php echo esc_attr( FASTLY_PLUGIN_URL . 'static/logo_white.gif' ); ?>"><br><span
+                                style="font-size: x-small;">version: <?php echo esc_html( FASTLY_VERSION ); ?></span></h1>
                 </div>
                 <?php
                 settings_fields('fastly-settings-general');
@@ -1940,8 +1980,8 @@ class Purgely_Settings_Page
         <div class="wrap">
             <form action='options.php' method='post'>
                 <div id="fastly-admin" class="wrap">
-                    <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL . 'static/logo_white.gif'; ?>"><br><span
-                                style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
+                    <h1><img alt="fastly" src="<?php echo esc_attr( FASTLY_PLUGIN_URL . 'static/logo_white.gif' ); ?>"><br><span
+                                style="font-size: x-small;">version: <?php echo esc_html( FASTLY_VERSION ); ?></span></h1>
                 </div>
                 <?php
                 settings_fields('fastly-settings-advanced');
@@ -1964,8 +2004,8 @@ class Purgely_Settings_Page
         <div class="wrap">
             <form action='options.php' method='post'>
                 <div id="fastly-admin" class="wrap">
-                    <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL . 'static/logo_white.gif'; ?>"><br><span
-                                style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
+                    <h1><img alt="fastly" src="<?php echo esc_attr( FASTLY_PLUGIN_URL . 'static/logo_white.gif' ); ?>"><br><span
+                                style="font-size: x-small;">version: <?php echo esc_html( FASTLY_VERSION ); ?></span></h1>
                 </div>
                 <?php
                 settings_fields('fastly-settings-webhooks');
@@ -1988,8 +2028,8 @@ class Purgely_Settings_Page
         <div class="wrap">
             <form action='options.php' method='post'>
                 <div id="fastly-admin" class="wrap">
-                    <h1><img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL . 'static/logo_white.gif'; ?>"><br><span
-                                style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span></h1>
+                    <h1><img alt="fastly" src="<?php echo esc_attr( FASTLY_PLUGIN_URL . 'static/logo_white.gif' ); ?>"><br><span
+                                style="font-size: x-small;">version: <?php echo esc_html( FASTLY_VERSION ); ?></span></h1>
                 </div>
                 <?php
                 settings_fields('fastly-settings-io');

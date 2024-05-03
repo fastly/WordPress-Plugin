@@ -120,13 +120,10 @@ class Purgely_Purge
         switch ($type) {
             case 'key-collection':
                 return trailingslashit($api_endpoint) . 'service/' . $fastly_service_id . '/purge';
-                break;
             case 'url':
                 return $this->get_thing();
-                break;
             case 'all':
                 return trailingslashit($api_endpoint) . 'service/' . $fastly_service_id . '/purge_all';
-                break;
             default :
                 return false;
         }

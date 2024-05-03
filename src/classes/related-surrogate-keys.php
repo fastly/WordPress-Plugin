@@ -157,7 +157,6 @@ class Purgely_Related_Surrogate_Keys
     {
 
         if ($post = $this->get_post($post_id)) {
-            $post->post_author;
             $key = 'a-' . absint($post->post_author);
             $this->_collection[] = $key;
         }

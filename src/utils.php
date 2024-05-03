@@ -147,7 +147,7 @@ function test_fastly_api_connection($hostname, $service_id, $api_key)
 {
 
     if (empty($hostname) || empty($service_id) || empty($api_key)) {
-        return array('status' => false, 'message' => __('Please enter credentials first'));
+        return array('status' => false, 'message' => __('Please enter credentials first', 'purgely'));
     }
 
     $url = trailingslashit($hostname) . 'service/' . $service_id;
@@ -164,7 +164,8 @@ function test_fastly_api_connection($hostname, $service_id, $api_key)
                 $response_body = json_decode($response->body);
                 $service_name = $response_body->name;
                 $purgely_instance->service_name = $service_name;
-                $message = __('Connection Successful on service *' . $service_name . "*");
+                /* translators: %s: Name of the Fastly service for which we have tested connection */
+                $message = sprintf(__('Connection Successful on service *%s*', 'purgely'), $service_name);
             } else {
                 handle_logging($response);
                 $message = json_decode($response->body);
@@ -194,7 +195,7 @@ function send_web_hook($message)
     $channel = Purgely_Settings::get_setting('webhooks_channel');
 
     $headers = array('Content-type: application/json');
-    $data = json_encode(
+    $data = wp_json_encode(
         array(
             'text' => $message,
             'username' => $username,
@@ -227,7 +228,7 @@ function test_web_hook()
     $channel = Purgely_Settings::get_setting('webhooks_channel');
 
     $headers = array('Content-type: application/json');
-    $data = json_encode(
+    $data = wp_json_encode(
         array(
             'text' => 'Webhook connection successful!',
             'username' => $username,
@@ -238,7 +239,7 @@ function test_web_hook()
 
     try {
         $response = Requests::request($webhook_url, $headers, $data, Requests::POST);
-        $message = $response->success ? __('Connection Successful!') : __($response->body);
+        $message = $response->success ? __('Connection Successful!', 'purgely') : $response->body;
 
         if (Purgely_Settings::get_setting('fastly_debug_mode')) {
             error_log('Webhooks - test connection: ' . $response->body);
@@ -299,31 +300,31 @@ function get_message_by_status_code($code)
 {
     switch ($code) {
         case 200:
-            $msg = __($code . ' - OK');
+            $msg = '200 - OK';
             break;
         case 203:
-            $msg = __($code . ' - Non-Authoritative Information');
+            $msg = '203 - Non-Authoritative Information';
             break;
         case 300:
-            $msg = __($code . ' - Multiple Choices');
+            $msg = '300 - Multiple Choices';
             break;
         case 301:
-            $msg = __($code . ' - Moved Permanently');
+            $msg = '301 - Moved Permanently';
             break;
         case 302:
-            $msg = __($code . ' - Moved Temporarily');
+            $msg = '302 - Moved Temporarily';
             break;
         case 401:
-            $msg = __($code . ' - Unauthorized');
+            $msg = '401 - Unauthorized';
             break;
         case 404:
-            $msg = __($code . ' - Not Found');
+            $msg = '404 - Not Found';
             break;
         case 410:
-            $msg = __($code . ' - Gone');
+            $msg = '410 - Gone';
             break;
         default:
-            $msg = __('Error occurred, turn on debugging options and check your logs.');
+            $msg = __('Error occurred, turn on debugging options and check your logs.', 'purgely');
             break;
     }
     return $msg;

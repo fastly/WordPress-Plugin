@@ -4,7 +4,7 @@ Plugin Name: Fastly
 Plugin URI: http://fastly.com/
 Description: Configuration and cache purging for the Fastly CDN.
 Authors: Zack Tollman (github.com/tollmanz), WIRED Tech Team (github.com/CondeNast) & Fastly
-Version: 1.2.25
+Version: 1.2.26
 Author URI: http://fastly.com/
 */
 
@@ -62,7 +62,7 @@ class Purgely
      *
      * @var   string    Plugin version.
      */
-    var $version = '1.2.25';
+    var $version = '1.2.26';
 
     /**
      * Currently installed plugin version.
@@ -190,10 +190,6 @@ class Purgely
             }
         }
 
-        if (is_admin()) {
-            include $this->src_dir . '/settings-page.php';
-        }
-
         // First install DB schema changes
         $upgrades = new Upgrades($this);
         $upgrades->check_and_run_upgrades();
@@ -248,6 +244,7 @@ class Purgely
 
         // Load the textdomain.
         add_action('plugins_loaded', array($this, 'load_plugin_textdomain'));
+        add_action('plugins_loaded', array($this, 'load_admin_settings'));
 
         // Load custom JS for EdgeModules
         add_action( 'admin_enqueue_scripts', array($this, 'enqueue_admin_script_edgemodules'));
@@ -368,6 +365,13 @@ class Purgely
     public function load_plugin_textdomain()
     {
         load_plugin_textdomain('purgely', false, basename(dirname(__FILE__)) . '/languages/');
+    }
+
+    public function load_admin_settings()
+    {
+        if (is_admin()) {
+            include $this->src_dir . '/settings-page.php';
+        }
     }
 
     /**
@@ -561,8 +565,7 @@ class Purgely
     function fastly_edge_modules() {
         $result = [];
         foreach ( glob( $this->edge_modules_dir . "/*.json" ) as $file ) {
-            if (is_file($file) && $contents = file_get_contents($file)) {
-                $json = json_decode($contents);
+            if (is_file($file) && $json = wp_json_file_decode($file)) {
                 $result[$json->id] = $json;
             }
         }
