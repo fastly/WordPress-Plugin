@@ -1257,7 +1257,7 @@ class Purgely_Settings_Page
      */
     public function fastly_cache_tags_settings_callback()
     {
-        esc_html__("This section allows you to configure fastly cache tags for special purging cases. This should be used only if you have Wordpress configuration where Fastly purging is not working for all cases. <b>Note: default Wordpress tags can be used for this purpose, if you're using them for some custom functionality already, only then use this.</b>", 'purgely');
+        esc_html_e("This section allows you to configure fastly cache tags for special purging cases. This should be used only if you have Wordpress configuration where Fastly purging is not working for all cases. <b>Note: default Wordpress tags can be used for this purpose, if you're using them for some custom functionality already, only then use this.</b>", 'purgely');
     }
 
     /**
@@ -1268,7 +1268,7 @@ class Purgely_Settings_Page
     public function fastly_io_main_settings_callback()
     {
 
-        esc_html__("This section allows you to enable Fastly IO options.", 'purgely');
+        esc_html_e("This section allows you to enable Fastly IO options.", 'purgely');
     }
 
     /**
@@ -1278,7 +1278,7 @@ class Purgely_Settings_Page
      */
     public function fastly_io_settings_callback()
     {
-        esc_html__("This section allows you to configure Fastly IO options inside Wordpress. Turning them on will rewrite HTML.", 'purgely');
+        esc_html_e("This section allows you to configure Fastly IO options inside Wordpress. Turning them on will rewrite HTML.", 'purgely');
     }
 
     /**
@@ -1288,7 +1288,7 @@ class Purgely_Settings_Page
      */
     public function fastly_io_settings_disabled_callback()
     {
-        esc_html__("Image Optimization feature is a separately priced feature. Please contact your sales rep about pricing or send an email to support@fastly.com if you believe it should have already been enabled on your account.", 'purgely');
+        esc_html_e("Image Optimization feature is a separately priced feature. Please contact your sales rep about pricing or send an email to support@fastly.com if you believe it should have already been enabled on your account.", 'purgely');
     }
 
     /**
@@ -1445,7 +1445,7 @@ class Purgely_Settings_Page
                name='fastly-settings-advanced[use_fastly_cache_tags_for_custom_post_type]' <?php checked(isset($options['use_fastly_cache_tags_for_custom_post_type']) && false === $options['use_fastly_cache_tags_for_custom_post_type']); ?>
                value='false'>No
         <p class="description">
-            <?php esc_html__("Use Fastly Cache Tags on custom post types. <b>Activate only if you have custom post types registered.</b>", 'purgely'); ?>
+            <?php esc_html_e("Use Fastly Cache Tags on custom post types. <b>Activate only if you have custom post types registered.</b>", 'purgely'); ?>
         </p>
         <?php
     }
