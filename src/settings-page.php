@@ -1602,9 +1602,7 @@ class Purgely_Settings_Page
                                 </label>
                                 <textarea name="maintenance-html-update" id="maintenance-html-update"
                                           rows="<?php echo esc_attr( self::INPUT_TEXTAREA_ROWS  )?>"
-                                          cols="<?php echo esc_attr( self::INPUT_TEXTAREA_COLS  )?>">
-                                    <?php echo esc_html( $html ) ?>
-                                </textarea>
+                                          cols="<?php echo esc_attr( self::INPUT_TEXTAREA_COLS  )?>"><?php echo esc_html( $html ) ?></textarea>
                             </td>
                         </tr>
                         </tbody>
