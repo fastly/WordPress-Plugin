@@ -1503,7 +1503,6 @@ class Purgely_Settings_Page
                             purge_url: purge_url_value
                         },
                         success: function (response) {
-                            console.log(response);
                             spinner.toggleClass('is-active');
                             purge_url_status.innerHTML = response.message;
                         },
