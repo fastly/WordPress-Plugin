@@ -204,7 +204,7 @@ class Fastly_Api
     {
         ?>
         <div class="error notice">
-            <p><?php _e( $this->error_message); ?></p>
+            <p><?php esc_html( $this->error_message ); ?></p>
         </div>
         <?php
     }

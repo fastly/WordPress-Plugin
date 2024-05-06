@@ -70,7 +70,7 @@ class Vcl_Handler
 
         $connection = test_fastly_api_connection($this->_hostname, $this->_service_id, $this->_api_key);
         if (!$connection['status']) {
-            $this->add_error(__($connection['message']));
+            $this->add_error($connection['message']);
             return;
         }
 
@@ -252,7 +252,9 @@ class Vcl_Handler
                 }
 
                 if (file_exists($single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['type'] . '.vcl')) {
-                    $single_vcl_data['content'] = file_get_contents($single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['type'] . '.vcl');
+                    global $wp_filesystem;
+                    WP_Filesystem();
+                    $single_vcl_data['content'] = $wp_filesystem->get_contents( ($single_vcl_data['vcl_dir'] . DIRECTORY_SEPARATOR . $single_vcl_data['type'] . '.vcl') );
                     unset($single_vcl_data['vcl_dir']);
                 } else {
                     $this->add_error(__('VCL file does not exist.'));

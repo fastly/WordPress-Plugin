@@ -84,8 +84,10 @@ if (!class_exists('Purgely_Command')) :
             }
 
             if ($result) {
+                /* translators: %s: information which parameter was purged - all sites, selected post or specific url */
                 WP_CLI::success(sprintf(__('Successfully purged - %s', 'purgely'), $message));
             } else {
+                /* translators: %s: information for which parameter purge was attempted - all sites, selected post or specific url */
                 WP_CLI::error(sprintf(__('Purge failed - %s - (enable and check logging for more information)'), $message));
             }
         }
@@ -110,7 +112,7 @@ if (!class_exists('Purgely_Command')) :
                 $message .= "\nTo list options from certain section run: $msg";
                 $msg = $this->_color('green', '{true|false}');
                 $message .= "\nFor yes/no configuration options use : $msg";
-                WP_CLI::error(sprintf(__($message, 'purgely')));
+                WP_CLI::error($message, 'purgely');
                 return;
             }
 
@@ -157,11 +159,12 @@ if (!class_exists('Purgely_Command')) :
             if(update_option($section, $settings_list)) {
                 $config_option = $this->_color('gold', $config_option);
                 $config_value = $this->_color('red', $config_value);
+                /* translators: %1\$s: option which is updated, %2\$s: value to which option is set */
                 WP_CLI::success(sprintf(__(
-                "Successfully saved $config_option option in configuration with value $config_value", 'purgely'))
+                "Successfully saved %1\$s option in configuration with value %2\$s", 'purgely'), $config_option, $config_value)
                 );
             } else {
-                WP_CLI::error(sprintf(__('Failed to save option. Please update value.', 'purgely')));
+                WP_CLI::error(__('Failed to save option. Please update value.', 'purgely'));
             }
         }
 
@@ -176,7 +179,8 @@ if (!class_exists('Purgely_Command')) :
             if(!$conf_list) {
                 $msg = $this->_color('gold', 'wp fastly configlist {general|advanced|webhooks}');
 
-                WP_CLI::error(sprintf(__("Usage: {$msg}", 'purgely')));
+                /* translators: %s: configlist message */
+                WP_CLI::error(sprintf(__("Usage: %s", 'purgely'), $msg));
                 return;
             }
 
@@ -195,12 +199,14 @@ if (!class_exists('Purgely_Command')) :
 
                     $key = $this->_color('gold', $key);
                     $value = $this->_color('red', $value);
-                    echo "\n $key = $value\n";
+                    /* translators: %1\$s: name of current setting, %2\$s: value of a setting */
+                    WP_CLI::line( sprintf( __( "Setting %1\$s = %2\$s", 'purgely' ), $key, $value ) );
                 }
                 return;
             }
             $msg = $this->_color('gold', 'wp fastly configlist {general|advanced|webhooks}');
-            WP_CLI::error(sprintf(__("Invalid config list selected. Usage: {$msg}", 'purgely')));
+            /* translators: %s: configlist message */
+            WP_CLI::error(sprintf(__("Invalid config list selected. Usage: %s", 'purgely'), $msg));
             return;
         }
 

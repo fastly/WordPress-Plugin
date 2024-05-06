@@ -37,8 +37,8 @@ class Fastly_Edgemodules
         <div class="wrap">
             <div id="fastly-admin" class="wrap">
                 <h1>
-                    <img alt="fastly" src="<?php echo FASTLY_PLUGIN_URL . 'static/logo_white.gif'; ?>"><br>
-                    <span style="font-size: x-small;">version: <?php echo FASTLY_VERSION; ?></span>
+                    <img alt="fastly" src="<?php echo esc_attr( FASTLY_PLUGIN_URL . 'static/logo_white.gif' ); ?>"><br>
+                    <span style="font-size: x-small;">version: <?php echo esc_html( FASTLY_VERSION ); ?></span>
                 </h1>
             </div>
             Fastly Edge Modules is a framework that allows you to enable specific functionality on Fastly without needing to write any VCL code.
@@ -50,19 +50,20 @@ class Fastly_Edgemodules
                 <?php foreach ($modules as $module): ?>
                     <tr>
                         <td>
-                            <strong><?php echo $module->name; ?></strong><br>
+                            <strong><?php echo esc_html( $module->name ); ?></strong><br>
                             <p>
-                                <em><?php echo $module->description; ?></em>
+                                <em><?php echo esc_html( $module->description ); ?></em>
                             </p>
                         </td>
                         <td nowrap="nowrap">
                             <em>
-                                <strong><?php echo (isset($module->enabled) && $module->enabled) ? __('Enabled') : __('Disabled'); ?></strong><br>
-                                Uploaded: <?php echo isset($module->data['uploaded_at']) ? date ( 'Y/m/d' , strtotime($module->data['uploaded_at'])) : __('never'); ?>
+                                <strong><?php echo (isset($module->enabled) && $module->enabled) ? esc_html__('Enabled', 'purgely') : esc_html__('Disabled', 'purgely'); ?></strong><br>
+                                Uploaded: <?php echo isset($module->data['uploaded_at']) ? esc_html( gmdate('Y/m/d' , strtotime($module->data['uploaded_at'] ) ) ) : esc_html__('never', 'purgely'); ?>
                             </em>
                         </td>
                         <td nowrap="nowrap">
-                            <a href="#TB_inline?&width=800&inlineId=fastly-edge-module-<?php echo $module->id; ?>" title="<?php echo $module->name; ?>" class="button thickbox">Manage</a>
+                            <a href="#TB_inline?&width=800&inlineId=fastly-edge-module-<?php echo esc_attr( $module->id ); ?>"
+                               title="<?php echo esc_attr( $module->name ); ?>" class="button thickbox">Manage</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -71,15 +72,15 @@ class Fastly_Edgemodules
             <span class="spinner" id="html-popup-spinner" style="position: absolute; top:0;left:0;width:100%;height:100%;margin:0; background-color: #fff; background-position:center;"></span>
         </div>
         <?php foreach ($modules as $module): ?>
-        <div id="fastly-edge-module-<?php echo $module->id; ?>"style="display:none;">
+        <div id="fastly-edge-module-<?php echo esc_attr( $module->id ); ?>" style="display:none;">
             <form action="<?php menu_page_url( 'fastly-edge-modules' ) ?>" onsubmit="return EdgeModules.submit(this)" method="post">
-                <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('fastly-edge-modules'); ?>">
-                <input type="hidden" id="<?php echo "{$module->id}-key"; ?>" value='<?php echo $module->id; ?>'>
-                <input type="hidden" id="<?php echo "{$module->id}-vcl"; ?>" value='<?php echo rawurlencode(json_encode($module->vcl)); ?>'>
-                <input type="hidden" id="<?php echo "{$module->id}-snippet"; ?>" name="<?php echo "{$module->id}[snippet]"; ?>">
+                <input type="hidden" name="nonce" value="<?php echo esc_attr( wp_create_nonce('fastly-edge-modules') ); ?>">
+                <input type="hidden" id="<?php echo esc_attr( "$module->id-key" ); ?>" value='<?php echo esc_attr( $module->id ); ?>'>
+                <input type="hidden" id="<?php echo esc_attr( "$module->id-vcl" ); ?>" value='<?php echo rawurlencode( wp_json_encode($module->vcl) ); ?>'>
+                <input type="hidden" id="<?php echo esc_attr( "$module->id-snippet" ); ?>" name="<?php echo esc_attr( "$module->id[snippet]" ); ?>">
                 <table class="form-table">
                     <tbody>
-                    <?php if($module->properties): ?>
+                    <?php if( !empty($module->properties) ): ?>
                         <?php foreach($module->properties as $property): ?>
                             <?php if($property->type === 'group'): ?>
                                 <?php $this->renderGroup($property, (isset($module->data[$property->name])) ? $module->data[$property->name] : null, $module->id); ?>
@@ -93,7 +94,7 @@ class Fastly_Edgemodules
                         <tr>
                             <td>
                                 <span class="submitbox">
-                                    <a class="submitdelete" href="#" onclick="return EdgeModules.disableModule('<?php echo $module->id; ?>')">Disable</a>
+                                    <a class="submitdelete" href="#" onclick="return EdgeModules.disableModule('<?php echo esc_attr( $module->id ); ?>')">Disable</a>
                                 </span>
                             </td>
                             <td>
@@ -103,12 +104,12 @@ class Fastly_Edgemodules
                     </tfoot>
                 </table>
             </form>
-            <form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="<?php echo "{$module->id}-disable-form"; ?>" method="post" style="display: none;">
-                <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('fastly-edge-modules-disable'); ?>">
+            <form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="<?php echo esc_attr( "$module->id-disable-form" ); ?>" method="post" style="display: none;">
+                <input type="hidden" name="nonce" value="<?php echo esc_attr( wp_create_nonce('fastly-edge-modules-disable') ); ?>">
                 <input type="hidden" name="action" value="fastly_module_disable_form">
-                <input type="hidden" name="module_name" value='<?php echo $module->id; ?>'>
+                <input type="hidden" name="module_name" value='<?php echo esc_attr( $module->id ); ?>'>
                 <?php for ($i = 0; $i < count($module->vcl); $i++): ?>
-                    <input type="hidden" name="types[<?php echo $i; ?>]" value='<?php echo $module->vcl[$i]->type; ?>'>
+                    <input type="hidden" name="types[<?php echo esc_attr( $i ); ?>]" value='<?php echo esc_attr( $module->vcl[$i]->type ); ?>'>
                 <?php endfor; ?>
             </form>
         </div>
@@ -121,7 +122,7 @@ class Fastly_Edgemodules
         $apiData = fastly_api()->get_all_snippets();
         $localData = get_option(self::SETTINGS, []);
         return array_map(function ($module) use ($apiData, $localData) {
-            $module->data = isset($localData[$module->id]) ? $localData[$module->id] : [];
+            $module->data = $localData[$module->id] ?? [];
             $query = self::EDGE_PREFIX.'_'.$module->id;
             foreach ($apiData as $apiModule) {
                 if (substr($apiModule->name, 0, strlen($query)) === $query) {
@@ -141,19 +142,19 @@ class Fastly_Edgemodules
         <tr>
             <th rowspan="2">
                 <label>
-                    <?php echo __($group->label); ?>
+                    <?php echo esc_html( $group->label ); ?>
                 </label>
             </th>
             <td>
-                <a href="#" title="Add group" class="button" onclick="return EdgeModules.addGroup('<?php echo $suffix; ?>', '<?php echo $name; ?>')">Add group</a>
+                <a href="#" title="Add group" class="button" onclick="return EdgeModules.addGroup('<?php echo esc_attr( $suffix ); ?>', '<?php echo esc_attr( $name ); ?>')">Add group</a>
             </td>
         </tr>
         <tr>
             <td>
-                <?php for ($i = 0; $i < count($values); $i++): ?>
-                    <?php $this->renderGroupProperties($group->properties, $values[$i], "{$name}[$i]", "{$suffix}-{$i}"); ?>
-                <?php endfor; ?>
-                <template id="<?php echo $suffix.'-template'; ?>">
+                <?php foreach ($values as $key => $value): ?>
+                    <?php $this->renderGroupProperties($group->properties, $value, "{$name}[$key]", "{$suffix}-{$key}"); ?>
+                <?php endforeach; ?>
+                <template id="<?php echo esc_attr( "$suffix-template" ); ?>">
                     <?php $this->renderGroupProperties($group->properties, [], "{$name}[x]", 'container'); ?>
                 </template>
             </td>
@@ -164,11 +165,11 @@ class Fastly_Edgemodules
     protected function renderGroupProperties($properties, $values, $name, $id)
     {
         ?>
-        <div id="<?php echo $id; ?>">
+        <div id="<?php echo esc_attr( $id ); ?>">
             <table class="form-table">
                 <tbody>
                 <?php foreach($properties as $property): ?>
-                    <?php $this->renderProperty($name, $property, $values[$property->name]); ?>
+                    <?php $this->renderProperty($name, $property, $values[$property->name] ?? ""); ?>
                 <?php endforeach; ?>
                 </tbody>
             </table>
@@ -185,13 +186,13 @@ class Fastly_Edgemodules
         ?>
         <tr>
             <th>
-                <label for="<?php echo $property->name; ?>">
-                    <?php echo __($property->label); ?>
+                <label for="<?php echo esc_attr( $property->name ); ?>">
+                    <?php echo esc_html( $property->label ); ?>
                 </label>
             </th>
             <td>
-                <?php echo $this->renderField($name, $property, $value); ?>
-                <p><small><em><?php echo $property->description; ?></em></small></p>
+                <?php $this->renderField($name, $property, $value); ?>
+                <p><small><em><?php echo esc_html( $property->description ?? "" ); ?></em></small></p>
             </td>
         </tr>
         <?php
@@ -211,42 +212,49 @@ class Fastly_Edgemodules
 
         switch ($property->type) {
             case 'acl':
-                $options = '';
+                echo "<select style='width: 100%;' id=' " . esc_attr($id) . "' name='" . esc_attr($name) . "' " . esc_attr($required) . ">";
                 foreach ($this->getAcls() as $acl) {
                     $selected = $acl->name === $value ? 'selected' : '';
-                    $options .= "<option value='$acl->name' {$selected}>{$acl->name}</option>";
-                };
-                return "<select style='width: 100%;' id='{$id}' name='{$name}' {$required}>{$options}</select>";
+                    echo "<option value='" . esc_attr($acl->name) . "' " . esc_attr($selected) . ">" . esc_html($acl->name) . "</option>";
+                }
+                echo "</select>";
+                break;
             case 'dict':
-                $options = '';
+                echo "<select style='width: 100%;' id=' " . esc_attr($id) . "' name='" . esc_attr($name) . "' " . esc_attr($required) . ">";
                 foreach ($this->getDictionaries() as $dictionary) {
                     $selected = $dictionary->name === $value ? 'selected' : '';
-                    $options .= "<option value='$dictionary->name' {$selected}>{$dictionary->name}</option>";
-                };
-                return "<select style='width: 100%;' id='{$id}' name='{$name}' {$required}>{$options}</select>";
+                    echo "<option value='" . esc_attr($dictionary->name) . "' " . esc_attr($selected) . ">" . esc_html($dictionary->name) . "</option>";
+                }
+                echo "</select>";
+                break;
             case 'select':
-                $options = '';
+                echo "<select style='width: 100%;' id=' " . esc_attr($id) . "' name='" . esc_attr($name) . "' " . esc_attr($required) . ">";
                 foreach ((array) $property->options as $k => $label) {
                     $selected = $k === $value ? 'selected' : '';
-                    $options .= "<option value='{$k}' {$selected}>{$label}</option>";
-                };
-                return "<select style='width: 100%;' id='{$id}' name='{$name}' {$required}>{$options}</select>";
+                    echo "<option value='" . esc_attr($k). "' " . esc_attr($selected) . ">" . esc_html($label) . "</option>";
+
+                }
+                echo "</select>";
+                break;
             case 'boolean':
-                $value = $value === 'true';
-                $options = implode('', [
-                    "<option value='' ".(!$value ? 'selected' : '').">No</option>",
-                    "<option value='1' ".($value ? 'selected' : '').">Yes</option>",
-                ]);
-                return "<select style='width: 100%;' id='{$id}' name='{$name}'>{$options}</select>";
+                echo "<select style='width: 100%;' id=' " . esc_attr($id) . "' name='" . esc_attr($name) . "' " . esc_attr($required) . ">";
+
+                echo"<option value='0' ".(!$value ? 'selected' : '').">No</option>" .
+                    "<option value='1' ".($value ? 'selected' : '').">Yes</option>";
+                echo "</select>";
+                break;
             case 'integer':
             case 'float':
-                $type = 'number';
-                return "<input style='width: 100%;' type='{$type}' id='{$id}' name='{$name}' value='{$value}' {$required}/>";
+                echo "<input style='width: 100%;' type='number' id='" . esc_attr($id) . "' name='" . esc_attr($name) .
+                    "' value='" . esc_attr($value) . "'" .  esc_attr($required) . "/>";
+                break;
             case 'string':
             case 'path':
             default:
-                $type = 'text';
-                return "<input style='width: 100%;' type='{$type}' id='{$id}' name='{$name}' value='{$value}' {$required}/>";
+
+            echo "<input style='width: 100%;' type='text' id='" . esc_attr($id) . "' name='" . esc_attr($name) .
+                "' value='" . esc_attr($value) . "'" .  esc_attr($required) . "/>";
+                break;
         }
     }
 
@@ -294,7 +302,7 @@ class Fastly_Edgemodules
         $currentData = get_option(self::SETTINGS, []);
         $data = array_merge($currentData , array_map(function ($d) {
             unset($d['snippet']);
-            $d['uploaded_at'] = date(DATE_ISO8601);
+            $d['uploaded_at'] = gmdate(DATE_ISO8601);
             return $d;
         }, $data));
         update_option(self::SETTINGS, $data);
