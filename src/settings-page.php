@@ -1257,7 +1257,14 @@ class Purgely_Settings_Page
      */
     public function fastly_cache_tags_settings_callback()
     {
-        esc_html_e("This section allows you to configure fastly cache tags for special purging cases. This should be used only if you have Wordpress configuration where Fastly purging is not working for all cases. <b>Note: default Wordpress tags can be used for this purpose, if you're using them for some custom functionality already, only then use this.</b>", 'purgely');
+        printf(
+        /* translators: %s: Note for Fastly cache tags */
+            esc_html__('This section allows you to configure fastly cache tags for special purging cases. This should be used only if you have Wordpress configuration where Fastly purging is not working for all cases. %s', 'purgely'),
+            sprintf(
+                '<b>%1$s</b>',
+                esc_html__("Note: default Wordpress tags can be used for this purpose, if you're using them for some custom functionality already, only then use this.", 'purgely')
+            )
+        );
     }
 
     /**
@@ -1445,7 +1452,8 @@ class Purgely_Settings_Page
                name='fastly-settings-advanced[use_fastly_cache_tags_for_custom_post_type]' <?php checked(isset($options['use_fastly_cache_tags_for_custom_post_type']) && false === $options['use_fastly_cache_tags_for_custom_post_type']); ?>
                value='false'>No
         <p class="description">
-            <?php esc_html_e("Use Fastly Cache Tags on custom post types. <b>Activate only if you have custom post types registered.</b>", 'purgely'); ?>
+            <?php esc_html_e("Use Fastly Cache Tags on custom post types.", 'purgely'); ?>
+            <b><?php esc_html_e("Activate only if you have custom post types registered.", 'purgely'); ?></b>
         </p>
         <?php
     }
