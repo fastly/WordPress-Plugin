@@ -48,23 +48,33 @@ class Purgely_Settings_Page
     public function __construct()
     {
 
-        if ( current_user_can('administrator') ) {
-            add_action('admin_menu', array($this, 'add_admin_menu'));
-            add_action('admin_menu', array($this, 'settings_init'));
-            add_action('admin_notices', array($this, 'fastly_admin_notices'));
-            add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
-            add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
-            add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
-            add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
-            add_action('wp_ajax_fastly_io_update_ok', array($this, 'fastly_io_update_ok_callback'));
-            add_action('wp_ajax_purge_by_url', array($this, 'fastly_purge_by_url_callback'));
-            add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
-            add_action( 'admin_post_fastly_module_disable_form', array($this, 'options_page_edgemodules_submit_disable') );
-        }
+        add_action('admin_menu', array($this, 'add_admin_menu'));
+        add_action('admin_menu', array($this, 'settings_init'));
+        add_action('admin_notices', array($this, 'fastly_admin_notices'));
+        add_action('wp_ajax_purge_all', array($this, 'purge_all_callback'));
+        add_action('wp_ajax_test_fastly_connection', array($this, 'test_fastly_connection_callback'));
+        add_action('wp_ajax_fastly_vcl_update_ok', array($this, 'fastly_vcl_update_ok_callback'));
+        add_action('wp_ajax_fastly_html_update_ok', array($this, 'fastly_html_update_ok_callback'));
+        add_action('wp_ajax_fastly_io_update_ok', array($this, 'fastly_io_update_ok_callback'));
+        add_action('wp_ajax_purge_by_url', array($this, 'fastly_purge_by_url_callback'));
+        add_action('wp_ajax_test_fastly_webhooks_connection', array($this, 'test_fastly_webhooks_connection_callback'));
+        add_action( 'admin_post_fastly_module_disable_form', array($this, 'options_page_edgemodules_submit_disable') );
+    }
+
+    /**
+     * @return bool
+     */
+    private function user_is_admin()
+    {
+        return is_user_logged_in() && in_array( 'administrator', wp_get_current_user()->roles ?? [], true );
     }
 
     function fastly_admin_notices()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         // todo: scope by fastly?
         settings_errors();
     }
@@ -76,6 +86,10 @@ class Purgely_Settings_Page
      */
     function add_admin_menu()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         add_menu_page(
             __('Fastly General', 'purgely'),
             __('Fastly', 'purgely'),
@@ -139,6 +153,10 @@ class Purgely_Settings_Page
      */
     function settings_init()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         // Set up the option name, "fastly-settings-general". All general values will be in this array.
         register_setting(
             'fastly-settings-general',
@@ -889,6 +907,10 @@ class Purgely_Settings_Page
      */
     function test_fastly_connection_callback()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         $hostname = Purgely_Settings::get_setting('fastly_api_hostname');
         $service_id = Purgely_Settings::get_setting('fastly_service_id');
         $api_key = Purgely_Settings::get_setting('fastly_api_key');
@@ -904,6 +926,10 @@ class Purgely_Settings_Page
      */
     function fastly_vcl_update_ok_callback()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         $purgely_instance = get_purgely_instance();
         $upgrades = new Upgrades($purgely_instance);
         $activate = false;
@@ -941,6 +967,10 @@ class Purgely_Settings_Page
      */
     function fastly_html_update_ok_callback()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         $purgely_instance = get_purgely_instance();
         $upgrades = new Upgrades($purgely_instance);
         $activate = false;
@@ -983,6 +1013,10 @@ class Purgely_Settings_Page
      */
     function fastly_io_update_ok_callback()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         $purgely_instance = get_purgely_instance();
         $upgrades = new Upgrades($purgely_instance);
         $activate = false;
@@ -1016,6 +1050,10 @@ class Purgely_Settings_Page
      */
     function fastly_purge_by_url_callback()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         $purge_url = $_GET['purge_url'];
         $url = !empty($purge_url) ? sanitize_url( $purge_url ) : false;
 
@@ -1048,6 +1086,10 @@ class Purgely_Settings_Page
      */
     function test_fastly_webhooks_connection_callback()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         $result = test_web_hook();
         echo wp_json_encode($result);
         die();
@@ -1058,6 +1100,10 @@ class Purgely_Settings_Page
      */
     function purge_all_callback()
     {
+
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
 
         if (!Purgely_Settings::get_setting('allow_purge_all')) {
             echo wp_json_encode(array('status' => false, 'message' => __('Allow Full Cache Purges first.')));
@@ -2075,6 +2121,10 @@ class Purgely_Settings_Page
      */
     public function options_page_edgemodules_submit_disable()
     {
+        if ( !$this->user_is_admin() ) {
+            return;
+        }
+
         if ('POST' === $_SERVER['REQUEST_METHOD'] && wp_verify_nonce($_POST['nonce'], 'fastly-edge-modules-disable')) {
             Fastly_Edgemodules::getInstance()->processFormSubmissionDisable($_POST);
             wp_redirect( $_SERVER["HTTP_REFERER"], 302, 'WordPress' );
