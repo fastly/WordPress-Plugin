@@ -71,7 +71,10 @@ function purgely_get_options()
         }
     }
 
-    $options = get_option('fastly-settings-general', $options);
+    if (!isset($options['fastly_service_id'], $options['fastly_api_key'])) {
+        $options = get_option('fastly-settings-general', $options);
+    }
+
     $options = array_merge($options, get_option('fastly-settings-advanced', $options));
     $options = array_merge($options, get_option('fastly-settings-webhooks', $options));
 

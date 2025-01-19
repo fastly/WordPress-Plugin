@@ -39,7 +39,7 @@ class Purgely_Settings
         return array(
             'fastly_api_key' => array(
                 'sanitize_callback' => 'purgely_sanitize_key',
-                'default' => PURGELY_FASTLY_KEY,
+                'default' => PURGELY_FASTLY_API_KEY,
             ),
             'fastly_service_id' => array(
                 'sanitize_callback' => 'purgely_sanitize_key',
@@ -63,7 +63,7 @@ class Purgely_Settings
             ),
             'fastly_api_hostname' => array(
                 'sanitize_callback' => 'esc_url',
-                'default' => PURGELY_API_ENDPOINT,
+                'default' => PURGELY_FASTLY_API_HOSTNAME,
             ),
             'enable_stale_while_revalidate' => array(
                 'sanitize_callback' => 'purgely_sanitize_checkbox',

@@ -2,22 +2,22 @@
 /**
  * Define the endpoint for the API.
  */
-if (!defined('PURGELY_API_ENDPOINT')) {
-    define('PURGELY_API_ENDPOINT', 'https://api.fastly.com/');
+if (!defined('PURGELY_FASTLY_API_HOSTNAME')) {
+    define('PURGELY_FASTLY_API_HOSTNAME', 'https://api.fastly.com/');
 }
 
 /**
  * Define the user API key.
  */
-if (!defined('PURGELY_FASTLY_KEY')) {
-    define('PURGELY_FASTLY_KEY', '');
+if (!defined('PURGELY_FASTLY_API_KEY')) {
+    define('PURGELY_FASTLY_API_KEY', getenv('FASTLY_API_TOKEN') ?: '');
 }
 
 /**
  * Define the service ID.
  */
 if (!defined('PURGELY_FASTLY_SERVICE_ID')) {
-    define('PURGELY_FASTLY_SERVICE_ID', '');
+    define('PURGELY_FASTLY_SERVICE_ID', getenv('FASTLY_API_SERVICE') ?: '');
 }
 
 /**
