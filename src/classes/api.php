@@ -24,18 +24,18 @@ class Fastly_Api
     protected function __construct()
     {
         $this->headers_get = [
-            'Fastly-Key' => purgely_get_option('fastly_api_key'),
+            'Fastly-Key' => Purgely_Settings::get_setting('fastly_api_key'),
             'Accept' => 'application/json'
         ];
         $this->headers_post = [
-            'Fastly-Key' => purgely_get_option('fastly_api_key'),
+            'Fastly-Key' => Purgely_Settings::get_setting('fastly_api_key'),
             'Accept' => 'application/json',
             'Content-Type' => 'application/x-www-form-urlencoded'
         ];
         $this->base_url = implode('', [
-            trailingslashit(purgely_get_option('fastly_api_hostname')),
+            trailingslashit(Purgely_Settings::get_setting('fastly_api_hostname')),
             trailingslashit('service'),
-            trailingslashit(purgely_get_option('fastly_service_id')),
+            trailingslashit(Purgely_Settings::get_setting('fastly_service_id')),
         ]);
     }
 
@@ -67,6 +67,11 @@ class Fastly_Api
     {
         if (is_null($this->active_version)) {
             $response = Requests::get($this->base_url.'version', $this->headers_get);
+
+            if ($response->status_code !== 200) {
+                throw new \Exception("Invalid response while fetching active version.");
+            }
+
             foreach (json_decode($response->body) as $version) {
                 if ($version->active) {
                     $this->active_version = $version;
