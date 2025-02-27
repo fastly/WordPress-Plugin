@@ -64,9 +64,9 @@ class Vcl_Handler
         $this->_header_data = !empty($data['header']) ? $data['header'] : false;
         $this->_response_object_data = !empty($data['response']) ? $data['response'] : false;
 
-        $this->_hostname = purgely_get_option('fastly_api_hostname');
-        $this->_service_id = purgely_get_option('fastly_service_id');
-        $this->_api_key = purgely_get_option('fastly_api_key');
+        $this->_hostname = Purgely_Settings::get_setting('fastly_api_hostname');
+        $this->_service_id = Purgely_Settings::get_setting('fastly_service_id');
+        $this->_api_key = Purgely_Settings::get_setting('fastly_api_key');
 
         $connection = test_fastly_api_connection($this->_hostname, $this->_service_id, $this->_api_key);
         if (!$connection['status']) {

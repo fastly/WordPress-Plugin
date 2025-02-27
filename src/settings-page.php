@@ -674,7 +674,7 @@ class Purgely_Settings_Page
         $service_name = $purgely_instance->service_name;
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
-            $service_id = purgely_get_option('fastly_service_id');
+            $service_id = Purgely_Settings::get_setting('fastly_service_id');
             /* translators: %1\$s: current active VCL version, %2\$s: Fastly service name, %3\$s: new VCL version */
             $message = sprintf(
                 __("You are about to clone active version %1\$s for service \"%2\$s\". We'll make changes to version %3\$s", 'purgely'),
@@ -1618,7 +1618,7 @@ class Purgely_Settings_Page
         $service_name = $purgely_instance->service_name;
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
-            $service_id = purgely_get_option('fastly_service_id');
+            $service_id = Purgely_Settings::get_setting('fastly_service_id');
             /* translators: %1\$s: current active VCL version, %2\$s: Fastly service name, %3\$s: new VCL version */
             $message = sprintf(
                     __("You are about to clone active version %1\$s for service \"%2\$s\". We'll make changes to version %3\$s", 'purgely'),
@@ -1740,7 +1740,7 @@ class Purgely_Settings_Page
         $service_name = $purgely_instance->service_name;
 
         if (!is_null($vcl->_last_active_version_num) && !is_null($vcl->_next_cloned_version_num)) {
-            $service_id = purgely_get_option('fastly_service_id');
+            $service_id = Purgely_Settings::get_setting('fastly_service_id');
             /* translators: %1\$s: current active VCL version, %2\$s: Fastly service name, %3\$s: new VCL version */
             $message = sprintf(
                 __("You are about to clone active version %1\$s for service \"%2\$s\". We'll make changes to version %3\$s", 'purgely'),
