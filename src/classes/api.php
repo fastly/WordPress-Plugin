@@ -143,7 +143,7 @@ class Fastly_Api
     public function snippet_exists($name, $version = null)
     {
         $result = $this->get_snippet($name, $version);
-        return (bool) $result->id;
+        return (bool) ($result->id ?? false);
     }
 
     public function upload_snippet($version, $snippet)
@@ -174,8 +174,8 @@ class Fastly_Api
     {
         $url = $this->base_url . "version/{$version}/snippet/{$name}";
         $result =  json_decode(Requests::delete($url, $this->headers_get)->body);
-        if ($result->status !== 'ok') {
-            $this->show_error($result->detail);
+        if (isset($result->status) && $result->status !== 'ok') {
+            $this->show_error($result->detail ?? '');
             return false;
         }
         return true;
