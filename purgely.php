@@ -586,12 +586,58 @@ class Purgely
     }
 
 	public function keys_for_rest_api($response) {
+
 		$responseData = $response->get_data();
 
-		if (isset($responseData['type']) && $responseData['type'] == 'page') {
-			$query = new WP_Query(['page' => '', 'pagename' => get_post_field( 'post_name', $responseData['id'] ?? '')]);
+		if ( empty( $responseData['id'] ) ) {
+			return $response;
+		}
+
+		if ( isset( $responseData['taxonomy'] ) && $responseData['taxonomy'] === 'category') {
+			$category = get_category( $responseData['id'] );
+			$type = 'post-category';
+			$name = $category->slug ?? '';
+		} else if ( str_contains($response->get_matched_route(), 'products/categories') ) {
+			$type = 'product-category';
+			$name = $responseData['slug'] ?? '';
 		} else {
-			$query = new WP_Query(['post_type' => 'product']);
+			$postInfo = get_post( $responseData['id'] );
+			$type = $postInfo->post_type ?? '';
+			$name = $postInfo->post_name ?? '';
+		}
+
+		if ( empty( $type ) || empty( $name ) ) {
+			return $response;
+		}
+
+		if ( $type === 'page' ) {
+			$query = new WP_Query([
+				'page' => '',
+				'pagename' => $name
+			]);
+		} else if ( $type === 'post' ) {
+			$query = new WP_Query([
+				'page' => '',
+				'name' => $name
+			]);
+		} else if ( $type === 'post-category' ) {
+			$query = new WP_Query([
+				'category_name' => $name,
+			]);
+			$query->queried_object = $category;
+		} else if ( $type === 'product' ) {
+			$query = new WP_Query( [
+				'page' => '',
+				'post_type' => 'product',
+				'product' => $name,
+				'name' => $name
+			]);
+		} else if ( $type === 'product-category' ) {
+			$query = new WP_Query([
+				'product_cat' => $name,
+			]);
+		} else {
+			return $response;
 		}
 
 		$this->query = $query;
