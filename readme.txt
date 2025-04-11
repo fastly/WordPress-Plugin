@@ -3,7 +3,7 @@ Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
 Requires at least: 4.6.2
 Tested up to: 6.8.0
-Stable tag: 1.2.27
+Stable tag: 1.2.28
 License: GPLv2
 
 Integrates Fastly with WordPress publishing tools.
@@ -126,6 +126,11 @@ Note: you may have to disable other caching plugins like W3TotalCache to avoid g
 3. Fastly Webhooks Tab
 
 == Changelog ==
+
+= 1.2.28
+
+* Small fixes reported in log files
+* Bumping tested up WP version to 6.8
 
 = 1.2.27
 
