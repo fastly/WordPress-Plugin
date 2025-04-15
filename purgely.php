@@ -132,6 +132,8 @@ class Purgely
      */
     var $service_name = '';
 
+	var $query = null;
+
     /**
      * Instantiate or return the one Purgely instance.
      *
@@ -210,6 +212,7 @@ class Purgely
 
         // Add the surrogate keys.
         add_action('wp', array($this, 'set_standard_keys'), 100);
+        add_filter('rest_post_dispatch', array($this, 'keys_for_rest_api'), 100, 20);
 
         // Send the surrogate keys.
         add_action('wp', array($this, 'send_surrogate_keys'), 101);
@@ -263,7 +266,7 @@ class Purgely
         }
 
         global $wp_query;
-        $key_collection = new Purgely_Surrogate_Key_Collection($wp_query);
+        $key_collection = new Purgely_Surrogate_Key_Collection($this->query ?? $wp_query);
 
         $this::$surrogate_keys_collection = $key_collection;
 
@@ -581,6 +584,70 @@ class Purgely
         wp_enqueue_script( 'fastly_edgemodules_handlebars_library', plugin_dir_url( __FILE__ ) . 'js/handlebars-v4.0.12.js', array(), '1.0' );
         wp_enqueue_script( 'fastly_edgemodules_script', plugin_dir_url( __FILE__ ) . 'js/edgemodules.js', array(), '1.0' );
     }
+
+	public function keys_for_rest_api($response) {
+
+		$responseData = $response->get_data();
+
+		if ( empty( $responseData['id'] ) ) {
+			return $response;
+		}
+
+		if ( isset( $responseData['taxonomy'] ) && $responseData['taxonomy'] === 'category') {
+			$category = get_category( $responseData['id'] );
+			$type = 'post-category';
+			$name = $category->slug ?? '';
+		} else if ( str_contains($response->get_matched_route(), 'products/categories') ) {
+			$type = 'product-category';
+			$name = $responseData['slug'] ?? '';
+		} else {
+			$postInfo = get_post( $responseData['id'] );
+			$type = $postInfo->post_type ?? '';
+			$name = $postInfo->post_name ?? '';
+		}
+
+		if ( empty( $type ) || empty( $name ) ) {
+			return $response;
+		}
+
+		if ( $type === 'page' ) {
+			$query = new WP_Query([
+				'page' => '',
+				'pagename' => $name
+			]);
+		} else if ( $type === 'post' ) {
+			$query = new WP_Query([
+				'page' => '',
+				'name' => $name
+			]);
+		} else if ( $type === 'post-category' ) {
+			$query = new WP_Query([
+				'category_name' => $name,
+			]);
+			$query->queried_object = $category;
+		} else if ( $type === 'product' ) {
+			$query = new WP_Query( [
+				'page' => '',
+				'post_type' => 'product',
+				'product' => $name,
+				'name' => $name
+			]);
+		} else if ( $type === 'product-category' ) {
+			$query = new WP_Query([
+				'product_cat' => $name,
+			]);
+		} else {
+			return $response;
+		}
+
+		$this->query = $query;
+		$this->set_standard_keys();
+		$this->send_surrogate_keys();
+		$this->send_surrogate_control();
+		$this->send_cache_control();
+
+		return $response;
+	}
 }
 
 /**
