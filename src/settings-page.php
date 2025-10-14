@@ -630,7 +630,7 @@ class Purgely_Settings_Page
             <?php
             printf(
             /* translators: %s: Link to Fastly account management details */
-            esc_html__('Please see Fastly\'s documentation for %s.', 'purgely'),
+                esc_html__('Please see Fastly\'s documentation for %s.', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://docs.fastly.com/guides/account-management-and-security/finding-and-managing-your-account-info#finding-your-service-id',
@@ -733,7 +733,7 @@ class Purgely_Settings_Page
                 </strong>
             </em>
             <p class="description">
-               <?php esc_html_e('Uploads stock Wordpress VCL. Wordpress VCL is recommended in order to take advantage of Fastly full page caching.', 'purgely'); ?>
+                <?php esc_html_e('Uploads stock Wordpress VCL. Wordpress VCL is recommended in order to take advantage of Fastly full page caching.', 'purgely'); ?>
             </p>
         </div>
 
@@ -750,7 +750,8 @@ class Purgely_Settings_Page
                     url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                     data: {
                         action: 'fastly_vcl_update_ok',
-                        activate: activate
+                        activate: activate,
+                        _wpnonce: '<?= wp_create_nonce('fastly_vcl_update_ok') ?>',
                     },
                     success: function (response) {
                         spinner.toggleClass('is-active');
@@ -801,7 +802,8 @@ class Purgely_Settings_Page
                         method: 'GET',
                         url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                         data: {
-                            action: 'test_fastly_connection'
+                            action: 'test_fastly_connection',
+                            _wpnonce: '<?= wp_create_nonce('test_fastly_connection') ?>',
                         },
                         success: function (response) {
                             document.getElementById('test-connection-response').innerHTML = '';
@@ -843,7 +845,8 @@ class Purgely_Settings_Page
                         method: 'GET',
                         url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                         data: {
-                            action: 'test_fastly_webhooks_connection'
+                            action: 'test_fastly_webhooks_connection',
+                            _wpnonce: '<?= wp_create_nonce('test_fastly_webhooks_connection') ?>',
                         },
                         success: function (response) {
                             document.getElementById('test-connection-response').innerHTML = '';
@@ -881,7 +884,8 @@ class Purgely_Settings_Page
                         method: 'GET',
                         url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                         data: {
-                            action: 'purge_all'
+                            action: 'purge_all',
+                            _wpnonce: '<?= wp_create_nonce('purge_all') ?>',
                         },
                         success: function (response) {
                             document.getElementById('purge-all-response').innerHTML = '';
@@ -911,6 +915,10 @@ class Purgely_Settings_Page
             return;
         }
 
+        if ( !isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'test_fastly_connection') ) {
+            wp_die('Unauthorized access', 403);
+        }
+
         $hostname = Purgely_Settings::get_setting('fastly_api_hostname');
         $service_id = Purgely_Settings::get_setting('fastly_service_id');
         $api_key = Purgely_Settings::get_setting('fastly_api_key');
@@ -928,6 +936,10 @@ class Purgely_Settings_Page
     {
         if ( !$this->user_is_admin() ) {
             return;
+        }
+
+        if ( !isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'fastly_vcl_update_ok') ) {
+            wp_die('Unauthorized access', 403);
         }
 
         $purgely_instance = get_purgely_instance();
@@ -971,10 +983,13 @@ class Purgely_Settings_Page
             return;
         }
 
+        if ( !isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'fastly_html_update_ok') ) {
+            wp_die('Unauthorized access', 403);
+        }
+
         $purgely_instance = get_purgely_instance();
         $upgrades = new Upgrades($purgely_instance);
         $activate = false;
-        $result = array();
 
         $html = $_GET['html'];
 
@@ -1017,6 +1032,10 @@ class Purgely_Settings_Page
             return;
         }
 
+        if ( !isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'fastly_io_update_ok') ) {
+            wp_die('Unauthorized access', 403);
+        }
+
         $purgely_instance = get_purgely_instance();
         $upgrades = new Upgrades($purgely_instance);
         $activate = false;
@@ -1052,6 +1071,10 @@ class Purgely_Settings_Page
     {
         if ( !$this->user_is_admin() ) {
             return;
+        }
+
+        if ( !isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'purge_by_url') ) {
+            wp_die('Unauthorized access', 403);
         }
 
         $purge_url = $_GET['purge_url'];
@@ -1090,6 +1113,10 @@ class Purgely_Settings_Page
             return;
         }
 
+        if ( !isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'test_fastly_webhooks_connection') ) {
+            wp_die('Unauthorized access', 403);
+        }
+
         $result = test_web_hook();
         echo wp_json_encode($result);
         die();
@@ -1103,6 +1130,10 @@ class Purgely_Settings_Page
 
         if ( !$this->user_is_admin() ) {
             return;
+        }
+
+        if ( !isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'purge_all') ) {
+            wp_die('Unauthorized access', 403);
         }
 
         if (!Purgely_Settings::get_setting('allow_purge_all')) {
@@ -1178,12 +1209,12 @@ class Purgely_Settings_Page
         <?php if(is_multisite()) { ?>
         <input type='text' name='notmuch'
                value='' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>" readonly >
-        <?php } else { ?>
+    <?php } else { ?>
         <input type='text' name='fastly-settings-advanced[sitecode]'
                value='<?php echo esc_attr($options['sitecode']); ?>' size="<?php echo esc_attr( self::INPUT_SIZE ) ?>">
-        <?php } ?>
+    <?php } ?>
         <p class="description">
-        <?php esc_html_e('Prepends sitecode to surrogate keys. Multisite does this automatically. Useful in situations where you have microsite(s) inside a single Fastly service.', 'purgely'); ?>
+            <?php esc_html_e('Prepends sitecode to surrogate keys. Multisite does this automatically. Useful in situations where you have microsite(s) inside a single Fastly service.', 'purgely'); ?>
         </p>
         <?php
     }
@@ -1211,7 +1242,7 @@ class Purgely_Settings_Page
             <?php
             printf(
             /* translators: %s Link to Fastly purging documentation*/
-            esc_html__('The purge type setting controls the manner in which the cache is purged. Instant purging causes the cached object(s) to be purged immediately. Soft purging causes the origin to revalidate the cache and Fastly will serve stale content until revalidation is completed. For more information, please see %s.', 'purgely'),
+                esc_html__('The purge type setting controls the manner in which the cache is purged. Instant purging causes the cached object(s) to be purged immediately. Soft purging causes the origin to revalidate the cache and Fastly will serve stale content until revalidation is completed. For more information, please see %s.', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://docs.fastly.com/guides/purging/soft-purges',
@@ -1383,7 +1414,7 @@ class Purgely_Settings_Page
             <?php
             printf(
             /* translators: %s: Link to Fastly documentation */
-            esc_html__('Toggle "stale while revalidate" behavior. The stale while revalidate behavior allows stale content to be served while content is regenerated in the background. Please see %s', 'purgely'),
+                esc_html__('Toggle "stale while revalidate" behavior. The stale while revalidate behavior allows stale content to be served while content is regenerated in the background. Please see %s', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://www.fastly.com/blog/stale-while-revalidate',
@@ -1432,7 +1463,7 @@ class Purgely_Settings_Page
             <?php
             printf(
             /* translators: %s: Link to Fastly documentation */
-            esc_html__('Toggle "stale if error" behavior. The stale if error behavior allows stale content to be served while the origin is returning an error state. Please see %s', 'purgely'),
+                esc_html__('Toggle "stale if error" behavior. The stale if error behavior allows stale content to be served while the origin is returning an error state. Please see %s', 'purgely'),
                 sprintf(
                     '<a href="%1$s" target="_blank">%2$s</a>',
                     'https://www.fastly.com/blog/stale-while-revalidate',
@@ -1554,7 +1585,8 @@ class Purgely_Settings_Page
                         url: '<?php echo esc_url( admin_url('admin-ajax.php') ); ?>',
                         data: {
                             action: 'purge_by_url',
-                            purge_url: purge_url_value
+                            purge_url: purge_url_value,
+                            _wpnonce: '<?= wp_create_nonce('purge_by_url') ?>',
                         },
                         success: function (response) {
                             spinner.toggleClass('is-active');
@@ -1621,7 +1653,7 @@ class Purgely_Settings_Page
             $service_id = Purgely_Settings::get_setting('fastly_service_id');
             /* translators: %1\$s: current active VCL version, %2\$s: Fastly service name, %3\$s: new VCL version */
             $message = sprintf(
-                    __("You are about to clone active version %1\$s for service \"%2\$s\". We'll make changes to version %3\$s", 'purgely'),
+                __("You are about to clone active version %1\$s for service \"%2\$s\". We'll make changes to version %3\$s", 'purgely'),
                 $vcl->_last_active_version_num, $service_name, $vcl->_next_cloned_version_num)
             ;
         } else {
@@ -1702,7 +1734,8 @@ class Purgely_Settings_Page
                     data: {
                         action: 'fastly_html_update_ok',
                         activate: activate,
-                        html: html.val()
+                        html: html.val(),
+                        _wpnonce: '<?= wp_create_nonce('fastly_html_update_ok') ?>',
                     },
                     success: function (response) {
                         spinner_html.toggleClass('is-active');
@@ -1862,7 +1895,7 @@ class Purgely_Settings_Page
             <input type='text' name='fastly-settings-advanced[custom_ttl_templates][<?php echo esc_attr( $type ); ?>]'
                    value='<?php echo esc_attr( $value ); ?>'>
         </div>
-        <?php endforeach; ?>
+    <?php endforeach; ?>
         <p class="description">
             <?php esc_html_e("If set, this will override standard TTL time for this template.", 'purgely'); ?>
         </p>
