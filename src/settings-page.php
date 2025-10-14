@@ -1853,6 +1853,7 @@ class Purgely_Settings_Page
                     data: {
                         action: 'fastly_io_update_ok',
                         activate: activate,
+                        _wpnonce: '<?= wp_create_nonce('fastly_io_update_ok') ?>',
                     },
                     success: function (response) {
                         spinner_io.toggleClass('is-active');
