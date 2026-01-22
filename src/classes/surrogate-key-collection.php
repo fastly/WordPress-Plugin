@@ -85,7 +85,7 @@ class Purgely_Surrogate_Key_Collection
 
         } else {
             if ($wp_query->is_category() || $wp_query->is_tag() || $wp_query->is_tax()) {
-                $term_keys = $this->_add_key_terms_taxonomy();
+                $term_keys = $this->_add_key_terms_taxonomy( $wp_query );
             }
         }
 
@@ -208,16 +208,18 @@ class Purgely_Surrogate_Key_Collection
         return $keys;
     }
 
-    /**
-     * Get the term keys for taxonomies.
-     *
-     * @return array The taxonomy combos for the post.
-     */
-    private function _add_key_terms_taxonomy()
+	/**
+	 * Get the term keys for taxonomies.
+	 *
+	 * @param $wp_query
+	 *
+	 * @return array The taxonomy combos for the post.
+	 */
+    private function _add_key_terms_taxonomy( $wp_query )
     {
         $keys = array();
 
-        $queried_object = get_queried_object();
+        $queried_object = $wp_query->get_queried_object();
         // archive page? author page? single post?
 
         if (!empty($queried_object->term_id) && !empty($queried_object->taxonomy)) {
