@@ -1,8 +1,8 @@
 === Fastly ===
 Contributors: Fastly, Inchoo, CondeNast
 Tags: fastly, cdn, performance, speed, spike, spike-protection, caching, dynamic, comments, ddos
-Requires at least: 4.6.2
-Tested up to: 6.8.0
+Requires at least: 5.9
+Tested up to: 7.1
 Stable tag: 1.2.29
 License: GPLv2
 
